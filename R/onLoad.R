@@ -1,6 +1,6 @@
 .onLoad <- function(libname, pkgname)
 {
-    # patched version of rxGetInfo for <= 7.3
+    # patched version of rxGetInfo for RRE <= 7.3
     f73 <- function (data, getVarInfo = FALSE, getBlockSizes = FALSE, getValueLabels = NULL,
         varsToKeep = NULL, varsToDrop = NULL, startRow = 1, numRows = 0,
         computeInfo = FALSE, allNodes = TRUE, verbose = 0)
@@ -104,7 +104,7 @@
         }
     }
     
-    # patched version of rxGetInfo for >= 7.4
+    # patched version of rxGetInfo for RRE 7.4
     f74 <- function (data, getVarInfo = FALSE, getBlockSizes = FALSE, getValueLabels = NULL, 
         varsToKeep = NULL, varsToDrop = NULL, startRow = 1, numRows = 0, 
         computeInfo = FALSE, allNodes = TRUE, verbose = 0) 
@@ -213,7 +213,7 @@
     environment(f74) <- environment(rxGetInfo)
 
     rxver <- packageVersion("RevoScaleR")
-    suppressWarnings(if(rxver <= package_version("7.5.0"))
+    suppressWarnings(if(rxver < package_version("7.5.0"))  # 7.5 corrects bug in rxGetInfo
     {
         f <- if(rxver >= package_version("7.4.0")) f74 else f73
         unlockBinding("rxGetInfo", as.environment("package:RevoScaleR"))
