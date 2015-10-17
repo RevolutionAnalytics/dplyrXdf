@@ -1,0 +1,42 @@
+Package: dplyrXdf
+Title: Interface to xdf files for the dplyr package
+Version: 0.6
+Authors@R: c(
+    person("Hong", "Ooi", , "hongooi@microsoft.com", role = c("aut", "cre")),
+    person("Revolution Analytics", role="cph")
+    )
+Description: Interface to xdf files for the dplyr package
+Depends:
+    R (>= 3.1.1),
+    dplyr,
+    RevoScaleR
+Imports:
+    RevoPemaR
+License: MIT + file LICENSE
+LazyData: true
+Collate:
+    '00rxArgs.R'
+    'arrange_xdf.R'
+    'copy_xdf.R'
+    'distinct_xdf.R'
+    'do_xdf.R'
+    'dplyr_pkg.R'
+    'factorise_xdf.R'
+    'filter_xdf.R'
+    'tbl_xdf.R'
+    'group_by_xdf.R'
+    'joins_xdf.R'
+    'mutate_xdf.R'
+    'onLoad.R'
+    'rename_xdf.R'
+    'select_xdf.R'
+    'summarise_xdf.R'
+    'summarise_xdf_cube.R'
+    'summarise_xdf_pema.R'
+    'summarise_xdf_summary.R'
+    'summarise_xdf_split.R'
+    'summarise_xdf_summary2.R'
+    'transmute_xdf.R'
+Suggests:
+    knitr
+VignetteBuilder: knitr

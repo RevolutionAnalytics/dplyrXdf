@@ -1,0 +1,192 @@
+---
+title: "Introducing the dplyrXdf package"
+author: "Hong Ooi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+options(dplyr.print_min = 5L, dplyr.print_max = 5L)
+library(dplyrXdf)
+```
+## Introduction
+
+The [dplyr package](https://cran.r-project.org/web/packages/dplyr/index.html) is a popular toolkit for data transformation and manipulation. Over the last year and a half, dplyr has become a hot topic in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks. 
+
+Out of the box, dplyr supports data frames, data tables (from the data.table package), and the following SQL databases: MySQL/MariaDB, SQLite, and PostgreSQL. However, a feature of dplyr is that it's _extensible_: by writing a specific backend, you can make it work with many other kinds of data sources. For example the development version of the [RSQLServer package](https://github.com/imanuelcostigan/RSQLServer) implements a dplyr backend for Microsoft SQL Server.
+
+The dplyrXdf package implements such a backend for the xdf file format, a technology supplied as part of Revolution R Enterprise. All of the data transformation and modelling functions provided with RRE support xdf files, which allow you to break R's memory barrier: by storing the data on disk, rather than in memory, they make it possible to work with multi-gigabyte or terabyte-sized datasets.
+
+dplyrXdf brings the benefits of dplyr to xdf files, including support for pipeline notation, all major verbs, and the ability to incorporate xdfs into dplyr pipelines. It also provides some additional benefits which are more specific to working with xdfs:
+
+* The RevoScaleR functions require keeping track of where your data is saved. In some situations, writing a function's output to the same file as its input is allowed, while in others, it causes problems. You can often end up with many different version of the data scattered around your filesystem, introducing reproducibility problems and making it difficult to keep track of changes. dplyrXdf abstracts this task of file management away, so that you can focus on the data itself.
+
+* Related to the above, the source xdf to a dplyrXdf pipeline is never modified. This provides a measure of security, so that even if there are bugs in your code (maybe you meant to use a `mutate` rather than a `transmute`), the original data is safe.
+
+* Consistency of interface: functions like `rxCube` and `rxSummary` use formulas in different ways, because they are designed to do slightly different things. Similarly, many RevoScaleR functions use factors but don't automatically create those factors; or they require handholding when trying to combine factor with non-factor data. With dplyrXdf, you don't have to remember which formula syntax goes with which function, or create factors yourself. If you _do_ have to create factors, it provides a new verb (`factorise`) to streamline this as well.
+
+* The verbs in dplyrXdf all read from xdf files and write to xdf files. The data is thus never read entirely into memory, so a dplyrXdf pipeline will work with datasets that are arbitrarily large.
+
+_Note that dplyrXdf is a shell on top of the existing functions provided by Revolution R Enterprise, which is the commercial (paid) distribution of R from Revolution Analytics. You must be an existing RRE customer to make use of dplyrXdf. Revolution R Open does not include support for xdf files._
+
+
+## A sample dplyrXdf pipeline
+
+For this example I'll use the flights dataset from the nycflights13 package. This is one of the datasets used in the [dplyr vignettes](https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html), and crops up in many other places besides.
+
+```{r}
+library(dplyrXdf)  # also loads dplyr
+library(nycflights13)
+
+# write the data as an xdf file
+flightsXdf <- rxDataFrameToXdf(flights, "flights.xdf", overwrite=TRUE)
+```
+
+Consider a simple task: get the average delay and total distance covered (in kilometers) in the first half of 2013, by carrier, sorted by descending delay. This isn't very complicated, conceptually speaking: we want to do a row selection, then some basic transformations, followed by a summary, and then order the output by one of the columns.
+
+This translates into the following sequence of RevoScaleR function calls:
+
+```{r}
+# select the rows
+flights_rx1 <- rxDataStep(flightsXdf, outFile="flights_rx1.xdf",
+                          rowSelection=month <= 6 & year == 2013,
+                          overwrite=TRUE)
+
+# variable transformations
+flights_rx2 <- rxDataStep(flights_rx1, outFile="flights_rx2.xdf",
+                          transforms=list(dist_km=distance*1.6093,
+                                          delay=(arr_delay + dep_delay)/2),
+                          overwrite=TRUE)
+
+# convert carrier into a factor variable (or rxSummary will complain)
+flights_rx3 <- rxFactors(flights_rx2, factorInfo="carrier",
+                         outFile="flights_rx3.xdf", overwrite=TRUE)
+
+# use rxSummary to get the summary table(s) (could also use rxCube twice)
+flights_rx4 <- rxSummary(~delay:carrier + dist_km:carrier, data=flights_rx3,
+                         summaryStats=c("mean", "sum"))
+
+# extract the desired tables from the rxSummary output
+flights_rx4_1 <- flights_rx4$categorical[[1]][c("carrier", "Means")]
+names(flights_rx4_1)[2] <- "mean_delay"
+
+flights_rx4_2 <- flights_rx4$categorical[[2]][c("carrier", "Sum")]
+names(flights_rx4_2)[2] <- "sum_dist"
+
+# merge the tables together
+flights_rx5 <- merge(flights_rx4_1, flights_rx4_2, by="carrier", all=TRUE)
+
+# sort the results
+flights_rx5 <- flights_rx5[order(flights_rx5$mean_delay, decreasing=TRUE), ]
+
+head(flights_rx5)
+```
+
+The equivalent in dplyrXdf would be the following pipeline:
+
+```{r}
+flightsSmry <- flightsXdf %>%
+    filter(month <= 6, year == 2013) %>%
+    mutate(dist_km=distance*1.6093, delay=(arr_delay + dep_delay)/2) %>%
+    group_by(carrier) %>%
+    summarise(mean_delay=mean(delay), sum_dist=sum(dist_km)) %>%
+    arrange(desc(mean_delay))
+
+head(flightsSmry)
+```
+
+Even with this very straightforward example, dplyrXdf hides the complexity of calling RevoScaleR functions while retaining their power. In particular, note the following:
+
+* There is no need to keep track of input and output file locations: the verbs in the dplyrXdf pipeline will automatically create files and reuse them as needed. Files that are no longer used will be deleted, so there won't be multiple orphaned files cluttering up your hard disk.
+
+* The `summarise` verb is much simpler to work with than the RevoScaleR `rxSummary` function. It doesn't require scanning through a list of output objects to find the information you're after, and it accepts grouping variables of any type (numeric, character or factor).
+
+* The pipeline notation makes it clear at a glance what is the sequence of operations being carried out. This is one of the major benefits of dplyr, and is now also available for those working with xdf files.
+
+
+## Single-table verbs
+
+dplyrXdf supports all the basic dplyr single-table verbs: 
+
+* `filter` and `select` to choose rows and columns
+
+* `mutate` and `transmute` to do data transformation
+
+* `group_by` to define groups
+
+* `summarise` and `do` to carry out computations on grouped data
+
+* `arrange` to sort by variables
+
+* `rename` to rename columns
+
+* `distinct` to drop duplicates
+
+Under the hood, they work by translating your pipeline into calls to the base RevoScaleR functions for working with xdf files: for example, `mutate` calls `rxDataStep` to compute transformations; `arrange` calls `rxSort`, and so on.
+
+Most of these verbs work exactly as they do in dplyr. Thus if you know how to use dplyr, then you also know how to use the bulk of dplyrXdf.
+
+
+## Two-table verbs
+
+dplyrXdf supports the main table-join verbs from dplyr: `left_join`, `right_join`, `inner_join` and `full_join`. The syntax is the same as for the dplyr versions, including joining on non-matching column names. The underlying implementation uses `rxMerge` with the appropriate arguments for each type of join.
+
+For example, one of the joins in the [dplyr two-table verbs vignette](https://cran.rstudio.com/web/packages/dplyr/vignettes/two-table.html) joins the flights table with the airports table, using the columns `dest` (in flights) and `faa` (in airports). The same code in dplyr also works in dplyrXdf:
+
+```{r}
+airportsXdf <- rxDataFrameToXdf(airports, "airports.xdf", overwrite=TRUE)
+flightsJoin <- left_join(
+    flightsXdf %>% select(year:day, hour, origin, dest, tailnum, carrier),
+    airportsXdf,
+    by=c("dest"="faa"))
+head(flightsJoin)
+```
+
+
+## Tbls and file management
+
+To facilitate the task of file management, dplyrXdf defines a new `tbl_xdf` class that extends the `RxXdfData` class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an `tbl_xdf` object is just a normal xdf data source; thus, existing code dealing with xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a `tbl_xdf`, as opposed to a normal xdf, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.
+
+To create a `tbl_xdf` yourself, just call the `tbl` function on an xdf data source:
+
+```{r}
+flightsTbl <- tbl(flightsXdf)
+flightsTbl
+```
+
+However this should rarely (if ever) be necessary, as dplyrXdf will automatically create a tbl for you if you pass a raw xdf to a pipeline.
+
+dplyrXdf creates its output files in R's temporary directory, so when you close your R session, these files will be deleted. This saves you having to manually delete files that are no longer in use, but it does mean that you must copy the output of your pipeline to a permanent location if you want to keep it around. You can use `file.copy` and `rxXdfFileName` for this purpose:
+
+```{r, eval=FALSE}
+# same dplyrXdf pipeline from before
+flightsSmry <- flightsXdf %>%
+    filter(month <= 6, year == 2013) %>%
+    mutate(dist_km=distance*1.6093, delay=(arr_delay + dep_delay)/2) %>%
+    group_by(carrier) %>%
+    summarise(mean_delay=mean(delay), sum_dist=sum(dist_km)) %>%
+    arrange(desc(mean_delay))
+
+# store the result of the pipeline where it won't get deleted
+outFile <- "./flightsSmry.xdf"
+file.copy(rxXdfFileName(flightsSmry), outFile, overwrite=TRUE)
+```
+
+## Non-xdf and non-local data sources
+
+Despite the name, dplyrXdf supports all file data sources defined by RevoScaleR, not just xdf files. This includes delimited text (`RxTextData`), SAS datasets (`RxSasData`) and SPSS datasets (`RxSpssData`). If you pass one of these data sources to a dplyrXdf pipeline, it will import the data to an xdf file first before executing the rest of the pipeline.
+
+For the moment, dplyrXdf only supports files stored in the local filesystem. Support for datasets stored in HDFS (using the `RxHdfsFileSystem` class) may appear in a future version. For data stored in a SQL database, consider using the dplyr backend for that database, if available.
+
+
+## Conclusion
+
+This article has been a quick executive-summary introduction to dplyrXdf. Like dplyr, dplyrXdf is a package under active development. If you have any suggestions on features to add (including bits of dplyr that have been left out) or bugs that need fixing, please contact me at [hongooi@microsoft.com](hongooi@microsoft.com).
+
+
+
+

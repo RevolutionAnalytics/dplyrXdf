@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Hong Ooi" />
+
+<meta name="date" content="2015-10-10" />
+
+<title>Using the dplyrXdf package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<link href="data:text/css;charset=utf-8,body%7Bbackground%2Dcolor%3A%23fff%3Bmargin%3A1emauto%3Bmax%2Dwidth%3A700px%3Boverflow%3Avisible%3Bpadding%2Dleft%3A2em%3Bpadding%2Dright%3A2em%3Bfont%2Dfamily%3A%22OpenSans%22%2C%22HelveticaNeue%22%2CHelvetica%2CArial%2Csans%2Dserif%3Bfont%2Dsize%3A14px%3Bline%2Dheight%3A1%2E35%3B%7D%23header%7Btext%2Dalign%3Acenter%3B%7D%23TOC%7Bclear%3Aboth%3Bmargin%3A0010px10px%3Bpadding%3A4px%3Bwidth%3A400px%3Bborder%3A1pxsolid%23CCCCCC%3Bborder%2Dradius%3A5px%3Bbackground%2Dcolor%3A%23f6f6f6%3Bfont%2Dsize%3A13px%3Bline%2Dheight%3A1%2E3%3B%7D%23TOC%2Etoctitle%7Bfont%2Dweight%3Abold%3Bfont%2Dsize%3A15px%3Bmargin%2Dleft%3A5px%3B%7D%23TOCul%7Bpadding%2Dleft%3A40px%3Bmargin%2Dleft%3A%2D1%2E5em%3Bmargin%2Dtop%3A5px%3Bmargin%2Dbottom%3A5px%3B%7D%23TOCulul%7Bmargin%2Dleft%3A%2D2em%3B%7D%23TOCli%7Bline%2Dheight%3A16px%3B%7Dtable%7Bmargin%3A1emauto%3Bborder%2Dwidth%3A1px%3Bborder%2Dcolor%3A%23DDDDDD%3Bborder%2Dstyle%3Aoutset%3Bborder%2Dcollapse%3Acollapse%3B%7Dtableth%7Bborder%2Dwidth%3A2px%3Bpadding%3A5px%3Bborder%2Dstyle%3Ainset%3B%7Dtabletd%7Bborder%2Dwidth%3A1px%3Bborder%2Dstyle%3Ainset%3Bline%2Dheight%3A18px%3Bpadding%3A5px5px%3B%7Dtable%2Ctableth%2Ctabletd%7Bborder%2Dleft%2Dstyle%3Anone%3Bborder%2Dright%2Dstyle%3Anone%3B%7Dtablethead%2Ctabletr%2Eeven%7Bbackground%2Dcolor%3A%23f7f7f7%3B%7Dp%7Bmargin%3A0%2E5em0%3B%7Dblockquote%7Bbackground%2Dcolor%3A%23f6f6f6%3Bpadding%3A0%2E25em0%2E75em%3B%7Dhr%7Bborder%2Dstyle%3Asolid%3Bborder%3Anone%3Bborder%2Dtop%3A1pxsolid%23777%3Bmargin%3A28px0%3B%7Ddl%7Bmargin%2Dleft%3A0%3B%7Ddldd%7Bmargin%2Dbottom%3A13px%3Bmargin%2Dleft%3A13px%3B%7Ddldt%7Bfont%2Dweight%3Abold%3B%7Dul%7Bmargin%2Dtop%3A0%3B%7Dulli%7Blist%2Dstyle%3Acircleoutside%3B%7Dulul%7Bmargin%2Dbottom%3A0%3B%7Dpre%2Ccode%7Bbackground%2Dcolor%3A%23f7f7f7%3Bborder%2Dradius%3A3px%3Bcolor%3A%23333%3B%7Dpre%7Bwhite%2Dspace%3Apre%2Dwrap%3Bborder%2Dradius%3A3px%3Bmargin%3A5px0px10px0px%3Bpadding%3A10px%3B%7Dpre%3Anot%28%5Bclass%5D%29%7Bbackground%2Dcolor%3A%23f7f7f7%3B%7Dcode%7Bfont%2Dfamily%3AConsolas%2CMonaco%2C%27CourierNew%27%2Cmonospace%3Bfont%2Dsize%3A85%25%3B%7Dp%3Ecode%2Cli%3Ecode%7Bpadding%3A2px0px%3B%7Ddiv%2Efigure%7Btext%2Dalign%3Acenter%3B%7Dimg%7Bbackground%2Dcolor%3A%23FFFFFF%3Bpadding%3A2px%3Bborder%3A1pxsolid%23DDDDDD%3Bborder%2Dradius%3A3px%3Bborder%3A1pxsolid%23CCCCCC%3Bmargin%3A05px%3B%7Dh1%7Bmargin%2Dtop%3A0%3Bfont%2Dsize%3A35px%3Bline%2Dheight%3A40px%3B%7Dh2%7Bborder%2Dbottom%3A4pxsolid%23f7f7f7%3Bpadding%2Dtop%3A10px%3Bpadding%2Dbottom%3A2px%3Bfont%2Dsize%3A145%25%3B%7Dh3%7Bborder%2Dbottom%3A2pxsolid%23f7f7f7%3Bpadding%2Dtop%3A10px%3Bfont%2Dsize%3A120%25%3B%7Dh4%7Bborder%2Dbottom%3A1pxsolid%23f7f7f7%3Bmargin%2Dleft%3A8px%3Bfont%2Dsize%3A105%25%3B%7Dh5%2Ch6%7Bborder%2Dbottom%3A1pxsolid%23ccc%3Bfont%2Dsize%3A105%25%3B%7Da%7Bcolor%3A%230033dd%3Btext%2Ddecoration%3Anone%3B%7Da%3Ahover%7Bcolor%3A%236666ff%3B%7Da%3Avisited%7Bcolor%3A%23800080%3B%7Da%3Avisited%3Ahover%7Bcolor%3A%23BB00BB%3B%7Da%5Bhref%5E%3D%22http%3A%22%5D%7Btext%2Ddecoration%3Aunderline%3B%7Da%5Bhref%5E%3D%22https%3A%22%5D%7Btext%2Ddecoration%3Aunderline%3B%7Dcode%3Espan%2Ekw%7Bcolor%3A%23555%3Bfont%2Dweight%3Abold%3B%7Dcode%3Espan%2Edt%7Bcolor%3A%23902000%3B%7Dcode%3Espan%2Edv%7Bcolor%3A%2340a070%3B%7Dcode%3Espan%2Ebn%7Bcolor%3A%23d14%3B%7Dcode%3Espan%2Efl%7Bcolor%3A%23d14%3B%7Dcode%3Espan%2Ech%7Bcolor%3A%23d14%3B%7Dcode%3Espan%2Est%7Bcolor%3A%23d14%3B%7Dcode%3Espan%2Eco%7Bcolor%3A%23888888%3Bfont%2Dstyle%3Aitalic%3B%7Dcode%3Espan%2Eot%7Bcolor%3A%23007020%3B%7Dcode%3Espan%2Eal%7Bcolor%3A%23ff0000%3Bfont%2Dweight%3Abold%3B%7Dcode%3Espan%2Efu%7Bcolor%3A%23900%3Bfont%2Dweight%3Abold%3B%7Dcode%3Espan%2Eer%7Bcolor%3A%23a61717%3Bbackground%2Dcolor%3A%23e3d2d2%3B%7D" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+<div id="header">
+<h1 class="title">Using the dplyrXdf package</h1>
+<h4 class="author"><em>Hong Ooi</em></h4>
+<h4 class="date"><em>2015-10-10</em></h4>
+</div>
+
+
+<p>This vignette goes into more details on using dplyrXdf. Most of dplyrXdf works the same way as dplyr, so if you know how to use the latter, then you also (mostly) know how to use the former. However, there are some places in which the two packages are different. These will be described below.</p>
+<div id="single-table-verbs" class="section level2">
+<h2>Single-table verbs</h2>
+<p>We’ll use the nycflights13 flights data to demonstrate the use of dplyrXdf.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyrXdf)  <span class="co"># also loads dplyr</span>
+<span class="kw">library</span>(nycflights13)
+
+<span class="co"># write the data as an xdf file</span>
+flightsXdf &lt;-<span class="st"> </span><span class="kw">rxDataFrameToXdf</span>(flights, <span class="st">&quot;flights.xdf&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>)</code></pre></div>
+<div id="the-.rxargs-parameter" class="section level3">
+<h3>The <code>.rxArgs</code> parameter</h3>
+<p>The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don’t need to touch these, it can sometimes be useful to do so. For example, when using <code>mutate</code> or <code>transmute</code>, you could specify more complicated transformations via a <code>transformFunc</code> (<a href="http://www.rdocumentation.org/packages/RevoScaleR/functions/rxTransform">see the help for <code>rxTransform</code></a>). Similarly, rather than chaining together a <code>mutate</code> and a <code>summarise</code> — which would involve creating an intermediate file — you could incorporate the variable transformation into the <code>summarise</code> itself. More low-level uses of such arguments include setting the block size for an xdf file, changing the compression level, limiting the number of rows, and so on.</p>
+<p>Most of the one-table dplyrXdf verbs accept an <code>.rxArgs</code> argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the verb in question; here is a list of the verbs and the underlying RevoScaleR function that they call:</p>
+<ul>
+<li><code>filter</code> and <code>select</code>: <code>rxDataStep</code></li>
+<li><code>mutate</code> and <code>transmute</code>: <code>rxDataStep</code></li>
+<li><code>summarise</code>: depending on the method chosen, <code>rxCube</code> or <code>rxSummary</code></li>
+<li><code>arrange</code>: <code>rxSort</code></li>
+<li><code>distinct</code>: <code>rxDataStep</code></li>
+<li><code>factorise</code>: <code>rxFactors</code></li>
+<li><code>doXdf</code>: <code>rxDataStep</code></li>
+</ul>
+<p>You should use the <code>.rxArgs</code> argument with caution, as some verbs may modify the data as part of their normal functioning, so the results you get back may not be as expected. It’s also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. However, when working with big datasets this feature can help save a lot of processing time by avoiding unnecessary disk traffic.</p>
+<p>See the help for each of the RevoScaleR functions for which arguments they support, and that you can pass via <code>.rxArgs</code>.</p>
+</div>
+<div id="transforming-data-with-mutate-and-transmute" class="section level3">
+<h3>Transforming data with <code>mutate</code> and <code>transmute</code></h3>
+<p>These verbs work much the same way as in dplyr. You can also use the <code>.rxArgs</code> parameter to specify additional transformation arguments to <code>rxDataStep</code>. Here are some examples to illustrate the use of <code>mutate</code> and <code>transmute</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># a simple transformation</span>
+flightsMut &lt;-<span class="st"> </span><span class="kw">mutate</span>(flightsXdf, <span class="dt">delay =</span> (dep_delay +<span class="st"> </span>arr_delay)/<span class="dv">2</span>)
+<span class="kw">head</span>(flightsMut)
+<span class="co">#&gt;   year month day dep_time dep_delay arr_time arr_delay carrier tailnum</span>
+<span class="co">#&gt; 1 2013     1   1      517         2      830        11      UA  N14228</span>
+<span class="co">#&gt; 2 2013     1   1      533         4      850        20      UA  N24211</span>
+<span class="co">#&gt; 3 2013     1   1      542         2      923        33      AA  N619AA</span>
+<span class="co">#&gt; 4 2013     1   1      544        -1     1004       -18      B6  N804JB</span>
+<span class="co">#&gt; 5 2013     1   1      554        -6      812       -25      DL  N668DN</span>
+<span class="co">#&gt; 6 2013     1   1      554        -4      740        12      UA  N39463</span>
+<span class="co">#&gt;   flight origin dest air_time distance hour minute delay</span>
+<span class="co">#&gt; 1   1545    EWR  IAH      227     1400    5     17   6.5</span>
+<span class="co">#&gt; 2   1714    LGA  IAH      227     1416    5     33  12.0</span>
+<span class="co">#&gt; 3   1141    JFK  MIA      160     1089    5     42  17.5</span>
+<span class="co">#&gt; 4    725    JFK  BQN      183     1576    5     44  -9.5</span>
+<span class="co">#&gt; 5    461    LGA  ATL      116      762    5     54 -15.5</span>
+<span class="co">#&gt; 6   1696    EWR  ORD      150      719    5     54   4.0</span>
+
+<span class="co"># a more complex transformation involving a transformFunc</span>
+flightsTrans &lt;-<span class="st"> </span><span class="kw">transmute</span>(flightsXdf, 
+    <span class="dt">.rxArgs=</span><span class="kw">list</span>(
+        <span class="dt">transformFunc=</span>function(varlist) <span class="kw">with</span>(varlist, {
+            delay &lt;-<span class="st"> </span>(dep_delay +<span class="st"> </span>arr_delay)/<span class="dv">2</span>
+            date &lt;-<span class="st"> </span><span class="kw">as.Date</span>(<span class="kw">sprintf</span>(<span class="st">&quot;%d-%02d-%02d&quot;</span>, year, month, day))
+            weekday &lt;-<span class="st"> </span><span class="kw">weekdays</span>(date)
+            weekendDelay &lt;-<span class="st"> </span><span class="kw">ifelse</span>(weekday %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Saturday&quot;</span>, <span class="st">&quot;Sunday&quot;</span>),
+                                   delay, <span class="ot">NA</span>)
+            <span class="kw">list</span>(<span class="dt">delay=</span>delay, <span class="dt">weekday=</span>weekday, <span class="dt">weekendDelay=</span>weekendDelay)
+        })
+    )
+)
+<span class="kw">head</span>(flightsTrans)
+<span class="co">#&gt;   delay weekday weekendDelay</span>
+<span class="co">#&gt; 1   6.5 Tuesday           NA</span>
+<span class="co">#&gt; 2  12.0 Tuesday           NA</span>
+<span class="co">#&gt; 3  17.5 Tuesday           NA</span>
+<span class="co">#&gt; 4  -9.5 Tuesday           NA</span>
+<span class="co">#&gt; 5 -15.5 Tuesday           NA</span>
+<span class="co">#&gt; 6   4.0 Tuesday           NA</span>
+
+<span class="co"># fit a model using open source R, and then score the training dataset</span>
+<span class="co"># we pass the model object via transformObjects, and the package to load</span>
+<span class="co"># via transformPackages</span>
+<span class="kw">library</span>(rpart)
+flightsModel &lt;-<span class="st"> </span><span class="kw">rpart</span>(arr_delay ~<span class="st"> </span>dep_delay +<span class="st"> </span>carrier +<span class="st"> </span>hour, <span class="dt">data=</span>flights)
+
+flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(flightsXdf,
+    <span class="dt">pred=</span><span class="kw">predict</span>(model, <span class="kw">data.frame</span>(dep_delay, carrier, hour)),
+    <span class="dt">.rxArgs=</span><span class="kw">list</span>(
+        <span class="dt">transformObjects=</span><span class="kw">list</span>(<span class="dt">model=</span>flightsModel),
+        <span class="dt">transformPackages=</span><span class="st">&quot;rpart&quot;</span>
+    )
+)
+<span class="kw">head</span>(flightsScores)
+<span class="co">#&gt;        pred</span>
+<span class="co">#&gt; 1 -8.433385</span>
+<span class="co">#&gt; 2 -8.433385</span>
+<span class="co">#&gt; 3 -8.433385</span>
+<span class="co">#&gt; 4 -8.433385</span>
+<span class="co">#&gt; 5 -8.433385</span>
+<span class="co">#&gt; 6 -8.433385</span></code></pre></div>
+<p>It’s important to note that any arguments passed in a <code>.transformFunc</code> are processed <em>after</em> the transformations in the main call to <code>mutate</code> and <code>transmute</code>. For example, this won’t work:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mutate</span>(flightsXdf, <span class="dt">delayHrs=</span>delay/<span class="dv">60</span>, 
+    <span class="dt">.transformArgs=</span><span class="kw">list</span>(
+        <span class="dt">transformFunc=</span>function(varlist) <span class="kw">with</span>(varlist, {
+            delay &lt;-<span class="st"> </span>(dep_delay +<span class="st"> </span>arr_delay)/<span class="dv">2</span>
+            <span class="kw">list</span>(<span class="dt">delay=</span>delay)
+        }),
+        <span class="dt">transformVars=</span><span class="kw">c</span>(<span class="st">&quot;dep_delay&quot;</span>, <span class="st">&quot;arr_delay&quot;</span>)
+    )
+)
+<span class="co">#&gt; Error in doTryCatch(return(expr), name, parentenv, handler) : </span>
+<span class="co">#&gt;   Error in executing R code: object 'delay' not found</span></code></pre></div>
+<p>Here, the variable <code>delayHrs</code> depends on <code>delay</code>, which is defined in a <code>transformFunc</code>. However, when dplyrXdf tries to compute <code>delayHrs</code>, the <code>transformFunc</code> has not yet been executed and so the code fails.</p>
+</div>
+<div id="summarising-data-with-summarise" class="section level3">
+<h3>Summarising data with <code>summarise</code></h3>
+<p>You can incorporate much of the functionality of <code>filter</code> and <code>mutate</code> by including selection and transformation parameters in the <code>.rxArg</code> argument. Here is an example:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flightsSmry &lt;-<span class="st"> </span>flightsXdf %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">sumdist=</span><span class="kw">sum</span>(dist_km),
+              <span class="dt">.rxArgs=</span><span class="kw">list</span>(<span class="dt">rowSelection=</span>month &gt;<span class="st"> </span><span class="dv">6</span>,
+                           <span class="dt">transforms=</span><span class="kw">list</span>(<span class="dt">dist_km=</span>distance *<span class="st"> </span><span class="fl">1.6093</span>))
+    )
+<span class="kw">head</span>(flightsSmry)
+<span class="co">#&gt;   carrier  sumdist</span>
+<span class="co">#&gt; 1      UA 74549477</span>
+<span class="co">#&gt; 2      AA 35197578</span>
+<span class="co">#&gt; 3      B6 47741787</span>
+<span class="co">#&gt; 4      DL 48677012</span>
+<span class="co">#&gt; 5      EV 25681489</span>
+<span class="co">#&gt; 6      MQ 12132540</span></code></pre></div>
+<p>For best performance, when using <code>summarise</code> you should request only those summary statistics supported by <code>rxCube</code> and/or <code>rxSummary</code>: sum, mean, min, max, sd, var and n (the count of observations). If you request something else, dplyrXdf will split the dataset into multiple data frames, one per group, and call <code>dplyr::summarise</code> on each data frame; this will generally work as intended, but may be slow.</p>
+<p>The dplyrXdf version of <code>summarise</code> can choose from a number of methods for computing the summary statistics. While it’s usually smart enough to choose the best method, you can set this manually with the <code>.method</code> argument, which takes a number from 1 to 5:</p>
+<ol style="list-style-type: decimal">
+<li>Use <code>rxCube</code></li>
+<li>Use <code>rxSummary</code></li>
+<li>Use <code>rxSummary</code> but create the groups by concatenating the grouping variables together; this is to work around a limitation in the RevoScaleR functions on the maximum number of cells in a cube</li>
+<li>Split the dataset into multiple data frames, call <code>dplyr::summarise</code> on each</li>
+<li>Split the dataset into multiple xdf files, call <code>rxSummary</code> on each</li>
+</ol>
+<p>Only methods 1 and 2 support the use of <code>.rxArgs</code>.</p>
+<p>In addition, dplyrXdf <code>summarise</code> doesn’t support expressions as summary statistics. For example, something like <code>summarise(datasrc, weightedMean=sum(x*wt)/sum(wt))</code> works when <code>datasrc</code> is a data frame, but not when it is an xdf. To get the desired result, one workaround would be to use three verbs in a pipeline:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">datasrc %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">xwt=</span><span class="kw">sum</span>(x*wt)) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">xwt=</span><span class="kw">sum</span>(xwt), <span class="dt">wt=</span><span class="kw">sum</span>(wt)) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">weightedMean=</span>xwt/wt)</code></pre></div>
+<p>Support for the <code>fweights</code> and <code>pweights</code> arguments to <code>rxCube</code> and <code>rxSummary</code> is forthcoming.</p>
+</div>
+<div id="selecting-variables-with-select" class="section level3">
+<h3>Selecting variables with <code>select</code></h3>
+<p>The dplyrXdf version of <code>select</code> doesn’t support renaming variables as part of the selection. Instead, use a <code>rename</code> following the <code>select</code> to rename variables. The <code>rename</code> verb is very fast since it only modifies the metadata portion of an xdf file, rather than the data itself.</p>
+</div>
+<div id="creating-factors-with-factorise" class="section level3">
+<h3>Creating factors with <code>factorise</code></h3>
+<p>Many RevoScaleR functions are optimised to work best with factors, or require factors as input. dplyrXdf provides a simple shell to the <code>rxFactors</code> function to convert non-factor variables to factors. The syntax is as follows:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">factorise</span>(data, x1, x2, ...)</code></pre></div>
+<p>where <code>x1</code>, <code>x2</code>, … are the variables to convert. Note that the generated factor variables will overwrite the originals. For performance reasons, the levels of the generated factors are not sorted in alphabetical order.</p>
+<p>The verbs in dplyrXdf will usually create factors on the fly as needed, so you shouldn’t need to call <code>factorise</code> very often. However, should you need it, <code>factorise</code> provides an explicit way to create factors within the framework of dplyrXdf and pipelines.</p>
+<p>There are a number of ways to specify the variables to convert, in addition to naming them explicitly. The functions <code>all_character()</code>, <code>all_numeric()</code> and <code>all_integer()</code> will convert all the variables falling under these categories. A logical variable counts as integer for this purpose. You can also use the helper functions available to <code>dplyr::select_vars</code> to choose variables based on their names.</p>
+<p>By default, if no variables are specified in the <code>factorise</code> call, then all character variables will be converted to factors. As with <code>select</code>, renaming variables as part of the factor conversion is not supported.</p>
+</div>
+<div id="executing-code-with-do-and-doxdf" class="section level3">
+<h3>Executing code with <code>do</code> and <code>doXdf</code></h3>
+<p>The <code>do</code> verb is an exception to the rule that <code>dplyrXdf</code> verbs write their output as xdf files. This is because <code>do</code> executes arbitrary R code, and can return arbitrary R objects; while a data frame is capable of storing these objects, an xdf file is limited to character and numeric vectors only.</p>
+<p>The <code>doXdf</code> verb is similar to <code>do</code>, but where <code>do</code> splits its input into one data frame per group, <code>doXdf</code> splits it into one xdf file per group. This allows <code>do</code>-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to <code>doXdf</code> must obviously know how to handle xdfs. Both <code>do</code> and <code>doXdf</code> only support named arguments.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># fit a regression model by carrier, using rxLinMod</span>
+flightsMods &lt;-<span class="st"> </span>flightsXdf %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
+<span class="st">    </span><span class="kw">doXdf</span>(<span class="dt">model=</span><span class="kw">rxLinMod</span>(arr_delay ~<span class="st"> </span>dep_delay +<span class="st"> </span>hour, <span class="dt">data=</span>.))
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.328 seconds</span>
+
+flightsMods$model[[<span class="dv">1</span>]]
+<span class="co">#&gt; Call:</span>
+<span class="co">#&gt; rxLinMod(formula = arr_delay ~ dep_delay + hour, data = .)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
+<span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
+<span class="co">#&gt; File name:</span>
+<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\Rtmpi2IaDP\file4614451f41d8..group..9E.xdf</span>
+<span class="co">#&gt; Dependent variable(s): arr_delay</span>
+<span class="co">#&gt; Total independent variables: 3 </span>
+<span class="co">#&gt; Number of valid observations: 17294</span>
+<span class="co">#&gt; Number of missing observations: 1166 </span>
+<span class="co">#&gt;  </span>
+<span class="co">#&gt; Coefficients:</span>
+<span class="co">#&gt;              arr_delay</span>
+<span class="co">#&gt; (Intercept) -3.8654201</span>
+<span class="co">#&gt; dep_delay    1.0335003</span>
+<span class="co">#&gt; hour        -0.3950968</span></code></pre></div>
+</div>
+</div>
+<div id="two-table-verbs" class="section level2">
+<h2>Two-table verbs</h2>
+<p>dplyrXdf currently supports the main table-join verbs from dplyr: <code>left_join</code>, <code>right_join</code>, <code>inner_join</code> and <code>full_join</code>. The syntax is the same as for the dplyr versions, including joining on non-matching column names. It’s also possible to join xdf files with data frames.</p>
+<p>The somewhat more obscure <code>semi_join</code> and <code>anti_join</code> verbs are not (yet) supported, mainly because there is no corresponding functionality for these types of joins in <code>rxMerge</code>. You can mimic <code>semi_join</code> with the following workaround, which is an <code>inner_join</code> call combined with a <code>distinct</code> to remove duplicated rows:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">planesXdf &lt;-<span class="st"> </span><span class="kw">rxDataFrameToXdf</span>(planes, <span class="st">&quot;planes.xdf&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>)
+
+<span class="co"># same as semi_join(flights, planes, by=&quot;tailnum&quot;)</span>
+flightsSemi &lt;-<span class="st"> </span><span class="kw">inner_join</span>(flightsXdf,
+                          <span class="kw">select</span>(planesXdf, tailnum) %&gt;%<span class="st"> </span>distinct,
+                          <span class="dt">by=</span><span class="st">&quot;tailnum&quot;</span>)
+<span class="co">#&gt; Rows Read: 3322, Total Rows Processed: 3322, Total Chunk Time: 0.031 seconds</span>
+<span class="kw">head</span>(flightsSemi)
+<span class="co">#&gt;   year month day dep_time dep_delay arr_time arr_delay carrier tailnum</span>
+<span class="co">#&gt; 1 2013     1  10      626        -4      802         2      EV  N10156</span>
+<span class="co">#&gt; 2 2013     1  10     1120        48     1320        40      EV  N10156</span>
+<span class="co">#&gt; 3 2013     1  10     1619        39     1831        47      EV  N10156</span>
+<span class="co">#&gt; 4 2013     1  11      632        -2      810       -12      EV  N10156</span>
+<span class="co">#&gt; 5 2013     1  11     1116        -4     1328        -8      EV  N10156</span>
+<span class="co">#&gt; 6 2013     1  11     1845        26     1959        27      EV  N10156</span>
+<span class="co">#&gt;   flight origin dest air_time distance hour minute</span>
+<span class="co">#&gt; 1   4560    EWR  PIT       60      319    6     26</span>
+<span class="co">#&gt; 2   4269    EWR  CHS       99      628   11     20</span>
+<span class="co">#&gt; 3   4667    EWR  MSP      175     1008   16     19</span>
+<span class="co">#&gt; 4   4334    EWR  CMH       81      463    6     32</span>
+<span class="co">#&gt; 5   4298    EWR  MCI      171     1092   11     16</span>
+<span class="co">#&gt; 6   4520    EWR  PWM       49      284   18     45</span></code></pre></div>
+<p>Similarly, you can mimic <code>anti_join</code> as follows:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as anti_join(flights, planes, by=&quot;tailnum&quot;)</span>
+flightsAnti &lt;-<span class="st"> </span><span class="kw">left_join</span>(flightsXdf,
+                         <span class="kw">transmute</span>(planesXdf, tailnum, <span class="dt">pl=</span><span class="kw">rep</span>(<span class="dv">1</span>, .rxNumRows)) %&gt;%
+<span class="st">                            </span>distinct,
+                         <span class="dt">by=</span><span class="st">&quot;tailnum&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">filter</span>(<span class="kw">is.na</span>(pl))
+<span class="co">#&gt; Rows Read: 3322, Total Rows Processed: 3322, Total Chunk Time: 0.061 seconds</span>
+<span class="kw">head</span>(flightsAnti)
+<span class="co">#&gt;   year month day dep_time dep_delay arr_time arr_delay carrier tailnum</span>
+<span class="co">#&gt; 1 2013     1   2       NA        NA       NA        NA      AA    &lt;NA&gt;</span>
+<span class="co">#&gt; 2 2013     1   2       NA        NA       NA        NA      UA    &lt;NA&gt;</span>
+<span class="co">#&gt; 3 2013     1   3       NA        NA       NA        NA      UA    &lt;NA&gt;</span>
+<span class="co">#&gt; 4 2013     1   3       NA        NA       NA        NA      UA    &lt;NA&gt;</span>
+<span class="co">#&gt; 5 2013     1   4       NA        NA       NA        NA      9E    &lt;NA&gt;</span>
+<span class="co">#&gt; 6 2013     1   4       NA        NA       NA        NA      9E    &lt;NA&gt;</span>
+<span class="co">#&gt;   flight origin dest air_time distance hour minute pl</span>
+<span class="co">#&gt; 1    133    JFK  LAX       NA     2475   NA     NA NA</span>
+<span class="co">#&gt; 2    623    EWR  ORD       NA      719   NA     NA NA</span>
+<span class="co">#&gt; 3    714    EWR  MIA       NA     1085   NA     NA NA</span>
+<span class="co">#&gt; 4    719    EWR  DFW       NA     1372   NA     NA NA</span>
+<span class="co">#&gt; 5   3405    JFK  DCA       NA      213   NA     NA NA</span>
+<span class="co">#&gt; 6   3716    EWR  DTW       NA      488   NA     NA NA</span></code></pre></div>
+<p>The set operations <code>intersect</code>, <code>union</code> and <code>setdiff</code> are also not supported. A workaround for <code>union</code> is to use <code>rxMerge</code> with <code>type=&quot;union&quot;</code> (which does a UNION ALL, in SQL lingo), followed by a <code>distinct</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as union(flightsXdf, flightsXdf)</span>
+flightsUnion &lt;-<span class="st"> </span><span class="kw">rxMerge</span>(flightsXdf, flightsXdf, <span class="dt">outFile=</span><span class="st">&quot;flightsUnion.xdf&quot;</span>,
+                        <span class="dt">type=</span><span class="st">&quot;union&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>distinct
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 1.794 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 2.140 seconds</span>
+<span class="kw">nrow</span>(flightsXdf)
+<span class="co">#&gt; [1] 336776</span>
+<span class="kw">nrow</span>(flightsUnion)  <span class="co"># same as nrow(flightsXdf)</span>
+<span class="co">#&gt; [1] 336776</span></code></pre></div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

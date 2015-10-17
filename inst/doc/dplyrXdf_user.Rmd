@@ -1,0 +1,221 @@
+---
+title: "Using the dplyrXdf package"
+author: "Hong Ooi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+options(dplyr.print_min = 5L, dplyr.print_max = 5L)
+library(dplyrXdf)
+```
+
+This vignette goes into more details on using dplyrXdf. Most of dplyrXdf works the same way as dplyr, so if you know how to use the latter, then you also (mostly) know how to use the former. However, there are some places in which the two packages are different. These will be described below.
+
+
+## Single-table verbs
+
+We'll use the nycflights13 flights data to demonstrate the use of dplyrXdf.
+
+```{r}
+library(dplyrXdf)  # also loads dplyr
+library(nycflights13)
+
+# write the data as an xdf file
+flightsXdf <- rxDataFrameToXdf(flights, "flights.xdf", overwrite=TRUE)
+```
+
+### The `.rxArgs` parameter
+
+The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don't need to touch these, it can sometimes be useful to do so. For example, when using `mutate` or `transmute`, you could specify more complicated transformations via a `transformFunc` ([see the help for `rxTransform`](http://www.rdocumentation.org/packages/RevoScaleR/functions/rxTransform)). Similarly, rather than chaining together a `mutate` and a `summarise` --- which would involve creating an intermediate file --- you could incorporate the variable transformation into the `summarise` itself. More low-level uses of such arguments include setting the block size for an xdf file, changing the compression level, limiting the number of rows, and so on.
+
+Most of the one-table dplyrXdf verbs accept an `.rxArgs` argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the verb in question; here is a list of the verbs and the underlying RevoScaleR function that they call:
+
+* `filter` and `select`: `rxDataStep`
+* `mutate` and `transmute`: `rxDataStep`
+* `summarise`: depending on the method chosen, `rxCube` or `rxSummary`
+* `arrange`: `rxSort`
+* `distinct`: `rxDataStep`
+* `factorise`: `rxFactors`
+* `doXdf`: `rxDataStep`
+
+You should use the `.rxArgs` argument with caution, as some verbs may modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. However, when working with big datasets this feature can help save a lot of processing time by avoiding unnecessary disk traffic.
+
+See the help for each of the RevoScaleR functions for which arguments they support, and that you can pass via `.rxArgs`.
+
+
+### Transforming data with `mutate` and `transmute`
+
+These verbs work much the same way as in dplyr. You can also use the `.rxArgs` parameter to specify additional transformation arguments to `rxDataStep`. Here are some examples to illustrate the use of `mutate` and `transmute`:
+
+```{r}
+# a simple transformation
+flightsMut <- mutate(flightsXdf, delay = (dep_delay + arr_delay)/2)
+head(flightsMut)
+
+# a more complex transformation involving a transformFunc
+flightsTrans <- transmute(flightsXdf, 
+    .rxArgs=list(
+        transformFunc=function(varlist) with(varlist, {
+            delay <- (dep_delay + arr_delay)/2
+            date <- as.Date(sprintf("%d-%02d-%02d", year, month, day))
+            weekday <- weekdays(date)
+            weekendDelay <- ifelse(weekday %in% c("Saturday", "Sunday"),
+                                   delay, NA)
+            list(delay=delay, weekday=weekday, weekendDelay=weekendDelay)
+        })
+    )
+)
+head(flightsTrans)
+
+# fit a model using open source R, and then score the training dataset
+# we pass the model object via transformObjects, and the package to load
+# via transformPackages
+library(rpart)
+flightsModel <- rpart(arr_delay ~ dep_delay + carrier + hour, data=flights)
+
+flightsScores <- transmute(flightsXdf,
+    pred=predict(model, data.frame(dep_delay, carrier, hour)),
+    .rxArgs=list(
+        transformObjects=list(model=flightsModel),
+        transformPackages="rpart"
+    )
+)
+head(flightsScores)
+```
+
+It's important to note that any arguments passed in a `.transformFunc` are processed _after_ the transformations in the main call to `mutate` and `transmute`. For example, this won't work:
+
+```{r, eval=FALSE}
+mutate(flightsXdf, delayHrs=delay/60, 
+    .transformArgs=list(
+        transformFunc=function(varlist) with(varlist, {
+            delay <- (dep_delay + arr_delay)/2
+            list(delay=delay)
+        }),
+        transformVars=c("dep_delay", "arr_delay")
+    )
+)
+#> Error in doTryCatch(return(expr), name, parentenv, handler) : 
+#>   Error in executing R code: object 'delay' not found
+```
+
+Here, the variable `delayHrs` depends on `delay`, which is defined in a `transformFunc`. However, when dplyrXdf tries to compute `delayHrs`, the `transformFunc` has not yet been executed and so the code fails.
+
+
+### Summarising data with `summarise`
+
+You can incorporate much of the functionality of `filter` and `mutate` by including selection and transformation parameters in the `.rxArg` argument. Here is an example:
+
+```{r}
+flightsSmry <- flightsXdf %>%
+    group_by(carrier) %>%
+    summarise(sumdist=sum(dist_km),
+              .rxArgs=list(rowSelection=month > 6,
+                           transforms=list(dist_km=distance * 1.6093))
+    )
+head(flightsSmry)
+```
+
+For best performance, when using `summarise` you should request only those summary statistics supported by `rxCube` and/or `rxSummary`: sum, mean, min, max, sd, var and n (the count of observations). If you request something else, dplyrXdf will split the dataset into multiple data frames, one per group, and call `dplyr::summarise` on each data frame; this will generally work as intended, but may be slow.
+
+The dplyrXdf version of `summarise` can choose from a number of methods for computing the summary statistics. While it's usually smart enough to choose the best method, you can set this manually with the `.method` argument, which takes a number from 1 to 5:
+
+1. Use `rxCube`
+2. Use `rxSummary`
+3. Use `rxSummary` but create the groups by concatenating the grouping variables together; this is to work around a limitation in the RevoScaleR functions on the maximum number of cells in a cube
+4. Split the dataset into multiple data frames, call `dplyr::summarise` on each
+5. Split the dataset into multiple xdf files, call `rxSummary` on each
+
+Only methods 1 and 2 support the use of `.rxArgs`.
+
+In addition, dplyrXdf `summarise` doesn't support expressions as summary statistics. For example, something like `summarise(datasrc, weightedMean=sum(x*wt)/sum(wt))` works when `datasrc` is a data frame, but not when it is an xdf. To get the desired result, one workaround would be to use three verbs in a pipeline:
+
+```{r, eval=FALSE}
+datasrc %>%
+    mutate(xwt=sum(x*wt)) %>%
+    summarise(xwt=sum(xwt), wt=sum(wt)) %>%
+    mutate(weightedMean=xwt/wt)
+```
+
+Support for the `fweights` and `pweights` arguments to `rxCube` and `rxSummary` is forthcoming.
+
+
+### Selecting variables with `select`
+
+The dplyrXdf version of `select` doesn't support renaming variables as part of the selection. Instead, use a `rename` following the `select` to rename variables. The `rename` verb is very fast since it only modifies the metadata portion of an xdf file, rather than the data itself.
+
+
+### Creating factors with `factorise`
+
+Many RevoScaleR functions are optimised to work best with factors, or require factors as input. dplyrXdf provides a simple shell to the `rxFactors` function to convert non-factor variables to factors. The syntax is as follows:
+
+```{r, eval=FALSE}
+factorise(data, x1, x2, ...)
+```
+
+where `x1`, `x2`, ... are the variables to convert. Note that the generated factor variables will overwrite the originals. For performance reasons, the levels of the generated factors are not sorted in alphabetical order.
+
+The verbs in dplyrXdf will usually create factors on the fly as needed, so you shouldn't need to call `factorise` very often. However, should you need it, `factorise` provides an explicit way to create factors within the framework of dplyrXdf and pipelines.
+
+There are a number of ways to specify the variables to convert, in addition to naming them explicitly. The functions `all_character()`, `all_numeric()` and `all_integer()` will convert all the variables falling under these categories. A logical variable counts as integer for this purpose. You can also use the helper functions available to `dplyr::select_vars` to choose variables based on their names.
+
+By default, if no variables are specified in the `factorise` call, then all character variables will be converted to factors. As with `select`, renaming variables as part of the factor conversion is not supported.
+
+### Executing code with `do` and `doXdf`
+
+The `do` verb is an exception to the rule that `dplyrXdf` verbs write their output as xdf files. This is because `do` executes arbitrary R code, and can return arbitrary R objects; while a data frame is capable of storing these objects, an xdf file is limited to character and numeric vectors only.
+
+The `doXdf` verb is similar to `do`, but where `do` splits its input into one data frame per group, `doXdf` splits it into one xdf file per group. This allows `do`-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to `doXdf` must obviously know how to handle xdfs. Both `do` and `doXdf` only support named arguments.
+
+```{r}
+# fit a regression model by carrier, using rxLinMod
+flightsMods <- flightsXdf %>%
+    group_by(carrier) %>%
+    doXdf(model=rxLinMod(arr_delay ~ dep_delay + hour, data=.))
+
+flightsMods$model[[1]]
+```
+
+## Two-table verbs
+
+dplyrXdf currently supports the main table-join verbs from dplyr: `left_join`, `right_join`, `inner_join` and `full_join`. The syntax is the same as for the dplyr versions, including joining on non-matching column names. It's also possible to join xdf files with data frames.
+
+The somewhat more obscure `semi_join` and `anti_join` verbs are not (yet) supported, mainly because there is no corresponding functionality for these types of joins in `rxMerge`. You can mimic `semi_join` with the following workaround, which is an `inner_join` call combined with a `distinct` to remove duplicated rows:
+
+```{r}
+planesXdf <- rxDataFrameToXdf(planes, "planes.xdf", overwrite=TRUE)
+
+# same as semi_join(flights, planes, by="tailnum")
+flightsSemi <- inner_join(flightsXdf,
+                          select(planesXdf, tailnum) %>% distinct,
+                          by="tailnum")
+head(flightsSemi)
+```
+
+Similarly, you can mimic `anti_join` as follows:
+
+```{r}
+# same as anti_join(flights, planes, by="tailnum")
+flightsAnti <- left_join(flightsXdf,
+                         transmute(planesXdf, tailnum, pl=rep(1, .rxNumRows)) %>%
+                            distinct,
+                         by="tailnum") %>% filter(is.na(pl))
+head(flightsAnti)
+```
+
+The set operations `intersect`, `union` and `setdiff` are also not supported. A workaround for `union` is to use `rxMerge` with `type="union"` (which does a UNION ALL, in SQL lingo), followed by a `distinct`:
+
+```{r}
+# same as union(flightsXdf, flightsXdf)
+flightsUnion <- rxMerge(flightsXdf, flightsXdf, outFile="flightsUnion.xdf",
+                        type="union", overwrite=TRUE) %>% distinct
+nrow(flightsXdf)
+nrow(flightsUnion)  # same as nrow(flightsXdf)
+```
+
+

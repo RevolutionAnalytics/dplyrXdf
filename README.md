@@ -1,2 +1,4 @@
 # dplyrXdf
-dplyr backend for Revolution Analytics xdf files
+
+An interface to the dplyr package for Revolution Analytics' `xdf` data format.
+

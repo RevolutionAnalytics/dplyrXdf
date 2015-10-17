@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Hong Ooi" />
+
+<meta name="date" content="2015-10-10" />
+
+<title>Introducing the dplyrXdf package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<link href="data:text/css;charset=utf-8,body%7Bbackground%2Dcolor%3A%23fff%3Bmargin%3A1emauto%3Bmax%2Dwidth%3A700px%3Boverflow%3Avisible%3Bpadding%2Dleft%3A2em%3Bpadding%2Dright%3A2em%3Bfont%2Dfamily%3A%22OpenSans%22%2C%22HelveticaNeue%22%2CHelvetica%2CArial%2Csans%2Dserif%3Bfont%2Dsize%3A14px%3Bline%2Dheight%3A1%2E35%3B%7D%23header%7Btext%2Dalign%3Acenter%3B%7D%23TOC%7Bclear%3Aboth%3Bmargin%3A0010px10px%3Bpadding%3A4px%3Bwidth%3A400px%3Bborder%3A1pxsolid%23CCCCCC%3Bborder%2Dradius%3A5px%3Bbackground%2Dcolor%3A%23f6f6f6%3Bfont%2Dsize%3A13px%3Bline%2Dheight%3A1%2E3%3B%7D%23TOC%2Etoctitle%7Bfont%2Dweight%3Abold%3Bfont%2Dsize%3A15px%3Bmargin%2Dleft%3A5px%3B%7D%23TOCul%7Bpadding%2Dleft%3A40px%3Bmargin%2Dleft%3A%2D1%2E5em%3Bmargin%2Dtop%3A5px%3Bmargin%2Dbottom%3A5px%3B%7D%23TOCulul%7Bmargin%2Dleft%3A%2D2em%3B%7D%23TOCli%7Bline%2Dheight%3A16px%3B%7Dtable%7Bmargin%3A1emauto%3Bborder%2Dwidth%3A1px%3Bborder%2Dcolor%3A%23DDDDDD%3Bborder%2Dstyle%3Aoutset%3Bborder%2Dcollapse%3Acollapse%3B%7Dtableth%7Bborder%2Dwidth%3A2px%3Bpadding%3A5px%3Bborder%2Dstyle%3Ainset%3B%7Dtabletd%7Bborder%2Dwidth%3A1px%3Bborder%2Dstyle%3Ainset%3Bline%2Dheight%3A18px%3Bpadding%3A5px5px%3B%7Dtable%2Ctableth%2Ctabletd%7Bborder%2Dleft%2Dstyle%3Anone%3Bborder%2Dright%2Dstyle%3Anone%3B%7Dtablethead%2Ctabletr%2Eeven%7Bbackground%2Dcolor%3A%23f7f7f7%3B%7Dp%7Bmargin%3A0%2E5em0%3B%7Dblockquote%7Bbackground%2Dcolor%3A%23f6f6f6%3Bpadding%3A0%2E25em0%2E75em%3B%7Dhr%7Bborder%2Dstyle%3Asolid%3Bborder%3Anone%3Bborder%2Dtop%3A1pxsolid%23777%3Bmargin%3A28px0%3B%7Ddl%7Bmargin%2Dleft%3A0%3B%7Ddldd%7Bmargin%2Dbottom%3A13px%3Bmargin%2Dleft%3A13px%3B%7Ddldt%7Bfont%2Dweight%3Abold%3B%7Dul%7Bmargin%2Dtop%3A0%3B%7Dulli%7Blist%2Dstyle%3Acircleoutside%3B%7Dulul%7Bmargin%2Dbottom%3A0%3B%7Dpre%2Ccode%7Bbackground%2Dcolor%3A%23f7f7f7%3Bborder%2Dradius%3A3px%3Bcolor%3A%23333%3B%7Dpre%7Bwhite%2Dspace%3Apre%2Dwrap%3Bborder%2Dradius%3A3px%3Bmargin%3A5px0px10px0px%3Bpadding%3A10px%3B%7Dpre%3Anot%28%5Bclass%5D%29%7Bbackground%2Dcolor%3A%23f7f7f7%3B%7Dcode%7Bfont%2Dfamily%3AConsolas%2CMonaco%2C%27CourierNew%27%2Cmonospace%3Bfont%2Dsize%3A85%25%3B%7Dp%3Ecode%2Cli%3Ecode%7Bpadding%3A2px0px%3B%7Ddiv%2Efigure%7Btext%2Dalign%3Acenter%3B%7Dimg%7Bbackground%2Dcolor%3A%23FFFFFF%3Bpadding%3A2px%3Bborder%3A1pxsolid%23DDDDDD%3Bborder%2Dradius%3A3px%3Bborder%3A1pxsolid%23CCCCCC%3Bmargin%3A05px%3B%7Dh1%7Bmargin%2Dtop%3A0%3Bfont%2Dsize%3A35px%3Bline%2Dheight%3A40px%3B%7Dh2%7Bborder%2Dbottom%3A4pxsolid%23f7f7f7%3Bpadding%2Dtop%3A10px%3Bpadding%2Dbottom%3A2px%3Bfont%2Dsize%3A145%25%3B%7Dh3%7Bborder%2Dbottom%3A2pxsolid%23f7f7f7%3Bpadding%2Dtop%3A10px%3Bfont%2Dsize%3A120%25%3B%7Dh4%7Bborder%2Dbottom%3A1pxsolid%23f7f7f7%3Bmargin%2Dleft%3A8px%3Bfont%2Dsize%3A105%25%3B%7Dh5%2Ch6%7Bborder%2Dbottom%3A1pxsolid%23ccc%3Bfont%2Dsize%3A105%25%3B%7Da%7Bcolor%3A%230033dd%3Btext%2Ddecoration%3Anone%3B%7Da%3Ahover%7Bcolor%3A%236666ff%3B%7Da%3Avisited%7Bcolor%3A%23800080%3B%7Da%3Avisited%3Ahover%7Bcolor%3A%23BB00BB%3B%7Da%5Bhref%5E%3D%22http%3A%22%5D%7Btext%2Ddecoration%3Aunderline%3B%7Da%5Bhref%5E%3D%22https%3A%22%5D%7Btext%2Ddecoration%3Aunderline%3B%7Dcode%3Espan%2Ekw%7Bcolor%3A%23555%3Bfont%2Dweight%3Abold%3B%7Dcode%3Espan%2Edt%7Bcolor%3A%23902000%3B%7Dcode%3Espan%2Edv%7Bcolor%3A%2340a070%3B%7Dcode%3Espan%2Ebn%7Bcolor%3A%23d14%3B%7Dcode%3Espan%2Efl%7Bcolor%3A%23d14%3B%7Dcode%3Espan%2Ech%7Bcolor%3A%23d14%3B%7Dcode%3Espan%2Est%7Bcolor%3A%23d14%3B%7Dcode%3Espan%2Eco%7Bcolor%3A%23888888%3Bfont%2Dstyle%3Aitalic%3B%7Dcode%3Espan%2Eot%7Bcolor%3A%23007020%3B%7Dcode%3Espan%2Eal%7Bcolor%3A%23ff0000%3Bfont%2Dweight%3Abold%3B%7Dcode%3Espan%2Efu%7Bcolor%3A%23900%3Bfont%2Dweight%3Abold%3B%7Dcode%3Espan%2Eer%7Bcolor%3A%23a61717%3Bbackground%2Dcolor%3A%23e3d2d2%3B%7D" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+<div id="header">
+<h1 class="title">Introducing the dplyrXdf package</h1>
+<h4 class="author"><em>Hong Ooi</em></h4>
+<h4 class="date"><em>2015-10-10</em></h4>
+</div>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The <a href="https://cran.r-project.org/web/packages/dplyr/index.html">dplyr package</a> is a popular toolkit for data transformation and manipulation. Over the last year and a half, dplyr has become a hot topic in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks.</p>
+<p>Out of the box, dplyr supports data frames, data tables (from the data.table package), and the following SQL databases: MySQL/MariaDB, SQLite, and PostgreSQL. However, a feature of dplyr is that it’s <em>extensible</em>: by writing a specific backend, you can make it work with many other kinds of data sources. For example the development version of the <a href="https://github.com/imanuelcostigan/RSQLServer">RSQLServer package</a> implements a dplyr backend for Microsoft SQL Server.</p>
+<p>The dplyrXdf package implements such a backend for Revolution Analytics’ xdf file format. All of the data transformation and modelling functions provided with Revolution R Enterprise support xdf files, which allow you to break R’s memory barrier: by storing the data on disk, rather than in memory, they make it possible to work with multi-gigabyte or terabyte-sized datasets.</p>
+<p>dplyrXdf brings the benefits of dplyr to xdf files, including support for pipeline notation, all major verbs, and the ability to incorporate xdfs into dplyr pipelines. It also provides some additional benefits which are more specific to working with xdfs:</p>
+<ul>
+<li><p>The RevoScaleR functions require keeping track of where your data is saved. In some situations, writing a function’s output to the same file as its input is allowed, while in others, it causes problems. You can often end up with many different version of the data scattered around your filesystem, introducing reproducibility problems and making it difficult to keep track of changes. dplyrXdf abstracts this task of file management away, so that you can focus on the data itself.</p></li>
+<li><p>Related to the above, the source xdf to a dplyrXdf pipeline is never modified. This provides a measure of security, so that even if there are bugs in your code (maybe you meant to use a <code>mutate</code> rather than a <code>transmute</code>), the original data is safe.</p></li>
+<li><p>Consistency of interface: functions like <code>rxCube</code> and <code>rxSummary</code> use formulas in different ways, because they are designed to do slightly different things. Similarly, many RevoScaleR functions use factors but don’t automatically create those factors; or they require handholding when trying to combine factor with non-factor data. With dplyrXdf, you don’t have to remember which formula syntax goes with which function, or create factors yourself. If you <em>do</em> have to create factors, it provides a new verb (<code>factorise</code>) to streamline this as well.</p></li>
+<li><p>The verbs in dplyrXdf all read from xdf files and write to xdf files. The data is thus never read entirely into memory, so a dplyrXdf pipeline will work with datasets that are arbitrarily large.</p></li>
+</ul>
+</div>
+<div id="a-sample-dplyrxdf-pipeline" class="section level2">
+<h2>A sample dplyrXdf pipeline</h2>
+<p>For this example I’ll use the flights dataset from the nycflights13 package. This is one of the datasets used in the <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html">dplyr vignettes</a>, and crops up in many other places besides.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyrXdf)  <span class="co"># also loads dplyr</span>
+<span class="kw">library</span>(nycflights13)
+
+<span class="co"># write the data as an xdf file</span>
+flightsXdf &lt;-<span class="st"> </span><span class="kw">rxDataFrameToXdf</span>(flights, <span class="st">&quot;flights.xdf&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>)</code></pre></div>
+<p>Consider a simple task: get the average delay and total distance covered (in kilometers) in the first half of 2013, by carrier, sorted by descending delay. This isn’t very complicated, conceptually speaking: we want to do a row selection, then some basic transformations, followed by a summary, and then order the output by one of the columns.</p>
+<p>This translates into the following sequence of RevoScaleR function calls:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># select the rows</span>
+flights_rx1 &lt;-<span class="st"> </span><span class="kw">rxDataStep</span>(flightsXdf, <span class="dt">outFile=</span><span class="st">&quot;flights_rx1.xdf&quot;</span>,
+                          <span class="dt">rowSelection=</span>month &lt;=<span class="st"> </span><span class="dv">6</span> &amp;<span class="st"> </span>year ==<span class="st"> </span><span class="dv">2013</span>,
+                          <span class="dt">overwrite=</span><span class="ot">TRUE</span>)
+
+<span class="co"># variable transformations</span>
+flights_rx2 &lt;-<span class="st"> </span><span class="kw">rxDataStep</span>(flights_rx1, <span class="dt">outFile=</span><span class="st">&quot;flights_rx2.xdf&quot;</span>,
+                          <span class="dt">transforms=</span><span class="kw">list</span>(<span class="dt">dist_km=</span>distance*<span class="fl">1.6093</span>,
+                                          <span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>),
+                          <span class="dt">overwrite=</span><span class="ot">TRUE</span>)
+
+<span class="co"># convert carrier into a factor variable (or rxSummary will complain)</span>
+flights_rx3 &lt;-<span class="st"> </span><span class="kw">rxFactors</span>(flights_rx2, <span class="dt">factorInfo=</span><span class="st">&quot;carrier&quot;</span>,
+                         <span class="dt">outFile=</span><span class="st">&quot;flights_rx3.xdf&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>)
+
+<span class="co"># use rxSummary to get the summary table(s) (could also use rxCube twice)</span>
+flights_rx4 &lt;-<span class="st"> </span><span class="kw">rxSummary</span>(~delay:carrier +<span class="st"> </span>dist_km:carrier, <span class="dt">data=</span>flights_rx3,
+                         <span class="dt">summaryStats=</span><span class="kw">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sum&quot;</span>))
+
+<span class="co"># extract the desired tables from the rxSummary output</span>
+flights_rx4_1 &lt;-<span class="st"> </span>flights_rx4$categorical[[<span class="dv">1</span>]][<span class="kw">c</span>(<span class="st">&quot;carrier&quot;</span>, <span class="st">&quot;Means&quot;</span>)]
+<span class="kw">names</span>(flights_rx4_1)[<span class="dv">2</span>] &lt;-<span class="st"> &quot;mean_delay&quot;</span>
+
+flights_rx4_2 &lt;-<span class="st"> </span>flights_rx4$categorical[[<span class="dv">2</span>]][<span class="kw">c</span>(<span class="st">&quot;carrier&quot;</span>, <span class="st">&quot;Sum&quot;</span>)]
+<span class="kw">names</span>(flights_rx4_2)[<span class="dv">2</span>] &lt;-<span class="st"> &quot;sum_dist&quot;</span>
+
+<span class="co"># merge the tables together</span>
+flights_rx5 &lt;-<span class="st"> </span><span class="kw">merge</span>(flights_rx4_1, flights_rx4_2, <span class="dt">by=</span><span class="st">&quot;carrier&quot;</span>, <span class="dt">all=</span><span class="ot">TRUE</span>)
+
+<span class="co"># sort the results</span>
+flights_rx5 &lt;-<span class="st"> </span>flights_rx5[<span class="kw">order</span>(flights_rx5$mean_delay, <span class="dt">decreasing=</span><span class="ot">TRUE</span>), ]
+
+<span class="kw">head</span>(flights_rx5)
+<span class="co">#&gt;    carrier mean_delay     sum_dist</span>
+<span class="co">#&gt; 11      OO   72.16667     2750.294</span>
+<span class="co">#&gt; 7       F9   24.81886   873367.110</span>
+<span class="co">#&gt; 6       EV   21.80613 23400472.426</span>
+<span class="co">#&gt; 16      YV   20.78378   128401.219</span>
+<span class="co">#&gt; 8       FL   15.61127  1979744.767</span>
+<span class="co">#&gt; 1       9E   13.85877  7160918.303</span></code></pre></div>
+<p>The equivalent in dplyrXdf would be the following pipeline:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flightsSmry &lt;-<span class="st"> </span>flightsXdf %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(month &lt;=<span class="st"> </span><span class="dv">6</span>, year ==<span class="st"> </span><span class="dv">2013</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">dist_km=</span>distance*<span class="fl">1.6093</span>, <span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>) %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">mean_delay=</span><span class="kw">mean</span>(delay), <span class="dt">sum_dist=</span><span class="kw">sum</span>(dist_km)) %&gt;%
+<span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(mean_delay))
+
+<span class="kw">head</span>(flightsSmry)
+<span class="co">#&gt;   carrier mean_delay     sum_dist</span>
+<span class="co">#&gt; 1      OO   72.16667     2750.294</span>
+<span class="co">#&gt; 2      F9   24.81886   873367.110</span>
+<span class="co">#&gt; 3      EV   21.80613 23400472.426</span>
+<span class="co">#&gt; 4      YV   20.78378   128401.219</span>
+<span class="co">#&gt; 5      FL   15.61127  1979744.767</span>
+<span class="co">#&gt; 6      9E   13.85877  7160918.303</span></code></pre></div>
+<p>Even with this very straightforward example, dplyrXdf hides the complexity of calling RevoScaleR functions while retaining their power. In particular, note the following:</p>
+<ul>
+<li><p>There is no need to keep track of input and output file locations: the verbs in the dplyrXdf pipeline will automatically create files and reuse them as needed. Files that are no longer used will be deleted, so there won’t be multiple orphaned files cluttering up your hard disk.</p></li>
+<li><p>The <code>summarise</code> verb is much simpler to work with than the RevoScaleR <code>rxSummary</code> function. It doesn’t require scanning through a list of output objects to find the information you’re after, and it accepts grouping variables of any type (numeric, character or factor).</p></li>
+<li><p>The pipeline notation makes it clear at a glance what is the sequence of operations being carried out. This is one of the major benefits of dplyr, and is now also available for those working with xdf files.</p></li>
+</ul>
+</div>
+<div id="single-table-verbs" class="section level2">
+<h2>Single-table verbs</h2>
+<p>dplyrXdf supports all the basic dplyr single-table verbs:</p>
+<ul>
+<li><p><code>filter</code> and <code>select</code> to choose rows and columns</p></li>
+<li><p><code>mutate</code> and <code>transmute</code> to do data transformation</p></li>
+<li><p><code>group_by</code> to define groups</p></li>
+<li><p><code>summarise</code> and <code>do</code> to carry out computations on grouped data</p></li>
+<li><p><code>arrange</code> to sort by variables</p></li>
+<li><p><code>rename</code> to rename columns</p></li>
+<li><p><code>distinct</code> to drop duplicates</p></li>
+</ul>
+<p>Under the hood, they work by translating your pipeline into calls to the base RevoScaleR functions for working with xdf files: for example, <code>mutate</code> calls <code>rxDataStep</code> to compute transformations; <code>arrange</code> calls <code>rxSort</code>, and so on.</p>
+<p>Most of these verbs work exactly as they do in dplyr. Thus if you know how to use dplyr, then you also know how to use the bulk of dplyrXdf.</p>
+</div>
+<div id="two-table-verbs" class="section level2">
+<h2>Two-table verbs</h2>
+<p>dplyrXdf supports the main table-join verbs from dplyr: <code>left_join</code>, <code>right_join</code>, <code>inner_join</code> and <code>full_join</code>. The syntax is the same as for the dplyr versions, including joining on non-matching column names. The underlying implementation uses <code>rxMerge</code> with the appropriate arguments for each type of join.</p>
+<p>For example, one of the joins in the <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/two-table.html">dplyr two-table verbs vignette</a> joins the flights table with the airports table, using the columns <code>dest</code> (in flights) and <code>faa</code> (in airports). The same code in dplyr also works in dplyrXdf:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">airportsXdf &lt;-<span class="st"> </span><span class="kw">rxDataFrameToXdf</span>(airports, <span class="st">&quot;airports.xdf&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>)
+flightsJoin &lt;-<span class="st"> </span><span class="kw">left_join</span>(
+    flightsXdf %&gt;%<span class="st"> </span><span class="kw">select</span>(year:day, hour, origin, dest, tailnum, carrier),
+    airportsXdf,
+    <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;dest&quot;</span>=<span class="st">&quot;faa&quot;</span>))
+<span class="kw">head</span>(flightsJoin)
+<span class="co">#&gt;   year month day hour origin dest tailnum carrier faa</span>
+<span class="co">#&gt; 1 2013    10   1   19    JFK  ABQ  N554JB      B6 ABQ</span>
+<span class="co">#&gt; 2 2013    10   2   20    JFK  ABQ  N607JB      B6 ABQ</span>
+<span class="co">#&gt; 3 2013    10   3   19    JFK  ABQ  N591JB      B6 ABQ</span>
+<span class="co">#&gt; 4 2013    10   4   20    JFK  ABQ  N662JB      B6 ABQ</span>
+<span class="co">#&gt; 5 2013    10   5   19    JFK  ABQ  N580JB      B6 ABQ</span>
+<span class="co">#&gt; 6 2013    10   6   19    JFK  ABQ  N507JB      B6 ABQ</span>
+<span class="co">#&gt;                                name      lat       lon  alt tz dst</span>
+<span class="co">#&gt; 1 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
+<span class="co">#&gt; 2 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
+<span class="co">#&gt; 3 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
+<span class="co">#&gt; 4 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
+<span class="co">#&gt; 5 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
+<span class="co">#&gt; 6 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span></code></pre></div>
+</div>
+<div id="tbls-and-file-management" class="section level2">
+<h2>Tbls and file management</h2>
+<p>To facilitate the task of file management, dplyrXdf defines a new <code>tbl_xdf</code> class that extends the <code>RxXdfData</code> class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an <code>tbl_xdf</code> object is just a normal xdf data source; thus, existing code dealing with xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a <code>tbl_xdf</code>, as opposed to a normal xdf, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.</p>
+<p>To create a <code>tbl_xdf</code> yourself, just call the <code>tbl</code> function on an xdf data source:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flightsTbl &lt;-<span class="st"> </span><span class="kw">tbl</span>(flightsXdf)
+flightsTbl
+<span class="co">#&gt; tbl_xdf Source</span>
+<span class="co">#&gt; &quot;C:\Users\hongooi\Documents\revoDplyr\dplyrXdf\vignettes\flights.xdf&quot;</span>
+<span class="co">#&gt; fileSystem: </span>
+<span class="co">#&gt;     fileSystemType: native</span></code></pre></div>
+<p>However this should rarely (if ever) be necessary, as dplyrXdf will automatically create a tbl for you if you pass a raw xdf to a pipeline.</p>
+<p>dplyrXdf creates its output files in R’s temporary directory, so when you close your R session, these files will be deleted. This saves you having to manually delete files that are no longer in use, but it does mean that you must copy the output of your pipeline to a permanent location if you want to keep it around. You can use <code>file.copy</code> and <code>rxXdfFileName</code> for this purpose:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same dplyrXdf pipeline from before</span>
+flightsSmry &lt;-<span class="st"> </span>flightsXdf %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(month &lt;=<span class="st"> </span><span class="dv">6</span>, year ==<span class="st"> </span><span class="dv">2013</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">dist_km=</span>distance*<span class="fl">1.6093</span>, <span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>) %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">mean_delay=</span><span class="kw">mean</span>(delay), <span class="dt">sum_dist=</span><span class="kw">sum</span>(dist_km)) %&gt;%
+<span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(mean_delay))
+
+<span class="co"># store the result of the pipeline where it won't get deleted</span>
+outFile &lt;-<span class="st"> &quot;./flightsSmry.xdf&quot;</span>
+<span class="kw">file.copy</span>(<span class="kw">rxXdfFileName</span>(flightsSmry), outFile, <span class="dt">overwrite=</span><span class="ot">TRUE</span>)</code></pre></div>
+</div>
+<div id="non-xdf-and-non-local-data-sources" class="section level2">
+<h2>Non-xdf and non-local data sources</h2>
+<p>Despite the name, dplyrXdf supports all file data sources defined by RevoScaleR, not just xdf files. This includes delimited text (<code>RxTextData</code>), SAS datasets (<code>RxSasData</code>) and SPSS datasets (<code>RxSpssData</code>). If you pass one of these data sources to a dplyrXdf pipeline, it will import the data to an xdf file first before executing the rest of the pipeline.</p>
+<p>For the moment, dplyrXdf only supports files stored in the local filesystem. Support for datasets stored in HDFS (using the <code>RxHdfsFileSystem</code> class) may appear in a future version. For data stored in a SQL database, consider using the dplyr backend for that database, if available.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>This article has been a quick executive-summary introduction to dplyrXdf. Like dplyr, dplyrXdf is a package under active development. If you have any suggestions on features to add (including bits of dplyr that have been left out) or bugs that need fixing, please contact me at <a href="hongooi@microsoft.com"><a href="mailto:hongooi@microsoft.com">hongooi@microsoft.com</a></a>.</p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
