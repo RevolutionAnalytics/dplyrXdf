@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2015-10-10" />
+<meta name="date" content="2015-10-26" />
 
 <title>Introducing the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Introducing the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2015-10-10</em></h4>
+<h4 class="date"><em>2015-10-26</em></h4>
 </div>
 
 
@@ -80,7 +80,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2>Introduction</h2>
 <p>The <a href="https://cran.r-project.org/web/packages/dplyr/index.html">dplyr package</a> is a popular toolkit for data transformation and manipulation. Over the last year and a half, dplyr has become a hot topic in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks.</p>
 <p>Out of the box, dplyr supports data frames, data tables (from the data.table package), and the following SQL databases: MySQL/MariaDB, SQLite, and PostgreSQL. However, a feature of dplyr is that it’s <em>extensible</em>: by writing a specific backend, you can make it work with many other kinds of data sources. For example the development version of the <a href="https://github.com/imanuelcostigan/RSQLServer">RSQLServer package</a> implements a dplyr backend for Microsoft SQL Server.</p>
-<p>The dplyrXdf package implements such a backend for Revolution Analytics’ xdf file format. All of the data transformation and modelling functions provided with Revolution R Enterprise support xdf files, which allow you to break R’s memory barrier: by storing the data on disk, rather than in memory, they make it possible to work with multi-gigabyte or terabyte-sized datasets.</p>
+<p>The dplyrXdf package implements such a backend for the xdf file format, a technology supplied as part of Revolution R Enterprise. All of the data transformation and modelling functions provided with RRE support xdf files, which allow you to break R’s memory barrier: by storing the data on disk, rather than in memory, they make it possible to work with multi-gigabyte or terabyte-sized datasets.</p>
 <p>dplyrXdf brings the benefits of dplyr to xdf files, including support for pipeline notation, all major verbs, and the ability to incorporate xdfs into dplyr pipelines. It also provides some additional benefits which are more specific to working with xdfs:</p>
 <ul>
 <li><p>The RevoScaleR functions require keeping track of where your data is saved. In some situations, writing a function’s output to the same file as its input is allowed, while in others, it causes problems. You can often end up with many different version of the data scattered around your filesystem, introducing reproducibility problems and making it difficult to keep track of changes. dplyrXdf abstracts this task of file management away, so that you can focus on the data itself.</p></li>
@@ -88,6 +88,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><p>Consistency of interface: functions like <code>rxCube</code> and <code>rxSummary</code> use formulas in different ways, because they are designed to do slightly different things. Similarly, many RevoScaleR functions use factors but don’t automatically create those factors; or they require handholding when trying to combine factor with non-factor data. With dplyrXdf, you don’t have to remember which formula syntax goes with which function, or create factors yourself. If you <em>do</em> have to create factors, it provides a new verb (<code>factorise</code>) to streamline this as well.</p></li>
 <li><p>The verbs in dplyrXdf all read from xdf files and write to xdf files. The data is thus never read entirely into memory, so a dplyrXdf pipeline will work with datasets that are arbitrarily large.</p></li>
 </ul>
+<p><em>Note that dplyrXdf is a shell on top of the existing functions provided by Revolution R Enterprise, which is the commercial (paid) distribution of R from Revolution Analytics. You must be an existing RRE customer to make use of dplyrXdf. Revolution R Open does not include support for xdf files.</em></p>
 </div>
 <div id="a-sample-dplyrxdf-pipeline" class="section level2">
 <h2>A sample dplyrXdf pipeline</h2>

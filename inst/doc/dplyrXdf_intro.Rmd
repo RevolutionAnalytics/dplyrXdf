@@ -19,7 +19,7 @@ The [dplyr package](https://cran.r-project.org/web/packages/dplyr/index.html) is
 
 Out of the box, dplyr supports data frames, data tables (from the data.table package), and the following SQL databases: MySQL/MariaDB, SQLite, and PostgreSQL. However, a feature of dplyr is that it's _extensible_: by writing a specific backend, you can make it work with many other kinds of data sources. For example the development version of the [RSQLServer package](https://github.com/imanuelcostigan/RSQLServer) implements a dplyr backend for Microsoft SQL Server.
 
-The dplyrXdf package implements such a backend for Revolution Analytics' xdf file format. All of the data transformation and modelling functions provided with Revolution R Enterprise support xdf files, which allow you to break R's memory barrier: by storing the data on disk, rather than in memory, they make it possible to work with multi-gigabyte or terabyte-sized datasets.
+The dplyrXdf package implements such a backend for the xdf file format, a technology supplied as part of Revolution R Enterprise. All of the data transformation and modelling functions provided with RRE support xdf files, which allow you to break R's memory barrier: by storing the data on disk, rather than in memory, they make it possible to work with multi-gigabyte or terabyte-sized datasets.
 
 dplyrXdf brings the benefits of dplyr to xdf files, including support for pipeline notation, all major verbs, and the ability to incorporate xdfs into dplyr pipelines. It also provides some additional benefits which are more specific to working with xdfs:
 
@@ -30,6 +30,8 @@ dplyrXdf brings the benefits of dplyr to xdf files, including support for pipeli
 * Consistency of interface: functions like `rxCube` and `rxSummary` use formulas in different ways, because they are designed to do slightly different things. Similarly, many RevoScaleR functions use factors but don't automatically create those factors; or they require handholding when trying to combine factor with non-factor data. With dplyrXdf, you don't have to remember which formula syntax goes with which function, or create factors yourself. If you _do_ have to create factors, it provides a new verb (`factorise`) to streamline this as well.
 
 * The verbs in dplyrXdf all read from xdf files and write to xdf files. The data is thus never read entirely into memory, so a dplyrXdf pipeline will work with datasets that are arbitrarily large.
+
+_Note that dplyrXdf is a shell on top of the existing functions provided by Revolution R Enterprise, which is the commercial (paid) distribution of R from Revolution Analytics. You must be an existing RRE customer to make use of dplyrXdf. Revolution R Open does not include support for xdf files._
 
 
 ## A sample dplyrXdf pipeline

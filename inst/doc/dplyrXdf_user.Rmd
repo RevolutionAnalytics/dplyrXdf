@@ -92,7 +92,7 @@ It's important to note that any arguments passed in a `.transformFunc` are proce
 
 ```{r, eval=FALSE}
 mutate(flightsXdf, delayHrs=delay/60, 
-    .transformArgs=list(
+    .rxArgs=list(
         transformFunc=function(varlist) with(varlist, {
             delay <- (dep_delay + arr_delay)/2
             list(delay=delay)
@@ -142,7 +142,12 @@ datasrc %>%
     mutate(weightedMean=xwt/wt)
 ```
 
-Support for the `fweights` and `pweights` arguments to `rxCube` and `rxSummary` is forthcoming.
+In this particular case though, you could also use `rxCube`'s built-in `pweight` argument to compute the weighted mean:
+
+```{r, eval=FALSE}
+datasrc %>%
+    summarise(weightedMean=mean(x), .rxArgs=list(pweight="wt"))
+```
 
 
 ### Selecting variables with `select`

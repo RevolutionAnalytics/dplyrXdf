@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2015-10-10" />
+<meta name="date" content="2015-10-26" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2015-10-10</em></h4>
+<h4 class="date"><em>2015-10-26</em></h4>
 </div>
 
 
@@ -167,7 +167,7 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 <span class="co">#&gt; 6 -8.433385</span></code></pre></div>
 <p>It’s important to note that any arguments passed in a <code>.transformFunc</code> are processed <em>after</em> the transformations in the main call to <code>mutate</code> and <code>transmute</code>. For example, this won’t work:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mutate</span>(flightsXdf, <span class="dt">delayHrs=</span>delay/<span class="dv">60</span>, 
-    <span class="dt">.transformArgs=</span><span class="kw">list</span>(
+    <span class="dt">.rxArgs=</span><span class="kw">list</span>(
         <span class="dt">transformFunc=</span>function(varlist) <span class="kw">with</span>(varlist, {
             delay &lt;-<span class="st"> </span>(dep_delay +<span class="st"> </span>arr_delay)/<span class="dv">2</span>
             <span class="kw">list</span>(<span class="dt">delay=</span>delay)
@@ -211,7 +211,9 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">xwt=</span><span class="kw">sum</span>(x*wt)) %&gt;%
 <span class="st">    </span><span class="kw">summarise</span>(<span class="dt">xwt=</span><span class="kw">sum</span>(xwt), <span class="dt">wt=</span><span class="kw">sum</span>(wt)) %&gt;%
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">weightedMean=</span>xwt/wt)</code></pre></div>
-<p>Support for the <code>fweights</code> and <code>pweights</code> arguments to <code>rxCube</code> and <code>rxSummary</code> is forthcoming.</p>
+<p>In this particular case though, you could also use <code>rxCube</code>’s built-in <code>pweight</code> argument to compute the weighted mean:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">datasrc %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">weightedMean=</span><span class="kw">mean</span>(x), <span class="dt">.rxArgs=</span><span class="kw">list</span>(<span class="dt">pweight=</span><span class="st">&quot;wt&quot;</span>))</code></pre></div>
 </div>
 <div id="selecting-variables-with-select" class="section level3">
 <h3>Selecting variables with <code>select</code></h3>
@@ -234,7 +236,7 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 flightsMods &lt;-<span class="st"> </span>flightsXdf %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
 <span class="st">    </span><span class="kw">doXdf</span>(<span class="dt">model=</span><span class="kw">rxLinMod</span>(arr_delay ~<span class="st"> </span>dep_delay +<span class="st"> </span>hour, <span class="dt">data=</span>.))
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.328 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.237 seconds</span>
 
 flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Call:</span>
@@ -243,7 +245,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\Rtmpi2IaDP\file4614451f41d8..group..9E.xdf</span>
+<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\RtmpWGBFv4\file1db46bd76506..group..9E.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 17294</span>
@@ -266,7 +268,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 flightsSemi &lt;-<span class="st"> </span><span class="kw">inner_join</span>(flightsXdf,
                           <span class="kw">select</span>(planesXdf, tailnum) %&gt;%<span class="st"> </span>distinct,
                           <span class="dt">by=</span><span class="st">&quot;tailnum&quot;</span>)
-<span class="co">#&gt; Rows Read: 3322, Total Rows Processed: 3322, Total Chunk Time: 0.031 seconds</span>
+<span class="co">#&gt; Rows Read: 3322, Total Rows Processed: 3322, Total Chunk Time: 0.019 seconds</span>
 <span class="kw">head</span>(flightsSemi)
 <span class="co">#&gt;   year month day dep_time dep_delay arr_time arr_delay carrier tailnum</span>
 <span class="co">#&gt; 1 2013     1  10      626        -4      802         2      EV  N10156</span>
@@ -288,7 +290,7 @@ flightsAnti &lt;-<span class="st"> </span><span class="kw">left_join</span>(flig
                          <span class="kw">transmute</span>(planesXdf, tailnum, <span class="dt">pl=</span><span class="kw">rep</span>(<span class="dv">1</span>, .rxNumRows)) %&gt;%
 <span class="st">                            </span>distinct,
                          <span class="dt">by=</span><span class="st">&quot;tailnum&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">filter</span>(<span class="kw">is.na</span>(pl))
-<span class="co">#&gt; Rows Read: 3322, Total Rows Processed: 3322, Total Chunk Time: 0.061 seconds</span>
+<span class="co">#&gt; Rows Read: 3322, Total Rows Processed: 3322, Total Chunk Time: 0.019 seconds</span>
 <span class="kw">head</span>(flightsAnti)
 <span class="co">#&gt;   year month day dep_time dep_delay arr_time arr_delay carrier tailnum</span>
 <span class="co">#&gt; 1 2013     1   2       NA        NA       NA        NA      AA    &lt;NA&gt;</span>
@@ -308,8 +310,8 @@ flightsAnti &lt;-<span class="st"> </span><span class="kw">left_join</span>(flig
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as union(flightsXdf, flightsXdf)</span>
 flightsUnion &lt;-<span class="st"> </span><span class="kw">rxMerge</span>(flightsXdf, flightsXdf, <span class="dt">outFile=</span><span class="st">&quot;flightsUnion.xdf&quot;</span>,
                         <span class="dt">type=</span><span class="st">&quot;union&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>distinct
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 1.794 seconds</span>
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 2.140 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 1.469 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 1.463 seconds</span>
 <span class="kw">nrow</span>(flightsXdf)
 <span class="co">#&gt; [1] 336776</span>
 <span class="kw">nrow</span>(flightsUnion)  <span class="co"># same as nrow(flightsXdf)</span>

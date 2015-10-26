@@ -47,7 +47,7 @@ head(flightsScores)
 
 ## ----, eval=FALSE--------------------------------------------------------
 #  mutate(flightsXdf, delayHrs=delay/60,
-#      .transformArgs=list(
+#      .rxArgs=list(
 #          transformFunc=function(varlist) with(varlist, {
 #              delay <- (dep_delay + arr_delay)/2
 #              list(delay=delay)
@@ -72,6 +72,10 @@ head(flightsSmry)
 #      mutate(xwt=sum(x*wt)) %>%
 #      summarise(xwt=sum(xwt), wt=sum(wt)) %>%
 #      mutate(weightedMean=xwt/wt)
+
+## ----, eval=FALSE--------------------------------------------------------
+#  datasrc %>%
+#      summarise(weightedMean=mean(x), .rxArgs=list(pweight="wt"))
 
 ## ----, eval=FALSE--------------------------------------------------------
 #  factorise(data, x1, x2, ...)
