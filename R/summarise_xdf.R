@@ -110,7 +110,7 @@ select_smry_method <- function(stats, method, groups=NULL)
             method <- Recall(stats=stats, method=NULL, groups=groups)
         }
     }
-    method 
+    method
 }
 
 
@@ -127,8 +127,12 @@ rebuild_groupvars <- function(x, grps, data)
         type <- varInfo$varType
         if(type %in% c("logical", "integer", "numeric"))
             x <- as(as.character(x), type)
-        else if(type %in% c("character", "Date", "POSIXct"))
-            x <- as(x, type)
+        else if(type %in% c("Date", "POSIXct"))
+        {
+            # underlying code in as.Date.numeric, as.POSIXct.numeric just adds an offset
+            x <- as.numeric(as.character(x))
+            class(x) <- type
+        }
         else if(type %in% c("factor", "ordered") && !identical(levels(x), varInfo$levels))
             x <- factor(x, levels=varInfo$levels, ordered=(type == "ordered"))
         x
