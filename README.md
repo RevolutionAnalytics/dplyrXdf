@@ -18,6 +18,6 @@ The verbs in dplyrXdf all read from xdf files and write to xdf files. The data i
 
 ##Obtaining dplyrXdf
 
-The package is available for download from Github, at [`https://github.com/Hong-Revo/dplyrXdf`](https://github.com/Hong-Revo/dplyrXdf). If you have the devtools package installed, you can download and install it from within R using the command `devtools::install_github("RevolutionAnalytics/dplyrXdf")`.
+The package is available for download from Github, at [`https://github.com/RevolutionAnalytics/dplyrXdf`](https://github.com/RevolutionAnalytics/dplyrXdf). If you have the devtools package installed, you can download and install it from within R using the command `devtools::install_github("RevolutionAnalytics/dplyrXdf")`.
 
 _Note that dplyrXdf is a shell on top of the existing functions provided by Revolution R Enterprise, which is the commercial (paid) distribution of R from Revolution Analytics. You must be an existing RRE customer to make use of dplyrXdf. It will not work with Revolution R Open, as RRO doesn't support xdf files._
