@@ -1,4 +1,4 @@
-## ----, echo = FALSE, message = FALSE-------------------------------------
+## ---- echo = FALSE, message = FALSE--------------------------------------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 options(dplyr.print_min = 5L, dplyr.print_max = 5L)
 library(dplyrXdf)
@@ -45,7 +45,7 @@ flightsScores <- transmute(flightsXdf,
 )
 head(flightsScores)
 
-## ----, eval=FALSE--------------------------------------------------------
+## ---- eval=FALSE---------------------------------------------------------
 #  mutate(flightsXdf, delayHrs=delay/60,
 #      .rxArgs=list(
 #          transformFunc=function(varlist) with(varlist, {
@@ -67,17 +67,17 @@ flightsSmry <- flightsXdf %>%
     )
 head(flightsSmry)
 
-## ----, eval=FALSE--------------------------------------------------------
+## ---- eval=FALSE---------------------------------------------------------
 #  datasrc %>%
 #      mutate(xwt=sum(x*wt)) %>%
 #      summarise(xwt=sum(xwt), wt=sum(wt)) %>%
 #      mutate(weightedMean=xwt/wt)
 
-## ----, eval=FALSE--------------------------------------------------------
+## ---- eval=FALSE---------------------------------------------------------
 #  datasrc %>%
 #      summarise(weightedMean=mean(x), .rxArgs=list(pweight="wt"))
 
-## ----, eval=FALSE--------------------------------------------------------
+## ---- eval=FALSE---------------------------------------------------------
 #  factorise(data, x1, x2, ...)
 
 ## ------------------------------------------------------------------------
@@ -87,23 +87,6 @@ flightsMods <- flightsXdf %>%
     doXdf(model=rxLinMod(arr_delay ~ dep_delay + hour, data=.))
 
 flightsMods$model[[1]]
-
-## ------------------------------------------------------------------------
-planesXdf <- rxDataFrameToXdf(planes, "planes.xdf", overwrite=TRUE)
-
-# same as semi_join(flights, planes, by="tailnum")
-flightsSemi <- inner_join(flightsXdf,
-                          select(planesXdf, tailnum) %>% distinct,
-                          by="tailnum")
-head(flightsSemi)
-
-## ------------------------------------------------------------------------
-# same as anti_join(flights, planes, by="tailnum")
-flightsAnti <- left_join(flightsXdf,
-                         transmute(planesXdf, tailnum, pl=rep(1, .rxNumRows)) %>%
-                            distinct,
-                         by="tailnum") %>% filter(is.na(pl))
-head(flightsAnti)
 
 ## ------------------------------------------------------------------------
 # same as union(flightsXdf, flightsXdf)

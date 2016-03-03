@@ -8,16 +8,19 @@ same_src.RxXdfData <- function(x, y)
 
 xdf_copy <- function(x, y, copy=FALSE, by)
 {
+    # data must be in xdf or data frame format, import if not
     if(!same_src(x, y))
     {
-        if(copy)
+        if(inherits(y, c("RxTextData", "RxSasData", "RxSpssData")))
+            y <- tbl(y, stringsAsFactors=FALSE)
+        else if(inherits(y, "tbl_sql"))
         {
-            if(inherits(y, c("RxTextData", "RxSasData", "RxSpssData")))
-                y <- tbl(y)
-            else stop("don't know how to convert y to Xdf", call.=FALSE)
+            # only copy data from dplyr SQL data source if copy==TRUE
+            if(copy)
+                y <- collect(y)
+            else stop("merging with dplyr SQL data source requires copying the data into memory; set copy=TRUE to allow this", call.=FALSE)
         }
-        else stop("x and y don't share the same src. Set copy = TRUE to copy y into ", 
-            "x's source (this may be time consuming).", call.=FALSE)
+        else stop("data must be in an xdf or data frame", call.=FALSE)
     }
 
     # rxMerge requires common varnames; transform if necessary
@@ -35,6 +38,7 @@ xdf_copy <- function(x, y, copy=FALSE, by)
     
     # check compatibility of factor types
     # TODO: combine this with mutate step above, extend checking to more than just factors
+    # TODO: this doesn't check factor _levels_, fix so it does
     xfactors <- names(which(varTypes(x, by$x) == "factor"))
     yfactors <- names(which(varTypes(y, by$x) == "factor"))
     if(!all(xfactors %in% yfactors))

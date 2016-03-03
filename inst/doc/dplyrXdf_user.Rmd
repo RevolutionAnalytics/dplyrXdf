@@ -188,32 +188,9 @@ flightsMods$model[[1]]
 
 ## Two-table verbs
 
-dplyrXdf currently supports the main table-join verbs from dplyr: `left_join`, `right_join`, `inner_join` and `full_join`. The syntax is the same as for the dplyr versions, including joining on non-matching column names. It's also possible to join xdf files with data frames.
+dplyrXdf currently supports the main table-join verbs from dplyr: `left_join`, `right_join`, `inner_join`, `full_join`, `semi_join` and `anti_join`. The syntax is the same as for the dplyr versions, including joining on non-matching column names. It's also possible to join xdf files with data frames.
 
-The somewhat more obscure `semi_join` and `anti_join` verbs are not (yet) supported, mainly because there is no corresponding functionality for these types of joins in `rxMerge`. You can mimic `semi_join` with the following workaround, which is an `inner_join` call combined with a `distinct` to remove duplicated rows:
-
-```{r}
-planesXdf <- rxDataFrameToXdf(planes, "planes.xdf", overwrite=TRUE)
-
-# same as semi_join(flights, planes, by="tailnum")
-flightsSemi <- inner_join(flightsXdf,
-                          select(planesXdf, tailnum) %>% distinct,
-                          by="tailnum")
-head(flightsSemi)
-```
-
-Similarly, you can mimic `anti_join` as follows:
-
-```{r}
-# same as anti_join(flights, planes, by="tailnum")
-flightsAnti <- left_join(flightsXdf,
-                         transmute(planesXdf, tailnum, pl=rep(1, .rxNumRows)) %>%
-                            distinct,
-                         by="tailnum") %>% filter(is.na(pl))
-head(flightsAnti)
-```
-
-The set operations `intersect`, `union` and `setdiff` are also not supported. A workaround for `union` is to use `rxMerge` with `type="union"` (which does a UNION ALL, in SQL lingo), followed by a `distinct`:
+The set operations `intersect`, `union` and `setdiff` are not supported. A workaround for `union` is to use `rxMerge` with `type="union"` (which does a UNION ALL, in SQL lingo), followed by a `distinct`:
 
 ```{r}
 # same as union(flightsXdf, flightsXdf)

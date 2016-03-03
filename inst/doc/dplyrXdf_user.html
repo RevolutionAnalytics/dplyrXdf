@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2015-10-26" />
+<meta name="date" content="2016-03-02" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2015-10-26</em></h4>
+<h4 class="date"><em>2016-03-02</em></h4>
 </div>
 
 
@@ -236,7 +236,7 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 flightsMods &lt;-<span class="st"> </span>flightsXdf %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
 <span class="st">    </span><span class="kw">doXdf</span>(<span class="dt">model=</span><span class="kw">rxLinMod</span>(arr_delay ~<span class="st"> </span>dep_delay +<span class="st"> </span>hour, <span class="dt">data=</span>.))
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.237 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.325 seconds</span>
 
 flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Call:</span>
@@ -245,7 +245,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\RtmpWGBFv4\file1db46bd76506..group..9E.xdf</span>
+<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\RtmpstVXyL\file414019c4aac..group..9E.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 17294</span>
@@ -260,58 +260,13 @@ flightsMods$model[[<span class="dv">1</span>]]
 </div>
 <div id="two-table-verbs" class="section level2">
 <h2>Two-table verbs</h2>
-<p>dplyrXdf currently supports the main table-join verbs from dplyr: <code>left_join</code>, <code>right_join</code>, <code>inner_join</code> and <code>full_join</code>. The syntax is the same as for the dplyr versions, including joining on non-matching column names. It’s also possible to join xdf files with data frames.</p>
-<p>The somewhat more obscure <code>semi_join</code> and <code>anti_join</code> verbs are not (yet) supported, mainly because there is no corresponding functionality for these types of joins in <code>rxMerge</code>. You can mimic <code>semi_join</code> with the following workaround, which is an <code>inner_join</code> call combined with a <code>distinct</code> to remove duplicated rows:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">planesXdf &lt;-<span class="st"> </span><span class="kw">rxDataFrameToXdf</span>(planes, <span class="st">&quot;planes.xdf&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>)
-
-<span class="co"># same as semi_join(flights, planes, by=&quot;tailnum&quot;)</span>
-flightsSemi &lt;-<span class="st"> </span><span class="kw">inner_join</span>(flightsXdf,
-                          <span class="kw">select</span>(planesXdf, tailnum) %&gt;%<span class="st"> </span>distinct,
-                          <span class="dt">by=</span><span class="st">&quot;tailnum&quot;</span>)
-<span class="co">#&gt; Rows Read: 3322, Total Rows Processed: 3322, Total Chunk Time: 0.019 seconds</span>
-<span class="kw">head</span>(flightsSemi)
-<span class="co">#&gt;   year month day dep_time dep_delay arr_time arr_delay carrier tailnum</span>
-<span class="co">#&gt; 1 2013     1  10      626        -4      802         2      EV  N10156</span>
-<span class="co">#&gt; 2 2013     1  10     1120        48     1320        40      EV  N10156</span>
-<span class="co">#&gt; 3 2013     1  10     1619        39     1831        47      EV  N10156</span>
-<span class="co">#&gt; 4 2013     1  11      632        -2      810       -12      EV  N10156</span>
-<span class="co">#&gt; 5 2013     1  11     1116        -4     1328        -8      EV  N10156</span>
-<span class="co">#&gt; 6 2013     1  11     1845        26     1959        27      EV  N10156</span>
-<span class="co">#&gt;   flight origin dest air_time distance hour minute</span>
-<span class="co">#&gt; 1   4560    EWR  PIT       60      319    6     26</span>
-<span class="co">#&gt; 2   4269    EWR  CHS       99      628   11     20</span>
-<span class="co">#&gt; 3   4667    EWR  MSP      175     1008   16     19</span>
-<span class="co">#&gt; 4   4334    EWR  CMH       81      463    6     32</span>
-<span class="co">#&gt; 5   4298    EWR  MCI      171     1092   11     16</span>
-<span class="co">#&gt; 6   4520    EWR  PWM       49      284   18     45</span></code></pre></div>
-<p>Similarly, you can mimic <code>anti_join</code> as follows:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as anti_join(flights, planes, by=&quot;tailnum&quot;)</span>
-flightsAnti &lt;-<span class="st"> </span><span class="kw">left_join</span>(flightsXdf,
-                         <span class="kw">transmute</span>(planesXdf, tailnum, <span class="dt">pl=</span><span class="kw">rep</span>(<span class="dv">1</span>, .rxNumRows)) %&gt;%
-<span class="st">                            </span>distinct,
-                         <span class="dt">by=</span><span class="st">&quot;tailnum&quot;</span>) %&gt;%<span class="st"> </span><span class="kw">filter</span>(<span class="kw">is.na</span>(pl))
-<span class="co">#&gt; Rows Read: 3322, Total Rows Processed: 3322, Total Chunk Time: 0.019 seconds</span>
-<span class="kw">head</span>(flightsAnti)
-<span class="co">#&gt;   year month day dep_time dep_delay arr_time arr_delay carrier tailnum</span>
-<span class="co">#&gt; 1 2013     1   2       NA        NA       NA        NA      AA    &lt;NA&gt;</span>
-<span class="co">#&gt; 2 2013     1   2       NA        NA       NA        NA      UA    &lt;NA&gt;</span>
-<span class="co">#&gt; 3 2013     1   3       NA        NA       NA        NA      UA    &lt;NA&gt;</span>
-<span class="co">#&gt; 4 2013     1   3       NA        NA       NA        NA      UA    &lt;NA&gt;</span>
-<span class="co">#&gt; 5 2013     1   4       NA        NA       NA        NA      9E    &lt;NA&gt;</span>
-<span class="co">#&gt; 6 2013     1   4       NA        NA       NA        NA      9E    &lt;NA&gt;</span>
-<span class="co">#&gt;   flight origin dest air_time distance hour minute pl</span>
-<span class="co">#&gt; 1    133    JFK  LAX       NA     2475   NA     NA NA</span>
-<span class="co">#&gt; 2    623    EWR  ORD       NA      719   NA     NA NA</span>
-<span class="co">#&gt; 3    714    EWR  MIA       NA     1085   NA     NA NA</span>
-<span class="co">#&gt; 4    719    EWR  DFW       NA     1372   NA     NA NA</span>
-<span class="co">#&gt; 5   3405    JFK  DCA       NA      213   NA     NA NA</span>
-<span class="co">#&gt; 6   3716    EWR  DTW       NA      488   NA     NA NA</span></code></pre></div>
-<p>The set operations <code>intersect</code>, <code>union</code> and <code>setdiff</code> are also not supported. A workaround for <code>union</code> is to use <code>rxMerge</code> with <code>type=&quot;union&quot;</code> (which does a UNION ALL, in SQL lingo), followed by a <code>distinct</code>:</p>
+<p>dplyrXdf currently supports the main table-join verbs from dplyr: <code>left_join</code>, <code>right_join</code>, <code>inner_join</code>, <code>full_join</code>, <code>semi_join</code> and <code>anti_join</code>. The syntax is the same as for the dplyr versions, including joining on non-matching column names. It’s also possible to join xdf files with data frames.</p>
+<p>The set operations <code>intersect</code>, <code>union</code> and <code>setdiff</code> are not supported. A workaround for <code>union</code> is to use <code>rxMerge</code> with <code>type=&quot;union&quot;</code> (which does a UNION ALL, in SQL lingo), followed by a <code>distinct</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as union(flightsXdf, flightsXdf)</span>
 flightsUnion &lt;-<span class="st"> </span><span class="kw">rxMerge</span>(flightsXdf, flightsXdf, <span class="dt">outFile=</span><span class="st">&quot;flightsUnion.xdf&quot;</span>,
                         <span class="dt">type=</span><span class="st">&quot;union&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>distinct
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 1.469 seconds</span>
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 1.463 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 2.176 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 2.257 seconds</span>
 <span class="kw">nrow</span>(flightsXdf)
 <span class="co">#&gt; [1] 336776</span>
 <span class="kw">nrow</span>(flightsUnion)  <span class="co"># same as nrow(flightsXdf)</span>
