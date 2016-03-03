@@ -40,6 +40,8 @@ The selector functions listed in \code{\link[dplyr]{select}} also work with \cod
 }
 If no variables are specified, all character variables will be converted to factors.
 
+You can specify the levels for a variable by specifying them as the value of the argument. For example, \code{factorise(x = c("a","b","c"))} will turn the variable \code{x} into a factor with three levels a, b and c. Any values that don't match the set of levels will be turned into NAs. In particular, this means you should include the existing levels for variables that are already factors.
+
 This is a shell around \code{\link[RevoScaleR]{rxFactors}}, which is the standard RevoScaleR function for factor manipulation. Note that for performance reasons, factors created by \code{factorise} are not sorted; instead, the ordering of their levels will be determined by the order in which they are encountered in the data.
 }
 \seealso{
