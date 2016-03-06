@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-03-02" />
+<meta name="date" content="2016-03-05" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-03-02</em></h4>
+<h4 class="date"><em>2016-03-05</em></h4>
 </div>
 
 
@@ -236,7 +236,7 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 flightsMods &lt;-<span class="st"> </span>flightsXdf %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
 <span class="st">    </span><span class="kw">doXdf</span>(<span class="dt">model=</span><span class="kw">rxLinMod</span>(arr_delay ~<span class="st"> </span>dep_delay +<span class="st"> </span>hour, <span class="dt">data=</span>.))
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.325 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.247 seconds</span>
 
 flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Call:</span>
@@ -245,7 +245,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\RtmpstVXyL\file414019c4aac..group..9E.xdf</span>
+<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\Rtmpgb5N3X\file2e8032116929..group..9E.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 17294</span>
@@ -265,8 +265,8 @@ flightsMods$model[[<span class="dv">1</span>]]
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as union(flightsXdf, flightsXdf)</span>
 flightsUnion &lt;-<span class="st"> </span><span class="kw">rxMerge</span>(flightsXdf, flightsXdf, <span class="dt">outFile=</span><span class="st">&quot;flightsUnion.xdf&quot;</span>,
                         <span class="dt">type=</span><span class="st">&quot;union&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>distinct
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 2.176 seconds</span>
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 2.257 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 1.826 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 1.860 seconds</span>
 <span class="kw">nrow</span>(flightsXdf)
 <span class="co">#&gt; [1] 336776</span>
 <span class="kw">nrow</span>(flightsUnion)  <span class="co"># same as nrow(flightsXdf)</span>
