@@ -6,40 +6,6 @@ same_src.RxXdfData <- function(x, y)
 }
 
 
-# get level sets of factors to merge on
-# return _changes_ to variables needed to ensure merge is successful
-setLevelsEqual <- function(x, y, by)
-{
-    factorList <- function(data, vars)
-    {
-        varInfo <- rxGetVarInfo(data, varsToKeep=vars)
-        fac <- which(sapply(varInfo, "[[", "varType") == "factor")
-        if(length(fac) == 0)
-            return(NULL)
-        sapply(varInfo[fac], "[[", "levels", simplify=FALSE)
-    }
-
-    factorsToChange <- function(oneFactor)
-    {
-        out <- sapply(names(allFactors), function(f) {
-            oneFac <- oneFactor[[f]]
-            allFac <- allFactors[[f]]
-            if(length(oneFac) != length(allFac) || any(oneFac != allFac))  # could also use identical()
-                allFac
-            else NULL
-        }, simplify=FALSE)
-        out[!sapply(out, is.null)]
-    }
-
-    xFactors <- factorList(x, by$x)
-    yFactors <- factorList(y, by$y)
-    allFactors <- sapply(base::union(names(xFactors), names(yFactors)), function(f)
-        sort(base::union(xFactors[[f]], yFactors[[f]])),
-        simplify=FALSE)
-    list(x=factorsToChange(xFactors), y=factorsToChange(yFactors))
-}
-
-
 xdf_copy <- function(x, y, copy=FALSE, by)
 {
     # data must be in xdf or data frame format, import if not
@@ -72,12 +38,13 @@ xdf_copy <- function(x, y, copy=FALSE, by)
     
     # check compatibility of factor types
     # TODO: combine this with mutate step above, extend checking to more than just factors
-    combinedFactors <- setLevelsEqual(x, y, by)
-    if(length(combinedFactors$x) > 0)
-        x <- do.call(factorise, c(list(x), combinedFactors$x))
-    if(length(combinedFactors$y) > 0)
-        y <- do.call(factorise, c(list(y), combinedFactors$y))
-
+    # TODO: this doesn't check factor _levels_, fix so it does
+    xfactors <- names(which(varTypes(x, by$x) == "factor"))
+    yfactors <- names(which(varTypes(y, by$x) == "factor"))
+    if(!all(xfactors %in% yfactors))
+        y <- factorise_(y, .dots=xfactors)
+    if(!all(yfactors %in% xfactors))
+        x <- factorise_(x, .dots=yfactors)
     list(x=x, y=y)
 }
 

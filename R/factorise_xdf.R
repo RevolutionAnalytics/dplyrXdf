@@ -1,7 +1,7 @@
 #' Convert columns in an Xdf file to factor
 #'
 #' @param .data A data source.
-#' @param ... Variables to convert to factors.
+#' @param ... variables to convert to factors.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
 #' @details
@@ -13,14 +13,12 @@
 #' }
 #' If no variables are specified, all character variables will be converted to factors.
 #'
-#' You can specify the levels for a variable by specifying them as the value of the argument. For example, \code{factorise(*, x = c("a","b","c"))} will turn the variable \code{x} into a factor with three levels \code{a}, \code{b} and \code{c}. Any values that don't match the set of levels will be turned into NAs. In particular, this means you should include the existing levels for variables that are already factors.
+#' You can specify the levels for a variable by specifying them as the value of the argument. For example, \code{factorise(x = c("a","b","c"))} will turn the variable \code{x} into a factor with three levels a, b and c. Any values that don't match the set of levels will be turned into NAs. In particular, this means you should include the existing levels for variables that are already factors.
 #'
-#' For performance reasons, factors created by \code{factorise} are not sorted; instead, the ordering of their levels will be determined by the order in which they are encountered in the data.
-#'
-#' The method for \code{RxXdfData} objects is a shell around \code{\link[RevoScaleR]{rxFactors}}, which is the standard RevoScaleR function for factor manipulation. For \code{RxFileData} objects, the method calls \code{\link[RevoScaleR]{rxImport}} with an appropriately constructed \code{colInfo} argument.
+#' This is a shell around \code{\link[RevoScaleR]{rxFactors}}, which is the standard RevoScaleR function for factor manipulation. Note that for performance reasons, factors created by \code{factorise} are not sorted; instead, the ordering of their levels will be determined by the order in which they are encountered in the data.
 #'
 #' @seealso
-#' \code{\link[RevoScaleR]{rxFactors}}, \code{\link[RevoScaleR]{rxImport}}, \code{\link{factor}}
+#' \code{\link[RevoScaleR]{rxFactors}}, \code{\link{factor}}
 #'
 #' \code{\link{chol}}, \code{\link{qr}}, \code{\link{svd}} for the other meaning of factorise
 #' @rdname factorise
@@ -63,9 +61,14 @@ factorise_.RxXdfData <- function(.data, ..., .dots)
     grps <- groups(.data)
     types <- varTypes(.data)
     vars <- factorise_vars(types, exprs)
+    #levels <- lapply(rxGetVarInfo(.data), function(v) {
+        #if(v$varType == "factor")
+            #v$levels
+        #else NULL
+    #})
 
     factorInfo <- c(
-        sapply(vars$blankArgs, function(nam) list(varName=nam), simplify=FALSE),
+        lapply(vars$blankArgs, function(nam) list(varName=nam)),
         sapply(names(vars$newlevelArgs), function(nam) {
             levs <- vars$newlevelArgs[[nam]]
             if(types[nam] == "factor")
@@ -80,7 +83,7 @@ factorise_.RxXdfData <- function(.data, ..., .dots)
     cl <- quote(rxFactors(.data, factorInfo, outFile=newTblFile()))
     cl[names(rxArgs)] <- rxArgs
 
-     # rxFactors is noisy when given already-existing factors; shut it up
+    # rxFactors is noisy when given already-existing factors; shut it up
     .data <- suppressWarnings(tbl(eval(cl), hasTblFile=TRUE))
     if(!is.null(grps))
         group_by_(.data, .dots=grps)
@@ -136,7 +139,7 @@ factorise_vars <- function(types, args)
 
     vars <- names(types)
     if(length(args) == 0)
-        return(list(blankArgs=selectionFuncs$all_character(), newlevelArgs=NULL))
+        return(selectionFuncs$all_character())
 
     # do blank arguments and arguments specifying new factor levels separately
     # unlike select, named arguments always treated as specifying factor levels, not indices
@@ -164,7 +167,7 @@ factorise_vars <- function(types, args)
     }
     blankArgs <- select_vars_(vars, newArgs)
     newlevelArgs <- lapply(newlevelArgs, eval)
-
+    
     list(blankArgs=blankArgs, newlevelArgs=newlevelArgs)
 }
 

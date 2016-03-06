@@ -77,10 +77,6 @@ semi_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {
     # no native semi-join functionality in ScaleR, so do it by hand
     by <- dplyr_common_by(by, x, y)
-
-    # make sure we don't orphan y
-    if(inherits(y, "tbl_xdf"))
-        y@hasTblFile <- FALSE
     y <- select_(y, by$y) %>% distinct
     on.exit({
         yFile <- tblFile(y)
@@ -95,10 +91,6 @@ anti_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {
     # no native anti-join functionality in ScaleR, so do it by hand
     by <- dplyr_common_by(by, x, y)
-
-    # make sure we don't orphan y
-    if(inherits(y, "tbl_xdf"))
-        y@hasTblFile <- FALSE
     ones <- sprintf("rep(1L, length(%s))", by$x[1])
     y <- transmute_(y, by$y, .ones=ones) %>% distinct
     on.exit({
@@ -107,7 +99,7 @@ anti_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
     })
     merge_base(x, y, by, copy, "left") %>%
         filter(is.na(.ones)) %>%
-        select(-.ones)
+        mutate(.ones=NULL)
 }
 
 
@@ -144,15 +136,13 @@ setdiff.RxFileData <- function(x, y, ...)
 
 merge_base <- function(x, y, by=NULL, copy=FALSE, type)
 {
-    # do not remove/overwrite y data on completion
-    if(inherits(y, "tbl_xdf"))
-        y@hasTblFile <- FALSE
-
-    # but if we create a temporary tbl for y, then remove it
-    on.exit({
-        ytbl <- tblFile(y)
-        if(hasTblFile(y) && file.exists(ytbl)) file.remove(ytbl)
-    })
+    if(!hasTblFile(y))
+    {
+        on.exit({
+            ytbl <- tblFile(y)
+            if(file.exists(ytbl)) file.remove(ytbl)
+        })
+    }
     newxy <- xdf_copy(x, y, copy, by)
     x <- newxy$x
     y <- newxy$y
