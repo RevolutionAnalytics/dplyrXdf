@@ -147,9 +147,49 @@ head(flightsJoin)
 ```
 
 
-## Tbls and file management
+## Tbls, file management and the `persist` verb
 
 To facilitate the task of file management, dplyrXdf defines a new `tbl_xdf` class that extends the `RxXdfData` class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an `tbl_xdf` object is just a normal xdf data source; thus, existing code dealing with xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a `tbl_xdf`, as opposed to a normal xdf, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.
+
+A side-effect of dplyrXdf handling file management is that you should be careful when passing the result from an initial dplyrXdf pipeline into subsequent pipelines. Consider the following example:
+
+```{r, eval=FALSE}
+# pipeline 1
+output1 <- flightsXdf %>%
+    mutate(delay=(arr_delay + dep_delay)/2)
+
+# use the output from pipeline 1
+output2 <- output1 %>%
+    group_by(airline) %>%
+    summarise(delay=mean(delay))
+
+# reuse the output from pipeline 1 -- WRONG
+output3 <- output1 %>%
+    group_by(dest) %>%
+    summarise(delay=mean(delay))
+```
+
+The bug in this code is that the second pipeline will overwrite or delete its input, so the third pipeline will fail. This is consistent with dplyrXdf's philosophy of only saving the most recent output of a pipeline, where a pipeline is defined as _all operations starting from a raw xdf file._ However, in this case it isn't what you want.
+
+Similarly, dplyrXdf creates its output files in R's temporary directory, so when you close your R session, these files will be deleted. This saves you having to manually delete files that are no longer in use, but it does mean that you must copy the output of your pipeline to a permanent location if you want to keep it around.
+
+To deal with these issues, you use the `persist` verb to save a pipeline's output to a non-temporary location. This also resets the status of the pipeline, so that subsequent operations will know not to modify the data.
+
+```{r, eval=FALSE}
+# pipeline 1 -- use persist to save the data
+output1 <- flightsXdf %>%
+    mutate(delay=(arr_delay + dep_delay)/2) %>% persist("output1.xdf")
+
+# use the output from pipeline 1
+output2 <- output1 %>%
+    group_by(airline) %>%
+    summarise(delay=mean(delay))
+
+# reuse the output from pipeline 1 -- this works as expected
+output3 <- output1 %>%
+    group_by(dest) %>%
+    summarise(delay=mean(delay))
+```
 
 To create a `tbl_xdf` yourself, just call the `tbl` function on an xdf data source:
 
@@ -160,21 +200,6 @@ flightsTbl
 
 However this should rarely (if ever) be necessary, as dplyrXdf will automatically create a tbl for you if you pass a raw xdf to a pipeline.
 
-dplyrXdf creates its output files in R's temporary directory, so when you close your R session, these files will be deleted. This saves you having to manually delete files that are no longer in use, but it does mean that you must copy the output of your pipeline to a permanent location if you want to keep it around. You can use `file.copy` and `rxXdfFileName` for this purpose:
-
-```{r, eval=FALSE}
-# same dplyrXdf pipeline from before
-flightsSmry <- flightsXdf %>%
-    filter(month <= 6, year == 2013) %>%
-    mutate(dist_km=distance*1.6093, delay=(arr_delay + dep_delay)/2) %>%
-    group_by(carrier) %>%
-    summarise(mean_delay=mean(delay), sum_dist=sum(dist_km)) %>%
-    arrange(desc(mean_delay))
-
-# store the result of the pipeline where it won't get deleted
-outFile <- "./flightsSmry.xdf"
-file.copy(rxXdfFileName(flightsSmry), outFile, overwrite=TRUE)
-```
 
 ## Non-xdf and non-local data sources
 

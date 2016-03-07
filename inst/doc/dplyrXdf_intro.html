@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-03-05" />
+<meta name="date" content="2016-03-07" />
 
 <title>Introducing the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Introducing the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-03-05</em></h4>
+<h4 class="date"><em>2016-03-07</em></h4>
 </div>
 
 
@@ -203,9 +203,39 @@ flightsJoin &lt;-<span class="st"> </span><span class="kw">left_join</span>(
 <span class="co">#&gt; 5 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
 <span class="co">#&gt; 6 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span></code></pre></div>
 </div>
-<div id="tbls-and-file-management" class="section level2">
-<h2>Tbls and file management</h2>
+<div id="tbls-file-management-and-the-persist-verb" class="section level2">
+<h2>Tbls, file management and the <code>persist</code> verb</h2>
 <p>To facilitate the task of file management, dplyrXdf defines a new <code>tbl_xdf</code> class that extends the <code>RxXdfData</code> class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an <code>tbl_xdf</code> object is just a normal xdf data source; thus, existing code dealing with xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a <code>tbl_xdf</code>, as opposed to a normal xdf, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.</p>
+<p>A side-effect of dplyrXdf handling file management is that you should be careful when passing the result from an initial dplyrXdf pipeline into subsequent pipelines. Consider the following example:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># pipeline 1</span>
+output1 &lt;-<span class="st"> </span>flightsXdf %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>)
+
+<span class="co"># use the output from pipeline 1</span>
+output2 &lt;-<span class="st"> </span>output1 %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(airline) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">delay=</span><span class="kw">mean</span>(delay))
+
+<span class="co"># reuse the output from pipeline 1 -- WRONG</span>
+output3 &lt;-<span class="st"> </span>output1 %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(dest) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">delay=</span><span class="kw">mean</span>(delay))</code></pre></div>
+<p>The bug in this code is that the second pipeline will overwrite or delete its input, so the third pipeline will fail. This is consistent with dplyrXdf’s philosophy of only saving the most recent output of a pipeline, where a pipeline is defined as <em>all operations starting from a raw xdf file.</em> However, in this case it isn’t what you want.</p>
+<p>Similarly, dplyrXdf creates its output files in R’s temporary directory, so when you close your R session, these files will be deleted. This saves you having to manually delete files that are no longer in use, but it does mean that you must copy the output of your pipeline to a permanent location if you want to keep it around.</p>
+<p>To deal with these issues, you use the <code>persist</code> verb to save a pipeline’s output to a non-temporary location. This also resets the status of the pipeline, so that subsequent operations will know not to modify the data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># pipeline 1 -- use persist to save the data</span>
+output1 &lt;-<span class="st"> </span>flightsXdf %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>) %&gt;%<span class="st"> </span><span class="kw">persist</span>(<span class="st">&quot;output1.xdf&quot;</span>)
+
+<span class="co"># use the output from pipeline 1</span>
+output2 &lt;-<span class="st"> </span>output1 %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(airline) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">delay=</span><span class="kw">mean</span>(delay))
+
+<span class="co"># reuse the output from pipeline 1 -- this works as expected</span>
+output3 &lt;-<span class="st"> </span>output1 %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(dest) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">delay=</span><span class="kw">mean</span>(delay))</code></pre></div>
 <p>To create a <code>tbl_xdf</code> yourself, just call the <code>tbl</code> function on an xdf data source:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flightsTbl &lt;-<span class="st"> </span><span class="kw">tbl</span>(flightsXdf)
 flightsTbl
@@ -214,18 +244,6 @@ flightsTbl
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span></code></pre></div>
 <p>However this should rarely (if ever) be necessary, as dplyrXdf will automatically create a tbl for you if you pass a raw xdf to a pipeline.</p>
-<p>dplyrXdf creates its output files in R’s temporary directory, so when you close your R session, these files will be deleted. This saves you having to manually delete files that are no longer in use, but it does mean that you must copy the output of your pipeline to a permanent location if you want to keep it around. You can use <code>file.copy</code> and <code>rxXdfFileName</code> for this purpose:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same dplyrXdf pipeline from before</span>
-flightsSmry &lt;-<span class="st"> </span>flightsXdf %&gt;%
-<span class="st">    </span><span class="kw">filter</span>(month &lt;=<span class="st"> </span><span class="dv">6</span>, year ==<span class="st"> </span><span class="dv">2013</span>) %&gt;%
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">dist_km=</span>distance*<span class="fl">1.6093</span>, <span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>) %&gt;%
-<span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
-<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">mean_delay=</span><span class="kw">mean</span>(delay), <span class="dt">sum_dist=</span><span class="kw">sum</span>(dist_km)) %&gt;%
-<span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(mean_delay))
-
-<span class="co"># store the result of the pipeline where it won't get deleted</span>
-outFile &lt;-<span class="st"> &quot;./flightsSmry.xdf&quot;</span>
-<span class="kw">file.copy</span>(<span class="kw">rxXdfFileName</span>(flightsSmry), outFile, <span class="dt">overwrite=</span><span class="ot">TRUE</span>)</code></pre></div>
 </div>
 <div id="non-xdf-and-non-local-data-sources" class="section level2">
 <h2>Non-xdf and non-local data sources</h2>

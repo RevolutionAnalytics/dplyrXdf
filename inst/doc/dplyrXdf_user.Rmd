@@ -40,7 +40,7 @@ Most of the one-table dplyrXdf verbs accept an `.rxArgs` argument as a way of tr
 * `summarise`: depending on the method chosen, `rxCube` or `rxSummary`
 * `arrange`: `rxSort`
 * `distinct`: `rxDataStep`
-* `factorise`: `rxFactors`
+* `factorise`: depending on the data source, `rxFactors` (for an xdf) or `rxImport` (for a non-xdf file source)
 * `doXdf`: `rxDataStep`
 
 You should use the `.rxArgs` argument with caution, as some verbs may modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. However, when working with big datasets this feature can help save a lot of processing time by avoiding unnecessary disk traffic.
@@ -163,7 +163,13 @@ Many RevoScaleR functions are optimised to work best with factors, or require fa
 factorise(data, x1, x2, ...)
 ```
 
-where `x1`, `x2`, ... are the variables to convert. Note that the generated factor variables will overwrite the originals. For performance reasons, the levels of the generated factors are not sorted in alphabetical order.
+where `x1`, `x2`, ... are the variables to convert. Note that the generated factor variables will overwrite the originals. For performance reasons, the levels of the generated factors are not sorted in alphabetical order. You can also specify the levels for the factor(s) in question, using the standard name=value syntax:
+
+```{r, eval=FALSE}
+factorise(data, x1=c("a", "b", "c"))
+```
+
+This will convert the variable `x1` into a factor with levels `a`, `b` and `c`. Any values that don't match the specified levels will be turned into NAs.
 
 The verbs in dplyrXdf will usually create factors on the fly as needed, so you shouldn't need to call `factorise` very often. However, should you need it, `factorise` provides an explicit way to create factors within the framework of dplyrXdf and pipelines.
 

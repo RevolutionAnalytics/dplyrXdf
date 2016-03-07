@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-03-05" />
+<meta name="date" content="2016-03-07" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-03-05</em></h4>
+<h4 class="date"><em>2016-03-07</em></h4>
 </div>
 
 
@@ -95,7 +95,7 @@ flightsXdf &lt;-<span class="st"> </span><span class="kw">rxDataFrameToXdf</span
 <li><code>summarise</code>: depending on the method chosen, <code>rxCube</code> or <code>rxSummary</code></li>
 <li><code>arrange</code>: <code>rxSort</code></li>
 <li><code>distinct</code>: <code>rxDataStep</code></li>
-<li><code>factorise</code>: <code>rxFactors</code></li>
+<li><code>factorise</code>: depending on the data source, <code>rxFactors</code> (for an xdf) or <code>rxImport</code> (for a non-xdf file source)</li>
 <li><code>doXdf</code>: <code>rxDataStep</code></li>
 </ul>
 <p>You should use the <code>.rxArgs</code> argument with caution, as some verbs may modify the data as part of their normal functioning, so the results you get back may not be as expected. It’s also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. However, when working with big datasets this feature can help save a lot of processing time by avoiding unnecessary disk traffic.</p>
@@ -223,7 +223,9 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 <h3>Creating factors with <code>factorise</code></h3>
 <p>Many RevoScaleR functions are optimised to work best with factors, or require factors as input. dplyrXdf provides a simple shell to the <code>rxFactors</code> function to convert non-factor variables to factors. The syntax is as follows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">factorise</span>(data, x1, x2, ...)</code></pre></div>
-<p>where <code>x1</code>, <code>x2</code>, … are the variables to convert. Note that the generated factor variables will overwrite the originals. For performance reasons, the levels of the generated factors are not sorted in alphabetical order.</p>
+<p>where <code>x1</code>, <code>x2</code>, … are the variables to convert. Note that the generated factor variables will overwrite the originals. For performance reasons, the levels of the generated factors are not sorted in alphabetical order. You can also specify the levels for the factor(s) in question, using the standard name=value syntax:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">factorise</span>(data, <span class="dt">x1=</span><span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>))</code></pre></div>
+<p>This will convert the variable <code>x1</code> into a factor with levels <code>a</code>, <code>b</code> and <code>c</code>. Any values that don’t match the specified levels will be turned into NAs.</p>
 <p>The verbs in dplyrXdf will usually create factors on the fly as needed, so you shouldn’t need to call <code>factorise</code> very often. However, should you need it, <code>factorise</code> provides an explicit way to create factors within the framework of dplyrXdf and pipelines.</p>
 <p>There are a number of ways to specify the variables to convert, in addition to naming them explicitly. The functions <code>all_character()</code>, <code>all_numeric()</code> and <code>all_integer()</code> will convert all the variables falling under these categories. A logical variable counts as integer for this purpose. You can also use the helper functions available to <code>dplyr::select_vars</code> to choose variables based on their names.</p>
 <p>By default, if no variables are specified in the <code>factorise</code> call, then all character variables will be converted to factors. As with <code>select</code>, renaming variables as part of the factor conversion is not supported.</p>
@@ -236,7 +238,7 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 flightsMods &lt;-<span class="st"> </span>flightsXdf %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
 <span class="st">    </span><span class="kw">doXdf</span>(<span class="dt">model=</span><span class="kw">rxLinMod</span>(arr_delay ~<span class="st"> </span>dep_delay +<span class="st"> </span>hour, <span class="dt">data=</span>.))
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.247 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.316 seconds</span>
 
 flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Call:</span>
@@ -245,7 +247,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\Rtmpgb5N3X\file2e8032116929..group..9E.xdf</span>
+<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\Rtmp67uUJB\file54342d3773ca..group..9E.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 17294</span>
@@ -265,8 +267,8 @@ flightsMods$model[[<span class="dv">1</span>]]
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as union(flightsXdf, flightsXdf)</span>
 flightsUnion &lt;-<span class="st"> </span><span class="kw">rxMerge</span>(flightsXdf, flightsXdf, <span class="dt">outFile=</span><span class="st">&quot;flightsUnion.xdf&quot;</span>,
                         <span class="dt">type=</span><span class="st">&quot;union&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>distinct
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 1.826 seconds</span>
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 1.860 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 2.115 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 1.976 seconds</span>
 <span class="kw">nrow</span>(flightsXdf)
 <span class="co">#&gt; [1] 336776</span>
 <span class="kw">nrow</span>(flightsUnion)  <span class="co"># same as nrow(flightsXdf)</span>

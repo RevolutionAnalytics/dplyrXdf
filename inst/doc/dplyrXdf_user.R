@@ -80,6 +80,9 @@ head(flightsSmry)
 ## ---- eval=FALSE---------------------------------------------------------
 #  factorise(data, x1, x2, ...)
 
+## ---- eval=FALSE---------------------------------------------------------
+#  factorise(data, x1=c("a", "b", "c"))
+
 ## ------------------------------------------------------------------------
 # fit a regression model by carrier, using rxLinMod
 flightsMods <- flightsXdf %>%
