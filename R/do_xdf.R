@@ -1,13 +1,16 @@
 #' Do arbitrary operations on a tbl
 #'
-#' The \code{do} verb converts the data to a data frame before running the operations. The \code{doXdf} verb keeps the data in Xdf format, so is not limited by memory.
+#' The \code{do} verb converts the data to a data frame before running the operations. The \code{doXdf} verb keeps the data in Xdf format, so is not (as) limited by memory.
 #'
 #' @param .data A tbl for an Xdf data source; or a raw Xdf data source.
 #' @param ... Expressions to apply.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
+#' @details
+#' The difference between the \code{do} and \code{doXdf} verbs is that the former converts the data into a data frame before running the expressions on it; while the latter passes the data as Xdf files. \code{do} is thus more flexible in the expressions it can run (basically anything that works with data frames), whereas \code{doXdf} is better able to handle large datasets. The final output from \code{doXdf} must still be able to fit in memory (see below).
+#'
 #' @return
-#' The \code{do} and \code{doXdf} verbs always return a data frame, unlike the other verbs for Xdf objects. 
+#' The \code{do} and \code{doXdf} verbs always return a data frame, unlike the other verbs for Xdf objects. This is because they are meant to execute code that can return arbitrarily complex objects, and Xdf files can only store atomic data.
 #'
 #' @seealso
 #' \code{\link[dplyr]{do}} in package dplyr
@@ -25,6 +28,7 @@ do_.RxFileData <- function(.data, ..., .dots)
         dots[[".rxArgs"]] <- NULL
     }
 
+    check_named_args(dots)
     oldfile <- tblFile(.data)
     on.exit(if(hasTblFile(.data))
         file.remove(oldfile))
@@ -32,8 +36,6 @@ do_.RxFileData <- function(.data, ..., .dots)
 }
 
 
-#' @details
-#' The \code{do} verb supports named and unnamed arguments, as per \code{dplyr::do}. The \code{doXdf} verb only supports named arguments.
 #' @rdname do
 #' @export
 doXdf <- function (.data, ...) 
@@ -59,28 +61,30 @@ doXdf_.RxFileData <- function(.data, ..., .dots)
     # identify Revo-specific arguments
     dots <- .rxArgs(dots)
 
+    check_named_args(dots)
     oldfile <- tblFile(.data)
-    on.exit(if(hasTblFile(.data))
+    on.exit(if(hasTblFile(.data) && file.exists(oldfile))
         file.remove(oldfile))
     doXdf_base(.data, dots$exprs, grps=NULL, dots$rxArgs, dots$env)
 }
 
 
 #' @details
-#' To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} create a factor variable \code{.group.} containing all observed combinations of the grouping variables. The data is then split into multiple files by this factor, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however that this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
+#' To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} create a factor variable \code{.group.} containing all observed combinations of the grouping variables. The data is then split into multiple files by this factor, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
 #' @rdname do
 #' @export
 do_.grouped_tbl_xdf <- function(.data, ..., .dots)
 {
-    dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
+    dots <- lazyeval::all_dots(.dots, ...)
 
     # identify Revo-specific arguments
     if(any(names(dots) == ".rxArgs"))
     {
-        warning("do doesn't support lib.rxArgs argument", call.=FALSE)
+        warning("do doesn't support .rxArgs argument", call.=FALSE)
         dots[[".rxArgs"]] <- NULL
     }
 
+    check_named_args(dots)
     grps <- groups(.data)
 
     oldfile <- tblFile(.data)
@@ -106,20 +110,21 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
 #' @export
 doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
 {
-    dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
-
+    dots <- lazyeval::all_dots(.dots, ...)
     # identify Revo-specific arguments
     dots <- .rxArgs(dots)
     rxArgs <- dots$rxArgs
     exprs <- dots$exprs
 
+    check_named_args(exprs)
     grps <- groups(.data)
 
     oldfile <- tblFile(.data)
     hasTbl <- hasTblFile(.data)
     on.exit({
-        file.remove(names(xdflst))
-        if(hasTbl)
+        if(all(file.exists(names(xdflst))))
+            file.remove(names(xdflst))
+        if(hasTbl && file.exists(oldfile))
             file.remove(oldfile)
     })
 
@@ -137,27 +142,62 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
 do_base <- function(data, dots, grps=NULL)
 {
     data <- as.data.frame(data)
-    df <- do_(data, .dots=dots)
+    out <- do_(data, .dots=dots)
     if(!is.null(grps))
-        cbind(data[1, grps, drop=FALSE], df)
-    else df
+    {
+        grps <- data[rep(1, nrow(out)), grps, drop=FALSE]
+        cbind(grps, out)
+    }
+    else out
 }
 
 
 # copy functionality of dplyr:::do_.data.frame, except dots must be named
 doXdf_base <- function(data, exprs, grps=NULL, rxArgs, env)
 {
+    named <- check_named_args(exprs)
     datlst <- list(.=data)
-    out <- lapply(exprs, function(arg) {
-        arg[names(rxArgs)] <- rxArgs
-        arg <- lazyeval::as.lazy(arg, env)
-        list(lazyeval::lazy_eval(arg, datlst))
-    })
-    names(out) <- names(exprs)
-    attr(out, "row.names") <- .set_row_names(1L)
+    if(named)
+    {
+        out <- lapply(exprs, function(arg) {
+            arg[names(rxArgs)] <- rxArgs
+            arg <- lazyeval::as.lazy(arg, env)
+            list(lazyeval::lazy_eval(arg, datlst))
+        })
+        attr(out, "row.names") <- .set_row_names(1L)
+        names(out) <- names(exprs)
+    }
+    else
+    {
+        expr <- lazyeval::as.lazy(exprs[[1]], env)
+        out <- as.data.frame(lazyeval::lazy_eval(expr, datlst))
+    }
     class(out) <- c("tbl_df", "data.frame")
     if(!is.null(grps))
-        cbind(head(data, 1)[grps], out)
-    else out    
+    {
+        grps <- head(data, 1)[rep(1, nrow(out)), grps, drop=FALSE]
+        cbind(grps, out[names(out) != ".group."])
+    }
+    else out
 }
 
+
+# copied from dplyr:::named_args: check that all args are named, or there is exactly 1 unnamed, 0 named
+check_named_args <- function (args) 
+{
+    names2 <- if(is.null(names(args))) rep("", length(args)) else names(args)
+    named <- sum(names2 != "")
+    if (!(named == 0 || named == length(args))) {
+        stop("Arguments to do() must either be all named or all unnamed", 
+            call. = FALSE)
+    }
+    if (named == 0 && length(args) > 1) {
+        stop("Can only supply single unnamed argument to do()", 
+            call. = FALSE)
+    }
+    if (named == 1 && names(args) == ".f") {
+        stop("do syntax changed in dplyr 0.2. Please see documentation for details", 
+            call. = FALSE)
+    }
+    named != 0
+}

@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-03-07" />
+<meta name="date" content="2016-03-08" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-03-07</em></h4>
+<h4 class="date"><em>2016-03-08</em></h4>
 </div>
 
 
@@ -233,12 +233,12 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 <div id="executing-code-with-do-and-doxdf" class="section level3">
 <h3>Executing code with <code>do</code> and <code>doXdf</code></h3>
 <p>The <code>do</code> verb is an exception to the rule that <code>dplyrXdf</code> verbs write their output as xdf files. This is because <code>do</code> executes arbitrary R code, and can return arbitrary R objects; while a data frame is capable of storing these objects, an xdf file is limited to character and numeric vectors only.</p>
-<p>The <code>doXdf</code> verb is similar to <code>do</code>, but where <code>do</code> splits its input into one data frame per group, <code>doXdf</code> splits it into one xdf file per group. This allows <code>do</code>-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to <code>doXdf</code> must obviously know how to handle xdfs. Both <code>do</code> and <code>doXdf</code> only support named arguments.</p>
+<p>The <code>doXdf</code> verb is similar to <code>do</code>, but where <code>do</code> splits its input into one data frame per group, <code>doXdf</code> splits it into one xdf file per group. This allows <code>do</code>-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to <code>doXdf</code> must obviously know how to handle xdfs.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># fit a regression model by carrier, using rxLinMod</span>
 flightsMods &lt;-<span class="st"> </span>flightsXdf %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
 <span class="st">    </span><span class="kw">doXdf</span>(<span class="dt">model=</span><span class="kw">rxLinMod</span>(arr_delay ~<span class="st"> </span>dep_delay +<span class="st"> </span>hour, <span class="dt">data=</span>.))
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.316 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 0.315 seconds</span>
 
 flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Call:</span>
@@ -247,7 +247,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\Rtmp67uUJB\file54342d3773ca..group..9E.xdf</span>
+<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\RtmpwDWLUY\file33542d3b7023..group..9E.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 17294</span>
@@ -267,8 +267,8 @@ flightsMods$model[[<span class="dv">1</span>]]
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as union(flightsXdf, flightsXdf)</span>
 flightsUnion &lt;-<span class="st"> </span><span class="kw">rxMerge</span>(flightsXdf, flightsXdf, <span class="dt">outFile=</span><span class="st">&quot;flightsUnion.xdf&quot;</span>,
                         <span class="dt">type=</span><span class="st">&quot;union&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>distinct
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 2.115 seconds</span>
-<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 1.976 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 336776, Total Chunk Time: 2.040 seconds</span>
+<span class="co">#&gt; Rows Read: 336776, Total Rows Processed: 673552, Total Chunk Time: 1.927 seconds</span>
 <span class="kw">nrow</span>(flightsXdf)
 <span class="co">#&gt; [1] 336776</span>
 <span class="kw">nrow</span>(flightsUnion)  <span class="co"># same as nrow(flightsXdf)</span>

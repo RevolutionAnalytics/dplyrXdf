@@ -30,15 +30,15 @@ doXdf_(.data, ..., .dots)
 \item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details.}
 }
 \value{
-The \code{do} and \code{doXdf} verbs always return a data frame, unlike the other verbs for Xdf objects.
+The \code{do} and \code{doXdf} verbs always return a data frame, unlike the other verbs for Xdf objects. This is because they are meant to execute code that can return arbitrarily complex objects, and Xdf files can only store atomic data.
 }
 \description{
-The \code{do} verb converts the data to a data frame before running the operations. The \code{doXdf} verb keeps the data in Xdf format, so is not limited by memory.
+The \code{do} verb converts the data to a data frame before running the operations. The \code{doXdf} verb keeps the data in Xdf format, so is not (as) limited by memory.
 }
 \details{
-The \code{do} verb supports named and unnamed arguments, as per \code{dplyr::do}. The \code{doXdf} verb only supports named arguments.
+The difference between the \code{do} and \code{doXdf} verbs is that the former converts the data into a data frame before running the expressions on it; while the latter passes the data as Xdf files. \code{do} is thus more flexible in the expressions it can run (basically anything that works with data frames), whereas \code{doXdf} is better able to handle large datasets. The final output from \code{doXdf} must still be able to fit in memory (see below).
 
-To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} create a factor variable \code{.group.} containing all observed combinations of the grouping variables. The data is then split into multiple files by this factor, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however that this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
+To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} create a factor variable \code{.group.} containing all observed combinations of the grouping variables. The data is then split into multiple files by this factor, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
 }
 \seealso{
 \code{\link[dplyr]{do}} in package dplyr

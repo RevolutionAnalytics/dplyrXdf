@@ -181,7 +181,7 @@ By default, if no variables are specified in the `factorise` call, then all char
 
 The `do` verb is an exception to the rule that `dplyrXdf` verbs write their output as xdf files. This is because `do` executes arbitrary R code, and can return arbitrary R objects; while a data frame is capable of storing these objects, an xdf file is limited to character and numeric vectors only.
 
-The `doXdf` verb is similar to `do`, but where `do` splits its input into one data frame per group, `doXdf` splits it into one xdf file per group. This allows `do`-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to `doXdf` must obviously know how to handle xdfs. Both `do` and `doXdf` only support named arguments.
+The `doXdf` verb is similar to `do`, but where `do` splits its input into one data frame per group, `doXdf` splits it into one xdf file per group. This allows `do`-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to `doXdf` must obviously know how to handle xdfs.
 
 ```{r}
 # fit a regression model by carrier, using rxLinMod
