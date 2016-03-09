@@ -85,7 +85,7 @@ head(flightsJoin)
 #  
 #  # use the output from pipeline 1
 #  output2 <- output1 %>%
-#      group_by(airline) %>%
+#      group_by(carrier) %>%
 #      summarise(delay=mean(delay))
 #  
 #  # reuse the output from pipeline 1 -- this works as expected

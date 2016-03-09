@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-03-08" />
+<meta name="date" content="2016-03-10" />
 
 <title>Introducing the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Introducing the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-03-08</em></h4>
+<h4 class="date"><em>2016-03-10</em></h4>
 </div>
 
 
@@ -229,7 +229,7 @@ output1 &lt;-<span class="st"> </span>flightsXdf %&gt;%
 
 <span class="co"># use the output from pipeline 1</span>
 output2 &lt;-<span class="st"> </span>output1 %&gt;%
-<span class="st">    </span><span class="kw">group_by</span>(airline) %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
 <span class="st">    </span><span class="kw">summarise</span>(<span class="dt">delay=</span><span class="kw">mean</span>(delay))
 
 <span class="co"># reuse the output from pipeline 1 -- this works as expected</span>
