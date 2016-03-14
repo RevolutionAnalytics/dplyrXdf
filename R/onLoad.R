@@ -225,6 +225,10 @@
     # turn progress reporting off
     rxOptions(reportProgress=0)
 
+    # run auxiliary initialisation code, set finaliser
+    .dxInit()
+    reg.finalizer(.dxOptions, .dxFinal, onexit=TRUE)
+
     invisible(NULL)
 }
 

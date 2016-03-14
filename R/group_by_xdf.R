@@ -104,12 +104,26 @@ ungroup.RxFileData <- function(x)
 }
 
 
+#get_grouplevels <- function(data)
+#{
+    #gvars <- groups(data)
+    #if(is.null(gvars))
+        #return(NULL)
+    #RevoPemaR::pemaCompute(pemaGrplevels(), data=data, gvars=gvars)
+#}
+
+
 get_grouplevels <- function(data)
 {
     gvars <- groups(data)
     if(is.null(gvars))
         return(NULL)
-    RevoPemaR::pemaCompute(pemaGrplevels(), data=data, gvars=gvars)
+    # read grouping vars into memory
+    levs <- rxDataStep(data, varsToKeep=gvars, maxRowsByCols=NULL, transformFunc=function(varlst) {
+        l <- do.call(paste, c(varlst, sep="_&&_"))
+        list(levs=l)
+    })[[1]]
+    unique(levs)
 }
 
 
@@ -120,25 +134,42 @@ make_groupvar <- function(gvars, levs)
 
 
 # split an xdf into multiple xdfs, one for each group
-split_groups <- function(data, outFile)
+split_groups <- function(data, outXdf)
 {
+    if(is.character(outXdf))
+        stop("must supply output data source to split_groups")
     grps <- groups(data)
     levs <- get_grouplevels(data)
-    data <- rxDataStep(data, outFile, transformFunc=function(varlst) {
+    data <- rxDataStep(data, outXdf, transformFunc=function(varlst) {
         varlst[[".group."]] <- .factor(varlst, .levs)
         varlst
     }, transformObjects=list(.levs=levs, .factor=make_groupvar), transformVars=grps, overwrite=TRUE)
-    lst <- rxSplitXdf(data, outFilesBase=outFile, splitByFactor=".group.")
+
+    # rxSplit not supported on HDFS -- fake it with multiple rxDataSteps
+    # this will be very slow with large no. of factor levels
+    if(inherits(rxGetFileSystem(data), "RxHdfsFileSystem"))
+    {
+        outFile <- rxXdfFileName(outXdf)
+        lst <- sapply(levs, function(l) {
+            thisXdf <- outXdf
+            thisXdf@file <- paste(sub(".xdf$", "", outFile), "_lev_", l, ".xdf", sep="")
+            cl <- substitute(rxDataStep(data, thisXdf, rowsToKeep=.group. == .l, overwrite=TRUE),
+                list(.l=l))
+            eval(cl)
+        }, simplify=FALSE)
+    }
+    else lst <- rxSplit(data, outFilesBase=rxXdfFileName(outXdf), splitByFactor=".group.")
+
     lapply(lst, function(obj) new("tbl_xdf", obj, hasTblFile=TRUE)) 
 }
 
 
 # paste individual groups back together
-combine_groups <- function(datlst, outFile, groups)
+combine_groups <- function(datlst, outXdf, groups)
 {
     xdf <- if(inherits(datlst[[1]], "data.frame"))
-        combine_group_dfs(datlst, outFile)
-    else combine_group_xdfs(datlst, outFile)
+        combine_group_dfs(datlst, outXdf)
+    else combine_group_xdfs(datlst, outXdf)
 
     # generate new grouping info if necessary
     numGroups <- length(groups)
@@ -149,27 +180,25 @@ combine_groups <- function(datlst, outFile, groups)
 
 
 # paste individual group xdfs back together
-combine_group_xdfs <- function(xdflst, outFile)
+combine_group_xdfs <- function(xdflst, outXdf)
 {
-    fnames <- sapply(xdflst, rxXdfFileName)
-    on.exit(file.remove(fnames))
+    on.exit(deleteTbl(xdflst))
 
     xdf1 <- xdflst[[1]]
-    file1 <- rxXdfFileName(xdf1)
 
-    # use rxDataStep loop for appending instead of rxMerge; latter is quadratic in no. of files (!)
+    # use rxDataStep loop for appending instead of rxMerge; latter is surprisingly slow and unsupported on HDFS
     for(xdf in xdflst[-1])
-        rxDataStep(xdf, file1, append="rows", computeLowHigh=FALSE)
+        rxDataStep(xdf, xdf1, append="rows", computeLowHigh=FALSE)
 
     dropvars <- base::intersect(".group.", names(xdf1))
-    tbl(xdf1, outFile, rowsPerRead=1e6, varsToDrop=dropvars, overwrite=TRUE, hasTblFile=TRUE)
+    tbl(xdf1, outXdf, rowsPerRead=1e6, varsToDrop=dropvars, overwrite=TRUE, hasTblFile=TRUE)
 }
 
 
 # paste individual group data frames back together
-combine_group_dfs <- function(dflst, outFile)
+combine_group_dfs <- function(dflst, outXdf)
 {
-    xdf <- rxDataFrameToXdf(bind_rows(dflst), outFile, overwrite=TRUE)
+    xdf <- rxDataStep(bind_rows(dflst), outXdf, overwrite=TRUE)
     tbl(xdf, file=NULL, hasTblFile=TRUE)
 }
 

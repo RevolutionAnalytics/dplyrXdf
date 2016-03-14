@@ -25,11 +25,11 @@ tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical
 tbl.RxXdfData <- function(data, file=NULL, hasTblFile=FALSE, ...)
 {
     data <- as(data, "tbl_xdf")
-    if(!is.null(file) && is.character(file))
+    if(!is.null(file))
     {
         data@hasTblFile <- TRUE
         rxDataStep(data, file, ...)
-        data@file <- file
+        data@file <- rxXdfFileName(file)
     }
     else data@hasTblFile <- hasTblFile
     data
@@ -43,9 +43,9 @@ tbl.RxXdfData <- function(data, file=NULL, hasTblFile=FALSE, ...)
 #' @rdname tbl
 #' @method tbl RxFileData
 #' @export
-tbl.RxFileData <- function(data, file=newTblFile(), hasTblFile=TRUE, stringsAsFactors=TRUE, ...)
+tbl.RxFileData <- function(data, file=newTbl(data), hasTblFile=TRUE, stringsAsFactors=TRUE, ...)
 {
-    stopifnot(!is.null(file) && is.character(file))
+    stopifnot(!is.null(file) && (is.character(file) || inherits(file, "RxXdfData")))
     data <- rxImport(data, file, stringsAsFactors=stringsAsFactors, ...)
     tbl(data, file=NULL, hasTblFile=hasTblFile) 
 }
@@ -54,11 +54,11 @@ tbl.RxFileData <- function(data, file=newTblFile(), hasTblFile=TRUE, stringsAsFa
 #' @export
 tbl.grouped_tbl_xdf <- function(data, file=NULL, hasTblFile=FALSE, ...)
 {
-    if(!is.null(file) && is.character(file))
+    if(!is.null(file))
     {
         data@hasTblFile <- TRUE
         rxDataStep(data, file, ...)
-        data@file <- file
+        data@file <- rxXdfFileName(file)
     }
     else data@hasTblFile <- hasTblFile
     data
@@ -67,25 +67,23 @@ tbl.grouped_tbl_xdf <- function(data, file=NULL, hasTblFile=FALSE, ...)
 
 #' @param x A file data source, or a tbl wrapping the same.
 #' @return
-#' The \code{tblFile} function returns the location where the intermediate and final results of a dplyr pipeline will be stored. If the tbl has not had any results written to it yet, or if this function is called on a non-tbl data source, a random filename is returned.
+#' The \code{tblFile} function returns the location where the intermediate and final results of a dplyr pipeline will be stored. If the tbl has not had any results written to it yet, or if this function is called on a non-tbl data source, a random filename is returned. The \code{tblSource} function is similar but returns a full data source, encapsulating file system information.
+#'
+#' The \code{tblFile} is deprecated; \code{tblSource} is preferred as it retains information about the file system and other parameters of the original data source.
 #' @rdname tbl
 #' @export
 tblFile <- function(x)
 {
-    if(hasTblFile(x))
-        rxXdfFileName(x)  # assume rxXdfFileName(x) is simply x@file
-    else newTblFile()
+    .Deprecated("tblSource", old="tblFile")
+    if(hasTblFile(x)) x@file else newTbl(x)@file
 }
 
 
-# do not export this: arbitrarily changing the file pointer of an xdf object can be bad
-`tblFile<-` <- function(x, value)
+#' @rdname tbl
+#' @export
+tblSource <- function(x)
 {
-    if(!inherits(x, "tbl_xdf"))
-        stop("cannot change xdf file")
-    x@file <- value
-    x@hasTblFile <- TRUE
-    x
+    if(hasTblFile(x)) x else newTbl(x)
 }
 
 
@@ -121,14 +119,15 @@ tbl_vars.RxFileData <- function(x)
 #' Convert a data source or tbl to a data frame
 #'
 #' @param x A data source object, or tbl wrapping the same.
-#' @param ... Other arguments to \code{rxReadXdf} or \code{rxImport}, as appropriate.
+#' @param maxRowsByCols the maximum dataset size to convert, expressed in terms of rows times columns. Defaults to NULL, meaning no maximum.
+#' @param ... Other arguments to \code{rxDataStep}.
 #' @details
-#' This is a simple wrapper around \code{\link[RevoScaleR]{rxReadXdf}} for the \code{RxXdfData} method, and \code{\link[RevoScaleR]{rxImport}} for the \code{RxFileData} method.
+#' This is a simple wrapper around \code{\link[RevoScaleR]{rxDataStep}}, with the check on the maximum table size turned off. You should ensure that you have enough memory for your data.
 #' @rdname as.data.frame
 #' @export
-as.data.frame.RxXdfData <- function(x, ...)
+as.data.frame.RxXdfData <- function(x, maxRowsByCols=NULL, ...)
 {
-    rxReadXdf(x, ...)
+    rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
 }
 
 
@@ -136,7 +135,7 @@ as.data.frame.RxXdfData <- function(x, ...)
 #' @export
 as.data.frame.RxFileData <- function(x, ...)
 {
-    rxImport(x, ...)
+    rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
 }
 
 
@@ -149,20 +148,8 @@ as.data.frame.RxFileData <- function(x, ...)
 #' @export
 deleteXdfTbls <- function(path=tempdir(), ignore.case=TRUE)
 {
-    files <- dir(path, pattern="\\.xdf$", ignore.case=ignore.case)
-    invisible(file.remove(file.path(path, files)))
+    files <- dir(path, pattern="\\.xdf$", full.names=TRUE, ignore.case=ignore.case)
+    # use unlink to allow for the possibility of composite xdfs
+    invisible(unlink(files, recursive=TRUE))
 }
 
-
-newTblFile <- function()
-{
-    if(inherits(rxGetFileSystem(), "RxNativeFileSystem"))
-        tempfile(fileext=".xdf")
-    else stop("only native file system supported") 
-}
-
-
-varTypes <- function(xdf, vars=NULL)
-{
-    sapply(rxGetVarInfo(xdf, varsToKeep=vars), "[[", "varType")
-}

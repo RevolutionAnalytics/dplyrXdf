@@ -36,10 +36,10 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .dots)
     if(any(names(exprs) %in% groups(.data)))
         stop("cannot transmute grouping variable")
 
-    outFile <- tblFile(.data)
-    xdflst <- split_groups(.data, outFile)
+    outData <- tblSource(.data)
+    xdflst <- split_groups(.data, outData)
     xdflst <- rxExec(transmute_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), packagesToLoad="dplyrXdf")
-    combine_groups(xdflst, outFile, groups(.data))
+    combine_groups(xdflst, outData, groups(.data))
 }
 
 
@@ -64,10 +64,10 @@ transmute_base <- function(data, exprs, rxArgs=NULL, gvars=NULL)
         as.call(c(quote(list), exprs))
     else NULL
 
-    oldfile <- tblFile(data)
+    oldData <- tblSource(data)
     if(hasTblFile(data))
-        on.exit(file.remove(oldfile))
-    cl <- substitute(rxDataStep(data, newTblFile(), transforms=.expr),
+        on.exit(deleteTbl(oldData))
+    cl <- substitute(rxDataStep(data, newTbl(data), transforms=.expr),
         list(.expr=exprlst))
     cl[names(rxArgs)] <- rxArgs
 

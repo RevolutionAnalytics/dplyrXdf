@@ -28,10 +28,10 @@ persist <- function(data, ...)
 #' @export
 persist.tbl_xdf <- function(data, outFile, overwrite=TRUE, deleteOldTbl=FALSE, ...)
 {
-    if(file.exists(outFile) && overwrite)
-        warning(sprintf("output file '%s' already exists, will be overwritten", outFile))
-    inFile <- tblFile(data)
-    on.exit(if(deleteOldTbl && file.exists(inFile)) file.remove(infile))
+#    if(file.exists(outFile) && overwrite)
+#        warning(sprintf("output file '%s' already exists, will be overwritten", outFile))
+    if(deleteOldTbl)
+        on.exit(deleteTbl(data))
     rxDataStep(data, outFile=outFile, overwrite=overwrite, ...)
 }
 

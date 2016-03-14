@@ -13,7 +13,7 @@ smry_rxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
 
     levs <- get_grouplevels(data)
     # put grouping variable on to dataset
-    data <- rxDataStep(data, tblFile(data), transformFunc=function(varlst) {
+    data <- rxDataStep(data, tblSource(data), transformFunc=function(varlst) {
         varlst[[".group."]] <- .factor(varlst, .levs)
         varlst
     }, transformObjects=list(.levs=levs, .factor=make_groupvar), transformVars=grps, overwrite=TRUE)

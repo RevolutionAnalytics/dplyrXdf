@@ -15,11 +15,11 @@ filter_.RxFileData <- function(.data, ..., .dots)
         all_exprs <- substitute(left & right, list(left=all_exprs, right=exprs[[i]]))
     }
 
-    oldfile <- tblFile(.data)
+    oldData <- tblSource(.data)
     if(hasTblFile(.data))
-        on.exit(file.remove(oldfile))
+        on.exit(deleteTbl(oldData))
     
-    cl <- substitute(rxDataStep(.data, newTblFile(), rowSelection=.expr),
+    cl <- substitute(rxDataStep(.data, newTbl(.data), rowSelection=.expr),
         list(.expr=all_exprs))
     cl[names(rxArgs)] <- rxArgs
 

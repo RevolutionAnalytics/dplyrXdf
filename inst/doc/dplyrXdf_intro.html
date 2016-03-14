@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-03-10" />
+<meta name="date" content="2016-03-14" />
 
 <title>Introducing the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Introducing the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-03-10</em></h4>
+<h4 class="date"><em>2016-03-14</em></h4>
 </div>
 
 
@@ -149,13 +149,13 @@ flights_rx5 &lt;-<span class="st"> </span>flights_rx5[<span class="kw">order</sp
 <span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(mean_delay))
 
 <span class="kw">head</span>(flightsSmry)
-<span class="co">#&gt;   carrier mean_delay     sum_dist</span>
-<span class="co">#&gt; 1      OO   72.16667     2750.294</span>
-<span class="co">#&gt; 2      F9   24.81886   873367.110</span>
-<span class="co">#&gt; 3      EV   21.80613 23400472.426</span>
-<span class="co">#&gt; 4      YV   20.78378   128401.219</span>
-<span class="co">#&gt; 5      FL   15.61127  1979744.767</span>
-<span class="co">#&gt; 6      9E   13.85877  7160918.303</span></code></pre></div>
+<span class="co">#&gt;   carrier mean_delay sum_dist</span>
+<span class="co">#&gt; 1      UA   8.252719 69813623</span>
+<span class="co">#&gt; 2      AA   5.725368 35393697</span>
+<span class="co">#&gt; 3      B6  12.093283 46215805</span>
+<span class="co">#&gt; 4      DL   5.634423 47088113</span>
+<span class="co">#&gt; 5      EV  21.806128 23400472</span>
+<span class="co">#&gt; 6      MQ  11.671721 12061604</span></code></pre></div>
 <p>Even with this very straightforward example, dplyrXdf hides the complexity of calling RevoScaleR functions while retaining their power. In particular, note the following:</p>
 <ul>
 <li><p>There is no need to keep track of input and output file locations: the verbs in the dplyrXdf pipeline will automatically create files and reuse them as needed. Files that are no longer used will be deleted, so there won’t be multiple orphaned files cluttering up your hard disk.</p></li>

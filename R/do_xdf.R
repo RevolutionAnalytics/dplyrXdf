@@ -29,9 +29,9 @@ do_.RxFileData <- function(.data, ..., .dots)
     }
 
     check_named_args(dots)
-    oldfile <- tblFile(.data)
+    oldData <- tblSource(.data)
     on.exit(if(hasTblFile(.data))
-        file.remove(oldfile))
+        deleteTbl(oldData))
     do_base(.data, dots=dots)
 }
 
@@ -62,9 +62,8 @@ doXdf_.RxFileData <- function(.data, ..., .dots)
     dots <- .rxArgs(dots)
 
     check_named_args(dots)
-    oldfile <- tblFile(.data)
-    on.exit(if(hasTblFile(.data) && file.exists(oldfile))
-        file.remove(oldfile))
+    oldData <- tblSource(.data)
+    on.exit(deleteTbl(oldData))
     doXdf_base(.data, dots$exprs, grps=NULL, dots$rxArgs, dots$env)
 }
 
@@ -87,15 +86,14 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
     check_named_args(dots)
     grps <- groups(.data)
 
-    oldfile <- tblFile(.data)
+    oldData <- tblSource(.data)
     hasTbl <- hasTblFile(.data)
     on.exit({
-        file.remove(names(xdflst))
-        if(hasTbl)
-            file.remove(oldfile)
+        deleteTbl(xdflst)
+        if(hasTbl) deleteTbl(oldData)
     })
 
-    xdflst <- split_groups(.data, oldfile)
+    xdflst <- split_groups(.data, .data)
     dolst <- rxExec(do_base, data=rxElemArg(xdflst), dots, grps, packagesToLoad="dplyrXdf")
     df <- bind_rows(dolst)
 
@@ -119,16 +117,14 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
     check_named_args(exprs)
     grps <- groups(.data)
 
-    oldfile <- tblFile(.data)
+    oldData <- tblSource(.data)
     hasTbl <- hasTblFile(.data)
     on.exit({
-        if(all(file.exists(names(xdflst))))
-            file.remove(names(xdflst))
-        if(hasTbl && file.exists(oldfile))
-            file.remove(oldfile)
+        deleteTbl(xdflst)
+        if(hasTbl) deleteTbl(oldData)
     })
 
-    xdflst <- split_groups(.data, oldfile)
+    xdflst <- split_groups(.data, oldData)
     dolst <- rxExec(doXdf_base, data=rxElemArg(xdflst), exprs, grps, rxArgs, dots$env, packagesToLoad="dplyrXdf")
     df <- bind_rows(dolst)
 

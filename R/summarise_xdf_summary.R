@@ -111,7 +111,7 @@ smry_rxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfO
 
     if(dfOut)  # output as data frame
         df
-    else rxDataFrameToXdf(df, tblFile(data), overwrite=TRUE)
+    else rxDataStep(as.data.frame(df), tblSource(data), overwrite=TRUE)
 }
 
 

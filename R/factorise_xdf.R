@@ -73,11 +73,11 @@ factorise_.RxXdfData <- function(.data, ..., .dots)
             else list(levels=levs)
         }, simplify=FALSE)
     )
-    oldfile <- tblFile(.data)
+    oldData <- tblSource(.data)
     if(hasTblFile(.data))
-        on.exit(file.remove(oldfile))
+        on.exit(deleteTbl(oldData))
 
-    cl <- quote(rxFactors(.data, factorInfo, outFile=newTblFile()))
+    cl <- quote(rxFactors(.data, factorInfo, outFile=newTbl(.data)))
     cl[names(rxArgs)] <- rxArgs
 
      # rxFactors is noisy when given already-existing factors; shut it up
@@ -111,11 +111,11 @@ factorise_.RxFileData <- function(.data, ..., .dots)
         else list(type=types[x])
     }, simplify=FALSE)
 
-    oldfile <- tblFile(.data)
+    oldData <- tblSource(.data)
     if(hasTblFile(.data))
-        on.exit(file.remove(oldfile))
+        on.exit(deleteTbl(oldData))
 
-    cl <- quote(rxImport(.data, newTblFile(), colInfo=colInfo))
+    cl <- quote(rxImport(.data, newTbl(.data), colInfo=colInfo))
     cl[names(rxArgs)] <- rxArgs
 
     .data <- tbl(eval(cl), hasTblFile=TRUE)

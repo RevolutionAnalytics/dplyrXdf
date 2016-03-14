@@ -11,15 +11,15 @@ select_.RxFileData <- function(.data, ..., .dots)
     grps <- groups(.data)
     vars <- c(grps, select_vars_(names(.data), exprs))
 
-    oldfile <- tblFile(.data)
+    oldData <- .data
     if(hasTblFile(.data))
-        on.exit(file.remove(oldfile))
+        on.exit(deleteTbl(oldData))
 
     # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep
     cl <- if(inherits(.data, "RxXdfData"))
-        substitute(rxDataStep(.data, newTblFile(), varsToKeep=.expr, overwrite=TRUE),
+        substitute(rxDataStep(.data, newTbl(.data), varsToKeep=.expr, overwrite=TRUE),
             list(.expr=vars))
-    else substitute(rxImport(.data, newTblFile(), varsToKeep=.expr, overwrite=TRUE),
+    else substitute(rxImport(.data, newTbl(.data), varsToKeep=.expr, overwrite=TRUE),
             list(.expr=vars))
     cl[names(rxArgs)] <- rxArgs
 

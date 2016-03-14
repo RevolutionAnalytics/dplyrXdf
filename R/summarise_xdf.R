@@ -65,7 +65,7 @@ summarise_.RxFileData <- function(.data, ..., .dots)
     smry <- smry_func(.data, grps, stats, exprs, rxArgs)
 
     .data <- if(is.data.frame(smry))
-        tbl(rxDataFrameToXdf(smry, tblFile(.data), overwrite=TRUE), hasTblFile=TRUE)
+        tbl(rxDataStep(smry, tblSource(.data), overwrite=TRUE), hasTblFile=TRUE)
     else tbl(smry, hasTblFile=TRUE)
 
     # generate new grouping info if necessary

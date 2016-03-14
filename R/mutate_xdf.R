@@ -43,24 +43,24 @@ mutate_.grouped_tbl_xdf <- function(.data, ..., .dots)
     if(any(names(exprs) %in% groups(.data)))
         stop("cannot mutate grouping variable")
 
-    outFile <- tblFile(.data)
-    xdflst <- split_groups(.data, outFile)
+    outSource <- tblSource(.data)
+    xdflst <- split_groups(.data, outSource)
     xdflst <- rxExec(mutate_base, data=rxElemArg(xdflst), exprs, rxArgs, packagesToLoad="dplyrXdf")
-    combine_groups(xdflst, outFile, groups(.data))
+    combine_groups(xdflst, .data, groups(.data))
 }
 
 
 mutate_base <- function(data, exprs, rxArgs=NULL, gvars=NULL)
 {
-    oldfile <- tblFile(data)
+    oldData <- data
     if(hasTblFile(data))
-        on.exit(file.remove(oldfile))
+        on.exit(deleteTbl(oldData))
 
     # write to new file to avoid issues with deleting variables
     exprlst <- if(length(exprs) > 0)
         as.call(c(quote(list), exprs))
     else NULL
-    cl <- substitute(rxDataStep(data, newTblFile(), transforms=.expr),
+    cl <- substitute(rxDataStep(data, newTbl(data), transforms=.expr),
         list(.expr=exprlst))
 
     if(!is.null(rxArgs))

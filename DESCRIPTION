@@ -38,7 +38,9 @@ Collate:
     'summarise_xdf_summary.R'
     'summarise_xdf_split.R'
     'summarise_xdf_summary2.R'
+    'tbl_utils.R'
     'transmute_xdf.R'
 Suggests:
     knitr
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1

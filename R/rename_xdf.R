@@ -14,7 +14,7 @@ rename_.RxFileData <- function(.data, ..., .dots)
     vars <- rename_vars_(names(.data), dots)
 
     if(!hasTblFile(.data))
-        .data <- tbl(.data, newTblFile())
+        .data <- tbl(.data, newTbl(.data))
 
     names(.data) <- names(vars)
     if(!is.null(grps))  # check if grouping vars were renamed

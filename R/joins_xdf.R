@@ -29,6 +29,8 @@ full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 {
+    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
+        stop("merging not supported yet on HDFS")
     semi_join(tbl(x, stringsAsFactors=FALSE), y, by=by, copy=copy, ...)
 }
 
@@ -36,6 +38,8 @@ semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 {
+    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
+        stop("merging not supported yet on HDFS")
     anti_join(tbl(x, stringsAsFactors=FALSE), y, by=by, copy=copy, ...)
 }
 
@@ -75,6 +79,9 @@ full_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 semi_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {
+    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
+        stop("merging not supported yet on HDFS")
+
     # no native semi-join functionality in ScaleR, so do it by hand
     by <- dplyr_common_by(by, x, y)
 
@@ -83,8 +90,8 @@ semi_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
         y@hasTblFile <- FALSE
     y <- select_(y, by$y) %>% distinct
     on.exit({
-        yFile <- tblFile(y)
-        if(file.exists(yFile)) file.remove(yFile)
+        yFile <- tblSource(y)
+        deleteTbl(yFile)
     })
     merge_base(x, y, by, copy, "inner")
 }
@@ -93,6 +100,9 @@ semi_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 anti_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {
+    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
+        stop("merging not supported yet on HDFS")
+
     # no native anti-join functionality in ScaleR, so do it by hand
     by <- dplyr_common_by(by, x, y)
 
@@ -102,8 +112,8 @@ anti_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
     ones <- sprintf("rep(1L, length(%s))", by$x[1])
     y <- transmute_(y, by$y, .ones=ones) %>% distinct
     on.exit({
-        yFile <- tblFile(y)
-        if(file.exists(yFile)) file.remove(yFile)
+        yFile <- tblSource(y)
+        deleteTbl(yFile)
     })
     merge_base(x, y, by, copy, "left") %>%
         filter(is.na(.ones)) %>%
@@ -144,19 +154,21 @@ setdiff.RxFileData <- function(x, y, ...)
 
 merge_base <- function(x, y, by=NULL, copy=FALSE, type)
 {
+    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
+        stop("merging not supported yet on HDFS")
     # do not remove/overwrite y data on completion
     if(inherits(y, "tbl_xdf"))
         y@hasTblFile <- FALSE
 
     # but if we create a temporary tbl for y, then remove it
     on.exit({
-        ytbl <- tblFile(y)
-        if(hasTblFile(y) && file.exists(ytbl)) file.remove(ytbl)
+        ytbl <- tblSource(y)
+        if(hasTblFile(y)) deleteTbl(ytbl)
     })
     newxy <- xdf_copy(x, y, copy, by)
     x <- newxy$x
     y <- newxy$y
-    out <- rxMerge(x, y, matchVars=by$x, outFile=tblFile(x), type=type, duplicateVarExt=c("x", "y"), overwrite=TRUE)
+    out <- rxMerge(x, y, matchVars=by$x, outFile=tblSource(x), type=type, duplicateVarExt=c("x", "y"), overwrite=TRUE)
     tblFile(x) <- rxGetInfo(out)$fileName
     x
 }

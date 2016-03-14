@@ -43,10 +43,10 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .dots)
     if(any(needs_mutate))
         .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
-    outFile <- tblFile(.data)
-    xdflst <- split_groups(.data, outFile)
+    outData <- tblSource(.data)
+    xdflst <- split_groups(.data, outData)
     xdflst <- rxExec(distinct_base, data=rxElemArg(xdflst), names(exprs), rxArgs, packagesToLoad="dplyrXdf")
-    combine_groups(xdflst, outFile, groups(.data))
+    combine_groups(xdflst, outData, groups(.data))
 }
 
 
@@ -54,7 +54,7 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .dots)
 distinct_base <- function(data, vars, rxArgs)
 {
     df <- RevoPemaR::pemaCompute(pemaDistinct(), data=data, varName=vars)
-    cl <- quote(rxDataFrameToXdf(df, tblFile(data), overwrite=TRUE))
+    cl <- quote(rxDataStep(df, tblSource(data), overwrite=TRUE))
     cl[names(rxArgs)] <- rxArgs
     eval(cl)
 }
