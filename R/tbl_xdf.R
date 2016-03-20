@@ -133,7 +133,7 @@ as.data.frame.RxXdfData <- function(x, maxRowsByCols=NULL, ...)
 
 #' @rdname as.data.frame
 #' @export
-as.data.frame.RxFileData <- function(x, ...)
+as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, ...)
 {
     rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
 }
