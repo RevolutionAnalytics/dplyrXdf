@@ -17,12 +17,7 @@ smry_rxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
 
 smry_rxSummary_with_groupvars <- function(data, grps, stats, exprs, rxArgs)
 {
-    if(inherits(rxGetFileSystem(data), "RxHdfsFileSystem"))
-    {
-        # rxReadXdf faster, but unsupported on HDFS
-        gvars <- rxDataStep(data, varsToKeep=grps, maxRowsByCols=nrow(data))
-    }
-    else gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
+    gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     smry <- smry_rxSummary(data, NULL, stats, exprs, rxArgs, dfOut=TRUE)
     rxDataFrameToXdf(cbind(gvars, smry, stringsAsFactors=FALSE), data, overwrite=TRUE)
 }
@@ -42,7 +37,8 @@ smry_rxSplit_dplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
 
     outSource <- tblSource(data)
     xdflst <- split_groups(data, outSource)
-    xdflst <- rxExec(smry_dplyr_with_groupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs, packagesToLoad="dplyrXdf")
+    xdflst <- rxExec(smry_dplyr_with_groupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs,
+        packagesToLoad="dplyr")
     combine_groups(xdflst, outSource, NULL)
 }
 
@@ -53,8 +49,9 @@ smry_dplyr_with_groupvars <- function(data, grps, exprs, rxArgs)
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     cl <- quote(rxDataStep(data, maxRowsByCols=NULL))
     cl[names(rxArgs)] <- rxArgs
+    exprs <- lazyeval::as.lazy_dots(exprs, attr(exprs, "env"))
     smry <- eval(cl) %>%
         dplyr::summarise_(.dots=exprs)
         
-    rxDataFrameToXdf(cbind(gvars, smry, stringsAsFactors=FALSE), rxXdfFileName(data), overwrite=TRUE)
+    rxDataStep(cbind(gvars, smry, stringsAsFactors=FALSE), rxXdfFileName(data), overwrite=TRUE)
 }

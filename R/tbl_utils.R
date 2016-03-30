@@ -89,6 +89,7 @@ makeHdfsTempDir <- function()
     hdfsTempDir <- tempfile(pattern="dxTmp", tmpdir=RxHadoopMR()@hdfsShareDir)
     .dxOptions$hdfsTempDir <- gsub("\\", "/", hdfsTempDir, fixed=TRUE)
     .dxOptions$hdfsTempDirCreated <- FALSE
+    .dxOptions$rowsPerRead <- 500000
 
     defaultFS <- rxGetFileSystem()
     if(inherits(defaultFS, "RxHdfFileSystem"))
@@ -105,3 +106,20 @@ makeHdfsTempDir <- function()
     NULL
 }
 
+
+dxOptions <- function(...)
+{
+    if(nargs() == 0)
+        return(as.list(.dxOptions))
+    dots <- list(...)
+    nams <- names(dots)
+    opts <- names(.dxOptions)
+    if(!all(nams %in% opts))
+    {
+        badOpts <- nams[!(nams %in% opts)]
+        stop("invalid dplyrXdf option(s): ", paste(badOpts, collapse=", "))
+    }
+    for(o in nams)
+        .dxOptions[[o]] <- dots[[o]]
+    as.list(.dxOptions)
+}

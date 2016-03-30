@@ -38,7 +38,7 @@ The \code{do} verb converts the data to a data frame before running the operatio
 \details{
 The difference between the \code{do} and \code{doXdf} verbs is that the former converts the data into a data frame before running the expressions on it; while the latter passes the data as Xdf files. \code{do} is thus more flexible in the expressions it can run (basically anything that works with data frames), whereas \code{doXdf} is better able to handle large datasets. The final output from \code{doXdf} must still be able to fit in memory (see below).
 
-To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} create a factor variable \code{.group.} containing all observed combinations of the grouping variables. The data is then split into multiple files by this factor, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
+To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} split the data into one file per group, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
 }
 \seealso{
 \code{\link[dplyr]{do}} in package dplyr

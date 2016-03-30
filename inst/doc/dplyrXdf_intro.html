@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-03-14" />
+<meta name="date" content="2016-03-20" />
 
 <title>Introducing the dplyrXdf package</title>
 
@@ -72,13 +72,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Introducing the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-03-14</em></h4>
+<h4 class="date"><em>2016-03-20</em></h4>
 </div>
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>The <a href="https://cran.r-project.org/web/packages/dplyr/index.html">dplyr package</a> is a popular toolkit for data transformation and manipulation. Over the last year and a half, dplyr has become a hot topic in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks.</p>
+<p>The <a href="https://cran.r-project.org/web/packages/dplyr/index.html">dplyr package</a> is a popular toolkit for data transformation and manipulation. Since its release dplyr has become a hot topic in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks.</p>
 <p>Out of the box, dplyr supports data frames, data tables (from the data.table package), and the following SQL databases: MySQL/MariaDB, SQLite, and PostgreSQL. However, a feature of dplyr is that it’s <em>extensible</em>: by writing a specific backend, you can make it work with many other kinds of data sources. For example the development version of the <a href="https://github.com/imanuelcostigan/RSQLServer">RSQLServer package</a> implements a dplyr backend for Microsoft SQL Server.</p>
 <p>The dplyrXdf package implements such a backend for the xdf file format, a technology supplied as part of Revolution R Enterprise. All of the data transformation and modelling functions provided with RRE support xdf files, which allow you to break R’s memory barrier: by storing the data on disk, rather than in memory, they make it possible to work with multi-gigabyte or terabyte-sized datasets.</p>
 <p>dplyrXdf brings the benefits of dplyr to xdf files, including support for pipeline notation, all major verbs, and the ability to incorporate xdfs into dplyr pipelines. It also provides some additional benefits which are more specific to working with xdfs:</p>

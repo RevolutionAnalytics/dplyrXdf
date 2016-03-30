@@ -12,7 +12,7 @@
 #'
 #' Note that if you supply a \code{transformFunc}, its returned variables will override any transformations in the main call to \code{mutate} and \code{transmute}). In particular, the results of any such inline transformations will be lost unless you also include them in the output of the \code{transformFunc}. This mirrors the existing behaviour of the variable transformation functionality in RevoScaleR. It's not recommended to use both inline transformations and a \code{transformFunc} at the same time, as the results may be confusing.
 #'
-#' To modify a grouped Xdf tbl, these functions create a factor variable \code{.group.} containing all observed combinations of the grouping variables. They then use \code{\link{rxSplit}} to split the data into multiple files by this factor, and call \code{rxDataStep} on each. This ensures two things: first, that the groups will be appropriately generated regardless of the types of the grouping variables; and second, the code remains scalable to large dataset sizes. Note however that this may be slow if you have a large number of groups.
+#' To modify a grouped Xdf tbl, these functions create a factor variable \code{.group.} split the data into one file per group, and call \code{rxDataStep} on each file. This ensures two things: first, that the groups will be appropriately generated regardless of the types of the grouping variables; and second, the code remains scalable to large dataset sizes. Note however that this may be slow if you have a large number of groups.
 #'
 #' @seealso
 #' \code{\link[dplyr]{mutate}} and \code{\link{transmute}} in package dplyr, \code{\link[RevoScaleR]{rxDataStep}}, \code{\link[RevoScaleR]{rxTransform}} for variable transformations in RevoScaleR

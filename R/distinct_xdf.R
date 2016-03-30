@@ -27,7 +27,7 @@ distinct_.RxFileData <- function(.data, ..., .dots)
 
 
 #' @details
-#' To sort a grouped Xdf tbl, \code{distinct} creates a factor variable \code{.group.} containing all observed combinations of the grouping variables. It then uses \code{\link{rxSplit}} to split the data into multiple files by this factor, and calls \code{\link[dplyr]{distinct}} on each. The individual data frames are \code{rbind}ed together and \code{distinct} is called on the overall result. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however that this may be slow if you have a large number of groups; and the operation will be limited by memory if the number of distinct rows is large.
+#' To sort a grouped Xdf tbl, \code{distinct} split the data into one file per group, and calls \code{\link[dplyr]{distinct}} on each. The individual data frames are \code{rbind}ed together and \code{distinct} is called on the overall result. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however that this may be slow if you have a large number of groups; and the operation will be limited by memory if the number of distinct rows is large.
 #' @rdname distinct
 #' @export
 distinct_.grouped_tbl_xdf <- function(.data, ..., .dots)

@@ -1,6 +1,6 @@
 Package: dplyrXdf
 Title: Interface to xdf files for the dplyr package
-Version: 0.62
+Version: 0.63
 Authors@R: c(
     person("Hong", "Ooi", , "hongooi@microsoft.com", role = c("aut", "cre")),
     person("Revolution Analytics", role="cph")
@@ -32,6 +32,7 @@ Collate:
     'persist_tbl_xdf.R'
     'rename_xdf.R'
     'select_xdf.R'
+    'split_groups.R'
     'summarise_xdf.R'
     'summarise_xdf_cube.R'
     'summarise_xdf_pema.R'

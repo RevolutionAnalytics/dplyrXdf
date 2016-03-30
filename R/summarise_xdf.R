@@ -35,9 +35,9 @@ summarise_.RxFileData <- function(.data, ..., .dots)
     dots <- .rxArgs(dots)
     rxArgs <- dots$rxArgs
     exprs <- dots$exprs
+    attr(exprs, "env") <- dots$env
 
     stats <- sapply(exprs, function(term) as.character(term[[1]]))
-    
     needs_mutate <- vapply(exprs, function(e) {
         (length(e) < 2 || !is.name(e[[2]])) && !identical(e, quote(n()))
     }, logical(1))

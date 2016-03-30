@@ -4,12 +4,10 @@
 \alias{deleteXdfTbls}
 \title{Delete data files for xdf tbls}
 \usage{
-deleteXdfTbls(path = tempdir(), ignore.case = TRUE)
+deleteXdfTbls(path = tempdir())
 }
 \arguments{
 \item{path}{Directory where the files are located. Defaults to the R temporary directory.}
-
-\item{ignore.case}{Logical. Should filename matching be case-insensitive?}
 }
 \description{
 Delete data files for xdf tbls

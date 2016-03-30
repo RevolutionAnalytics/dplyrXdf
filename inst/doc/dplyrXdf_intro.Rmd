@@ -15,7 +15,7 @@ library(dplyrXdf)
 ```
 ## Introduction
 
-The [dplyr package](https://cran.r-project.org/web/packages/dplyr/index.html) is a popular toolkit for data transformation and manipulation. Over the last year and a half, dplyr has become a hot topic in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks. 
+The [dplyr package](https://cran.r-project.org/web/packages/dplyr/index.html) is a popular toolkit for data transformation and manipulation. Since its release dplyr has become a hot topic in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks. 
 
 Out of the box, dplyr supports data frames, data tables (from the data.table package), and the following SQL databases: MySQL/MariaDB, SQLite, and PostgreSQL. However, a feature of dplyr is that it's _extensible_: by writing a specific backend, you can make it work with many other kinds of data sources. For example the development version of the [RSQLServer package](https://github.com/imanuelcostigan/RSQLServer) implements a dplyr backend for Microsoft SQL Server.
 

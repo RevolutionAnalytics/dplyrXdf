@@ -32,7 +32,7 @@ persist.tbl_xdf <- function(data, outFile, overwrite=TRUE, deleteOldTbl=FALSE, .
 #        warning(sprintf("output file '%s' already exists, will be overwritten", outFile))
     if(deleteOldTbl)
         on.exit(deleteTbl(data))
-    rxDataStep(data, outFile=outFile, overwrite=overwrite, ...)
+    rxDataStep(data, outFile, overwrite=overwrite, rowsPerRead=.dxOptions$rowsPerRead, ...)
 }
 
 

@@ -7,7 +7,7 @@
 \usage{
 \method{as.data.frame}{RxXdfData}(x, maxRowsByCols = NULL, ...)
 
-\method{as.data.frame}{RxFileData}(x, ...)
+\method{as.data.frame}{RxFileData}(x, maxRowsByCols = NULL, ...)
 }
 \arguments{
 \item{x}{A data source object, or tbl wrapping the same.}
