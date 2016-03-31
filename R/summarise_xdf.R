@@ -13,7 +13,9 @@
 #'  \item split into multiple Xdfs by group, run \code{dplyr::summarise} on each, rbind xdfs together: arbitrary stats supported (slow)
 #'  \item split into multiple Xdfs by group, run \code{rxSummary} on each, rbind xdfs together: stats in rxSummary supported (slowest, most scalable)
 #' }
-#' The default method is 1 if the data is grouped and the requested summary statistics are supported by \code{rxCube}; otherwise 2 if the requested statistics are supported by \code{rxSummary}; otherwise 4. Method 3 is supplied for the case where the product of factor levels for the grouping variables exceeds 2^32 - 1)
+#' The default method is 1 if the data is grouped and the requested summary statistics are supported by \code{rxCube}; otherwise 2 if the requested statistics are supported by \code{rxSummary}; otherwise 4. Method 3 is supplied for the case where the product of factor levels for the grouping variables exceeds 2^32 - 1, a known limitation of \code{rxCube} and \code{rxSummary}.
+#'
+#' Supplying custom functions to summarise is supported, but they must be \emph{named} functions (and will automatically cause \code{.method=4} to be selected). Anonymous functions will cause an error.
 #'
 #' @seealso
 #' \code{\link[dplyr]{summarise}} in package dplyr, \code{\link[RevoScaleR]{rxCube}}, \code{\link[RevoScaleR]{rxSummary}}

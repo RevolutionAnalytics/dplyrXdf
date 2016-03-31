@@ -35,7 +35,6 @@ Collate:
     'split_groups.R'
     'summarise_xdf.R'
     'summarise_xdf_cube.R'
-    'summarise_xdf_pema.R'
     'summarise_xdf_summary.R'
     'summarise_xdf_split.R'
     'summarise_xdf_summary2.R'
