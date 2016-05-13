@@ -31,8 +31,11 @@ newTbl <- function(xdf=NULL, fileSystem=rxGetFileSystem(xdf))
         file.path(hdfsTempDir, basename(tempfile(fileext=".xdf")), fsep="/")
     }
     else stop("unknown file system")
+
     if(!inherits(xdf, "RxXdfData"))
         return(RxXdfData(file=fname, fileSystem=fileSystem))
+    else xdf <- as(xdf, "RxXdfData")  # do coerce to remove any grouping info
+
     xdf@file <- fname
     xdf@fileSystem <- fileSystem
     xdf

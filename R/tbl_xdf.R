@@ -83,7 +83,9 @@ tblFile <- function(x)
 #' @export
 tblSource <- function(x)
 {
-    if(hasTblFile(x)) x else newTbl(x)
+    if(hasTblFile(x))
+        as(x, "RxXdfData")  # do coerce to remove any grouping info
+    else newTbl(x)
 }
 
 
