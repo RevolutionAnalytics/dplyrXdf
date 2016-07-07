@@ -1,6 +1,6 @@
 Package: dplyrXdf
 Title: Interface to xdf files for the dplyr package
-Version: 0.631
+Version: 0.64
 Authors@R: c(
     person("Hong", "Ooi", , "hongooi@microsoft.com", role = c("aut", "cre")),
     person("Revolution Analytics", role="cph")

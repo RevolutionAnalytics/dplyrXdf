@@ -97,6 +97,10 @@ makeHdfsTempDir <- function()
     defaultFS <- rxGetFileSystem()
     if(inherits(defaultFS, "RxHdfFileSystem"))
         makeHdfsTempDir()
+
+    # store dplyr version
+    .dxOptions$dplyrVersion <- packageVersion("dplyr")
+
     NULL
 }
 

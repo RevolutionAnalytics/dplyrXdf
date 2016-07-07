@@ -6,22 +6,24 @@
 \alias{distinct_.grouped_tbl_xdf}
 \title{Select distinct/unique rows}
 \usage{
-\method{distinct_}{RxFileData}(.data, ..., .dots)
+\method{distinct_}{RxFileData}(.data, ..., .dots, .keep_all = FALSE)
 
-\method{distinct_}{grouped_tbl_xdf}(.data, ..., .dots)
+\method{distinct_}{grouped_tbl_xdf}(.data, ..., .dots, .keep_all = FALSE)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}
 
-\item{...}{Variables to use for determining uniqueness.}
+\item{...}{Variables to use for determining uniqueness. If left blank, all variables in \code{.data} are used to determine uniqueness.}
 
 \item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details.}
+
+\item{.keep_all}{If \code{TRUE}, keep all variables in the dataset; otherwise, only keep variables used in defining uniqueness. Only used if dplyr version 0.5 or greater is installed.}
 }
 \description{
 Select distinct/unique rows
 }
 \details{
-To sort a grouped Xdf tbl, \code{distinct} split the data into one file per group, and calls \code{\link[dplyr]{distinct}} on each. The individual data frames are \code{rbind}ed together and \code{distinct} is called on the overall result. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however that this may be slow if you have a large number of groups; and the operation will be limited by memory if the number of distinct rows is large.
+To process a grouped Xdf tbl, \code{distinct} splits the data into one file per group, and calls \code{\link[dplyr]{distinct}} on each. The individual data frames are \code{rbind}ed together and \code{distinct} is called on the overall result. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however that this may be slow if you have a large number of groups; and the operation will be limited by memory if the number of distinct rows is large.
 }
 \seealso{
 \code{\link[dplyr]{distinct}} in package dplyr

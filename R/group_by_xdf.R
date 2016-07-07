@@ -118,11 +118,11 @@ get_grouplevels <- function(data, gvars=groups(data))
     if(is.null(gvars))
         return(NULL)
 
-    levdf <- as_data_frame(sapply(gvars, function(xi) logical(0), simplify=FALSE))
+    levdf <- as.data.frame(sapply(gvars, function(xi) logical(0), simplify=FALSE))
 
     # read grouping variables by block, return unique row combinations
     levs <- rxDataStep(data, varsToKeep=gvars, transformFunc=function(varlst) {
-        .levdf <<- dplyr::distinct(rbind(.levdf, as_data_frame(varlst)))
+        .levdf <<- dplyr::distinct(rbind(.levdf, as.data.frame(varlst)))
         NULL
     }, transformObjects=list(.levdf=levdf), transformPackages="dplyr", returnTransformObjects=TRUE)[[1]]
 
