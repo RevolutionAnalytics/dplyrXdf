@@ -3,14 +3,14 @@
 \name{intersect.RxFileData}
 \alias{intersect.RxFileData}
 \alias{setdiff.RxFileData}
-\alias{union.RxFileData}
+\alias{setequal.RxFileData}
 \title{Unsupported joins/set operations}
 \usage{
 intersect.RxFileData(x, y, ...)
 
-union.RxFileData(x, y, ...)
-
 setdiff.RxFileData(x, y, ...)
+
+setequal.RxFileData(x, y, ...)
 }
 \arguments{
 \item{x, }{y ScaleR data sources, or tbls wrapping the same.}

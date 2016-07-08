@@ -121,6 +121,35 @@ anti_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 }
 
 
+#' @export
+union_all.RxFileData <- function(x, y, ...)
+{
+    # use x's tbl if it exists; otherwise create a new tbl, copy x into it
+    xTbl <- if(hasTblFile(x))
+        tblSource(x)
+    else rxDataStep(x, newTbl(x))
+
+    # if y points to same file as xTbl, make a copy
+    # should only happen with union_all(x, x) with x a tbl
+    if(inherits(y, "RxFileData") && y@file == xTbl@file)
+    {
+        y <- rxDataStep(y, newTbl(y))
+        on.exit(file.remove(y@file))
+    }
+
+    # append y to x
+    tbl(rxDataStep(y, xTbl, append="rows", ...), hasTblFile=TRUE)
+}
+
+
+#' @export
+union.RxFileData <- function(x, y, ...)
+{
+    # call union_all.RxFileData explicitly to allow use in dplyr < 0.5
+    union_all.RxFileData(x, y, ...) %>% distinct
+}
+
+
 #' Unsupported joins/set operations
 #'
 #' These operations are currently not supported for ScaleR data sources.
@@ -138,17 +167,17 @@ intersect.RxFileData <- function(x, y, ...)
 
 #' @rdname setops 
 #' @export
-union.RxFileData <- function(x, y, ...)
+setdiff.RxFileData <- function(x, y, ...)
 {
-    stop("union not supported for Rx data sources", call.=FALSE)
+    stop("setdiff not supported for Rx data sources", call.=FALSE)
 }
 
 
 #' @rdname setops 
 #' @export
-setdiff.RxFileData <- function(x, y, ...)
+setequal.RxFileData <- function(x, y, ...)
 {
-    stop("setdiff not supported for Rx data sources", call.=FALSE)
+    stop("setequal not supported for Rx data sources", call.=FALSE)
 }
 
 
