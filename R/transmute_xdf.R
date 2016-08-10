@@ -24,6 +24,8 @@ transmute_.RxFileData <- function(.data, ..., .dots)
 #' @export
 transmute_.grouped_tbl_xdf <- function(.data, ..., .dots)
 {
+    stopIfHdfs(.data, "transmute on grouped data not supported on HDFS")
+
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
     # identify Revo-specific arguments
@@ -38,12 +40,13 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .dots)
 
     outData <- tblSource(.data)
     xdflst <- split_groups(.data, outData)
-    xdflst <- rxExec(transmute_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), packagesToLoad="dplyrXdf")
+    xdflst <- rxExec(transmute_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), tblDir=tempdir(),
+        execObjects=c("deleteTbl", "newTbl"), packagesToLoad="dplyrXdf")
     combine_groups(xdflst, outData, groups(.data))
 }
 
 
-transmute_base <- function(data, exprs, rxArgs=NULL, gvars=NULL)
+transmute_base <- function(data, exprs, rxArgs=NULL, gvars=NULL, tblDir=tempdir())
 {
     # identify variables to drop
     if(!is.null(rxArgs$transformFunc))  # first case: transformFunc is present
@@ -67,7 +70,7 @@ transmute_base <- function(data, exprs, rxArgs=NULL, gvars=NULL)
     oldData <- tblSource(data)
     if(hasTblFile(data))
         on.exit(deleteTbl(oldData))
-    cl <- substitute(rxDataStep(data, newTbl(data), transforms=.expr),
+    cl <- substitute(rxDataStep(data, newTbl(data, tblDir=tblDir), transforms=.expr),
         list(.expr=exprlst))
     cl[names(rxArgs)] <- rxArgs
 

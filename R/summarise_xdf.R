@@ -56,11 +56,10 @@ summarise_.RxFileData <- function(.data, ..., .dots)
     # 5- split into multiple xdfs, rxSummary on each, rbind xdfs together: stats in rxSummary supported (slowest, most scalable)
     .method <- select_smry_method(stats, .method, grps)
 
-#    if(.method %in% 3:5 && !is.null(rxArgs))
-#    {
-#        warning(".rxArgs not supported for method ", .method, call.=FALSE)
-#        rxArgs <- NULL
-#    }
+    # only summarise methods 1-3 work with HDFS
+    if(.method > 3)
+        stopIfHdfs(sprintf("chosen summarise method not (%d) supported on HDFS",
+                           .method))
 
     smry_func <- switch(.method,
         smry_rxCube, smry_rxSummary, smry_rxSummary2, smry_rxSplit_dplyr, smry_rxSplit)

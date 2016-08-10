@@ -1,6 +1,8 @@
 #' @export
 arrange_.RxFileData <- function(.data, ..., .dots)
 {
+    stopIfHdfs(.data, "arrange not supported on HDFS")
+
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
     # identify Revo-specific arguments

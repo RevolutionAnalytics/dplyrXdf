@@ -12,6 +12,8 @@
 #' @export
 distinct_.RxFileData <- function(.data, ..., .dots, .keep_all=FALSE)
 {
+    stopIfHdfs(.data, "distinct not supported on HDFS")
+
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
     # identify Revo-specific arguments
@@ -40,6 +42,8 @@ distinct_.RxFileData <- function(.data, ..., .dots, .keep_all=FALSE)
 #' @export
 distinct_.grouped_tbl_xdf <- function(.data, ..., .dots, .keep_all=FALSE)
 {
+    stopIfHdfs(x, "distinct not supported on HDFS")
+
     dots <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
 
     # identify Revo-specific arguments
@@ -61,16 +65,16 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .dots, .keep_all=FALSE)
     outData <- tblSource(.data)
     xdflst <- split_groups(.data, outData)
     xdflst <- rxExec(distinct_base, data=rxElemArg(xdflst), names(exprs), rxArgs, keep_all=.keep_all,
-        packagesToLoad="dplyrXdf")
+        tblDir=tempdir(), execObjects=c("pemaDistinct", "newTbl"), packagesToLoad="dplyrXdf")
     combine_groups(xdflst, outData, groups(.data))
 }
 
 
 #' @importFrom RevoPemaR pemaCompute
-distinct_base <- function(data, vars, rxArgs, keep_all)
+distinct_base <- function(data, vars, rxArgs, keep_all, tblDir=tempdir())
 {
     df <- RevoPemaR::pemaCompute(pemaDistinct(), data=data, varNames=vars, keep_all=keep_all)
-    cl <- quote(rxDataStep(df, tblSource(data), overwrite=TRUE))
+    cl <- quote(rxDataStep(df, newTbl(data, tblDir=tblDir), overwrite=TRUE))
     cl[names(rxArgs)] <- rxArgs
     eval(cl)
 }

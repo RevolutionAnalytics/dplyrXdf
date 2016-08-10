@@ -33,6 +33,8 @@ mutate_.RxFileData <- function(.data, ..., .dots)
 #' @export
 mutate_.grouped_tbl_xdf <- function(.data, ..., .dots)
 {
+    stopIfHdfs(.data, "mutate on grouped data not supported on HDFS")
+
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
     # identify Revo-specific arguments
@@ -45,12 +47,13 @@ mutate_.grouped_tbl_xdf <- function(.data, ..., .dots)
 
     outSource <- tblSource(.data)
     xdflst <- split_groups(.data, outSource)
-    xdflst <- rxExec(mutate_base, data=rxElemArg(xdflst), exprs, rxArgs, packagesToLoad="dplyrXdf")
+    xdflst <- rxExec(mutate_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), tblDir=tempdir(),
+        execObjects=c("deleteTbl", "newTbl"), packagesToLoad="dplyrXdf")
     combine_groups(xdflst, .data, groups(.data))
 }
 
 
-mutate_base <- function(data, exprs, rxArgs=NULL, gvars=NULL)
+mutate_base <- function(data, exprs, rxArgs=NULL, gvars=NULL, tblDir=tempdir())
 {
     oldData <- data
     if(hasTblFile(data))
@@ -60,7 +63,7 @@ mutate_base <- function(data, exprs, rxArgs=NULL, gvars=NULL)
     exprlst <- if(length(exprs) > 0)
         as.call(c(quote(list), exprs))
     else NULL
-    cl <- substitute(rxDataStep(data, newTbl(data), transforms=.expr),
+    cl <- substitute(rxDataStep(data, newTbl(data, tblDir=tblDir), transforms=.expr),
         list(.expr=exprlst))
 
     if(!is.null(rxArgs))

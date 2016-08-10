@@ -104,17 +104,10 @@ ungroup.RxFileData <- function(x)
 }
 
 
-#get_grouplevels <- function(data)
-#{
-    #gvars <- groups(data)
-    #if(is.null(gvars))
-        #return(NULL)
-    #RevoPemaR::pemaCompute(pemaGrplevels(), data=data, gvars=gvars)
-#}
-
-
 get_grouplevels <- function(data, gvars=groups(data))
 {
+    stopIfHdfs("get_grouplevels not supported on HDFS")  # should never trip this
+
     if(is.null(gvars))
         return(NULL)
 
@@ -156,15 +149,21 @@ combine_groups <- function(datlst, outXdf, groups)
 combine_group_xdfs <- function(xdflst, outXdf)
 {
     on.exit(deleteTbl(xdflst))
+    if(hasTblFile(outXdf))
+        on.exit(deleteTbl(outXdf), add=TRUE)
 
     xdf1 <- xdflst[[1]]
 
-    # use rxDataStep loop for appending instead of rxMerge; latter is surprisingly slow and unsupported on HDFS
+    # use rxDataStep loop for appending instead of rxMerge; latter is surprisingly slow
+    stopIfHdfs("combine_group not supported on HDFS")  # should never trip this
     for(xdf in xdflst[-1])
         rxDataStep(xdf, xdf1, append="rows", computeLowHigh=FALSE)
 
     dropvars <- base::intersect(".group.", names(xdf1))
-    tbl(xdf1, outXdf, rowsPerRead=.dxOptions$rowsPerRead, varsToDrop=dropvars, overwrite=TRUE, hasTblFile=TRUE)
+    if(length(dropvars) < 1)
+        dropvars <- NULL
+    tbl(xdf1, newTbl(outXdf), rowsPerRead=.dxOptions$rowsPerRead, varsToDrop=dropvars, overwrite=TRUE,
+        hasTblFile=TRUE)
 }
 
 

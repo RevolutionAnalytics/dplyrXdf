@@ -10,7 +10,8 @@ smry_rxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
 
     outSource <- tblSource(data)
     xdflst <- split_groups(data, outSource)
-    xdflst <- rxExec(smry_rxSummary_with_groupvars, data=rxElemArg(xdflst), grps, stats, exprs, rxArgs, packagesToLoad="dplyrXdf")
+    xdflst <- rxExec(smry_rxSummary_with_groupvars, data=rxElemArg(xdflst), grps, stats, exprs, rxArgs,
+        packagesToLoad="dplyrXdf")
     combine_groups(xdflst, outSource, NULL)
 }
 
@@ -19,7 +20,7 @@ smry_rxSummary_with_groupvars <- function(data, grps, stats, exprs, rxArgs)
 {
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     smry <- smry_rxSummary(data, NULL, stats, exprs, rxArgs, dfOut=TRUE)
-    rxDataFrameToXdf(cbind(gvars, smry, stringsAsFactors=FALSE), data, overwrite=TRUE)
+    cbind(gvars, smry, stringsAsFactors=FALSE)
 }
 
 
@@ -38,7 +39,7 @@ smry_rxSplit_dplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
     outSource <- tblSource(data)
     xdflst <- split_groups(data, outSource)
     xdflst <- rxExec(smry_dplyr_with_groupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs,
-        packagesToLoad="dplyr")
+        execObjects="invars", packagesToLoad="dplyr")
     combine_groups(xdflst, outSource, NULL)
 }
 
@@ -53,5 +54,5 @@ smry_dplyr_with_groupvars <- function(data, grps, exprs, rxArgs)
     smry <- eval(cl) %>%
         dplyr::summarise_(.dots=exprs)
         
-    rxDataStep(cbind(gvars, smry, stringsAsFactors=FALSE), rxXdfFileName(data), overwrite=TRUE)
+    cbind(gvars, smry, stringsAsFactors=FALSE)
 }

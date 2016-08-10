@@ -74,6 +74,8 @@ doXdf_.RxFileData <- function(.data, ..., .dots)
 #' @export
 do_.grouped_tbl_xdf <- function(.data, ..., .dots)
 {
+    stopIfHdfs(x, "do on grouped data not supported on HDFS")
+
     dots <- lazyeval::all_dots(.dots, ...)
 
     # identify Revo-specific arguments
@@ -108,6 +110,8 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
 #' @export
 doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
 {
+    stopIfHdfs(x, "doXdf on grouped data not supported on HDFS")
+
     dots <- lazyeval::all_dots(.dots, ...)
     # identify Revo-specific arguments
     dots <- .rxArgs(dots)
@@ -125,7 +129,8 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
     })
 
     xdflst <- split_groups(.data, oldData)
-    dolst <- rxExec(doXdf_base, data=rxElemArg(xdflst), exprs, grps, rxArgs, dots$env, packagesToLoad="dplyrXdf")
+    dolst <- rxExec(doXdf_base, data=rxElemArg(xdflst), exprs, grps, rxArgs, dots$env,
+        execObjects="check_named_args", packagesToLoad="dplyrXdf")
     df <- bind_rows(dolst)
 
     ngroupvars <- length(groups(.data))

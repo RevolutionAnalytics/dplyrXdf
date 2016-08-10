@@ -29,8 +29,6 @@ full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 {
-    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
-        stop("merging not supported yet on HDFS")
     semi_join(tbl(x, stringsAsFactors=FALSE), y, by=by, copy=copy, ...)
 }
 
@@ -38,8 +36,6 @@ semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 {
-    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
-        stop("merging not supported yet on HDFS")
     anti_join(tbl(x, stringsAsFactors=FALSE), y, by=by, copy=copy, ...)
 }
 
@@ -47,6 +43,8 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 left_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {    
+    stopIfHdfs(x, "joining not supported on HDFS")
+    stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
     merge_base(x, y, by, copy, "left")
 }
@@ -55,6 +53,8 @@ left_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 right_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {
+    stopIfHdfs(x, "joining not supported on HDFS")
+    stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
     merge_base(x, y, by, copy, "right")
 }
@@ -63,6 +63,8 @@ right_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 inner_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {
+    stopIfHdfs(x, "joining not supported on HDFS")
+    stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
     merge_base(x, y, by, copy, "inner")
 }
@@ -71,6 +73,8 @@ inner_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 full_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {
+    stopIfHdfs(x, "joining not supported on HDFS")
+    stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
     merge_base(x, y, by, copy, "full")
 }
@@ -79,8 +83,8 @@ full_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 semi_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {
-    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
-        stop("merging not supported yet on HDFS")
+    stopIfHdfs(x, "joining not supported on HDFS")
+    stopIfHdfs(y, "joining not supported on HDFS")
 
     # no native semi-join functionality in ScaleR, so do it by hand
     by <- dplyr_common_by(by, x, y)
@@ -100,8 +104,8 @@ semi_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 #' @export
 anti_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 {
-    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
-        stop("merging not supported yet on HDFS")
+    stopIfHdfs(x, "joining not supported on HDFS")
+    stopIfHdfs(y, "joining not supported on HDFS")
 
     # no native anti-join functionality in ScaleR, so do it by hand
     by <- dplyr_common_by(by, x, y)
@@ -121,9 +125,18 @@ anti_join.tbl_xdf <- function(x, y, by=NULL, copy=FALSE, ...)
 }
 
 
+# duplicate the generic from dplyr 0.5, to allow install with dplyr <= 0.4.3
+#' @export
+union_all <- function(x, y, ...)
+UseMethod("union_all")
+
+
 #' @export
 union_all.RxFileData <- function(x, y, ...)
 {
+    stopIfHdfs(x, "joining not supported on HDFS")
+    stopIfHdfs(y, "joining not supported on HDFS")
+
     # use x's tbl if it exists; otherwise create a new tbl, copy x into it
     xTbl <- if(hasTblFile(x))
         tblSource(x)
@@ -145,6 +158,9 @@ union_all.RxFileData <- function(x, y, ...)
 #' @export
 union.RxFileData <- function(x, y, ...)
 {
+    stopIfHdfs(x, "joining not supported on HDFS")
+    stopIfHdfs(y, "joining not supported on HDFS")
+
     # call union_all.RxFileData explicitly to allow use in dplyr < 0.5
     union_all.RxFileData(x, y, ...) %>% distinct
 }
@@ -183,8 +199,9 @@ setequal.RxFileData <- function(x, y, ...)
 
 merge_base <- function(x, y, by=NULL, copy=FALSE, type)
 {
-    if(inherits(rxGetFileSystem(x), "RxHdfsFileSystem") || inherits(rxGetFileSystem(y), "RxHdfsFileSystem"))
-        stop("merging not supported yet on HDFS")
+    stopIfHdfs(x, "merging not supported on HDFS")
+    stopIfHdfs(y, "merging not supported on HDFS")
+
     # do not remove/overwrite y data on completion
     if(inherits(y, "tbl_xdf"))
         y@hasTblFile <- FALSE

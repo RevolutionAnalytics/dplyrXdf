@@ -1,6 +1,6 @@
 Package: dplyrXdf
 Title: Interface to xdf files for the dplyr package
-Version: 0.64
+Version: 0.7
 Authors@R: c(
     person("Hong", "Ooi", , "hongooi@microsoft.com", role = c("aut", "cre")),
     person("Revolution Analytics", role="cph")
@@ -26,6 +26,7 @@ Collate:
     'filter_xdf.R'
     'tbl_xdf.R'
     'group_by_xdf.R'
+    'hdfs_utils.R'
     'joins_xdf.R'
     'mutate_xdf.R'
     'onLoad.R'
