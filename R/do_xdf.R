@@ -110,7 +110,7 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
 #' @export
 doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
 {
-    stopIfHdfs(x, "doXdf on grouped data not supported on HDFS")
+    stopIfHdfs(.data, "doXdf on grouped data not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ...)
     # identify Revo-specific arguments
