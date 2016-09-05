@@ -14,3 +14,9 @@ vignettes/*.pdf
 
 # backups
 *.bak
+
+# VS files
+*.tss
+*.sln
+*.rproj
+*.rxproj
