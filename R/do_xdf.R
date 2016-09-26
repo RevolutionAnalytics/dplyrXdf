@@ -74,7 +74,7 @@ doXdf_.RxFileData <- function(.data, ..., .dots)
 #' @export
 do_.grouped_tbl_xdf <- function(.data, ..., .dots)
 {
-    stopIfHdfs(x, "do on grouped data not supported on HDFS")
+    stopIfHdfs(.data, "do on grouped data not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ...)
 
