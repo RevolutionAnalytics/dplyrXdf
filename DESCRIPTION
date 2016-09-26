@@ -39,6 +39,7 @@ Collate:
     'summarise_xdf_summary.R'
     'summarise_xdf_split.R'
     'summarise_xdf_summary2.R'
+    'tbl_df_methods.R'
     'tbl_utils.R'
     'transmute_xdf.R'
 Suggests:

@@ -118,29 +118,6 @@ tbl_vars.RxFileData <- function(x)
 }
 
 
-#' Convert a data source or tbl to a data frame
-#'
-#' @param x A data source object, or tbl wrapping the same.
-#' @param maxRowsByCols the maximum dataset size to convert, expressed in terms of rows times columns. Defaults to NULL, meaning no maximum.
-#' @param ... Other arguments to \code{rxDataStep}.
-#' @details
-#' This is a simple wrapper around \code{\link[RevoScaleR]{rxDataStep}}, with the check on the maximum table size turned off. You should ensure that you have enough memory for your data.
-#' @rdname as.data.frame
-#' @export
-as.data.frame.RxXdfData <- function(x, maxRowsByCols=NULL, ...)
-{
-    rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
-}
-
-
-#' @rdname as.data.frame
-#' @export
-as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, ...)
-{
-    rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
-}
-
-
 #' Delete data files for xdf tbls
 #'
 #' @param path Directory where the files are located. Defaults to the temporary directory where dplyrXdf creates tbl files (the R temporary directory for the native filesystem, or the dplyrXdf-created directory on HDFS).
