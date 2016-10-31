@@ -13,7 +13,7 @@
 #' \item \code{doXdf}: \code{rxDataStep}
 #' }
 #'
-#' You should use the `.rxArgs` argument with caution, as some verbs may modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. However, when working with big datasets this feature can help save a lot of processing time by avoiding unnecessary disk traffic.
+#' You should use the \code{.rxArgs} argument with caution, as some verbs may modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. However, when working with big datasets this feature can help save a lot of processing time by avoiding unnecessary disk traffic.
 #'
 #' The following one-table verbs don't support the \code{.rxArgs} argument:
 #' \itemize{
@@ -23,8 +23,7 @@
 #' }
 #' @seealso
 #' \code{\link{rxTransform}}
-#' @aliases rxArgs
-#' @aliases .rxArgs
+#' @aliases rxArgs .rxArgs
 #' @name rxArgs
 NULL
 

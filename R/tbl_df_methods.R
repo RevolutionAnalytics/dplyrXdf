@@ -7,7 +7,9 @@ NULL
 #' @param maxRowsByCols the maximum dataset size to convert, expressed in terms of rows times columns. Defaults to NULL, meaning no maximum.
 #' @param ... Other arguments to \code{rxDataStep}.
 #' @details
-#' This is a simple wrapper around \code{\link[RevoScaleR]{rxDataStep}}, with the check on the maximum table size turned off. You should ensure that you have enough memory for your data.
+#' These are simple wrappers around \code{\link[RevoScaleR]{rxDataStep}}, with the check on the maximum table size turned off. You should ensure that you have enough memory for your data.
+#'
+#' \code{as.data.frame} converts a data source object (typically an xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
 #' @rdname as.data.frame
 #' @export
 as.data.frame.RxXdfData <- function(x, maxRowsByCols=NULL, ...)
@@ -24,6 +26,8 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, ...)
 }
 
 
+#' @param name The name of a column to extract from a data source object
+#' @rdname as.data.frame
 #' @export
 "$.RxFileData" <- function(x, name)
 {
@@ -31,44 +35,45 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, ...)
 }
 
 
+##' @export
+#"[.RxFileData" <- function(x, i, j, drop=FALSE, maxRowsByCols=NULL, ...)
+#{
+    ## try to detect if list-style indexing used (no j argument, missing or otherwise)
+    #missingI <- missing(i)
+    #missingJ <- missing(j)
+    #nArgs <- nargs()
+    #nOtherArgs <- length(match.call(expand=FALSE)$`...`) + !missing(drop) + !missing(maxRowsByCols)
+    #asList <- (nArgs - nOtherArgs <= 2) || (nArgs - nOtherArgs <= 1 && missingJ)
+
+    #if(asList)
+    #{
+        ## morph to matrix-style indexing: set 2nd index (if present) to 1st, set 1st index to missing
+        #if(!missingI)
+            #j <- i
+        #missingJ <- missingI
+        #missingI <- TRUE
+    #}
+
+    ## from here on, assume matrix-style indexing (2 indices)
+    #varsToKeep <- if(!missingJ)
+    #{
+        #nams <- names(x)
+        #if(is.logical(j) || is.numeric(j))
+            #varsToKeep <- nams[j]
+        #else varsToKeep <- as.character(j)
+    #}
+    #else NULL
+    #df <- rxDataStep(x, outFile=NULL, varsToKeep=varsToKeep, maxRowsByCols=maxRowsByCols, ...)
+    ## must do this separately because by semantics of [, row selection expression is evaluated in calling frame
+    #if(!missingI)
+        #df[i, , drop=drop]
+    #else df
+#}
+
+
+#' @rdname as.data.frame
 #' @export
-"[.RxFileData" <- function(x, i, j, drop=FALSE, maxRowsByCols=NULL, ...)
-{
-    # try to detect if list-style indexing used (no j argument, missing or otherwise)
-    missingI <- missing(i)
-    missingJ <- missing(j)
-    nArgs <- nargs()
-    nOtherArgs <- length(match.call(expand=FALSE)$`...`) + !missing(drop) + !missing(maxRowsByCols)
-    asList <- (nArgs - nOtherArgs <= 2) || (nArgs - nOtherArgs <= 1 && missingJ)
-
-    if(asList)
-    {
-        # morph to matrix-style indexing: set 2nd index (if present) to 1st, set 1st index to missing
-        if(!missingI)
-            j <- i
-        missingJ <- missingI
-        missingI <- TRUE
-    }
-
-    # from here on, assume matrix-style indexing (2 indices)
-    varsToKeep <- if(!missingJ)
-    {
-        nams <- names(x)
-        if(is.logical(j) || is.numeric(j))
-            varsToKeep <- nams[j]
-        else varsToKeep <- as.character(j)
-    }
-    else NULL
-    df <- rxDataStep(x, outFile=NULL, varsToKeep=varsToKeep, maxRowsByCols=maxRowsByCols, ...)
-    # must do this separately because by semantics of [, row selection expression is evaluated in calling frame
-    if(!missingI)
-        df[i, , drop=drop]
-    else df
-}
-
-
-#' @export
-"[[.RxFileData" <- function(x, name, outFile=NULL, maxRowsByCols=NULL, ...)
+"[[.RxFileData" <- function(x, name, maxRowsByCols=NULL, ...)
 {
     nams <- names(x)
     if(length(name) > 1)
@@ -76,27 +81,6 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, ...)
     varsToKeep <- if(is.logical(name) || is.numeric(name))
         nams[name]
     else as.character(name)
-    rxDataStep(x, outFile=outFile, varsToKeep=varsToKeep, maxRowsByCols=maxRowsByCols, ...)[[1]]
+    rxDataStep(x, outFile=NULL, varsToKeep=varsToKeep, maxRowsByCols=maxRowsByCols, ...)[[1]]
 }
-
-
-#' @export
-subset.RxFileData <- function(.data, subset=NULL, select=NULL, outFile=NULL, maxRowsByCols=NULL, ...)
-{
-    rowSelection <- substitute(subset)
-    varsToKeep <- if(!missing(select))
-    {
-        nams <- names(.data)
-        nl <- as.list(seq_along(nams))
-        names(nl) <- nams
-        select <- eval(substitute(select), nl, parent.frame())
-        if(is.logical(select) || is.numeric(select))
-            varsToKeep <- nams[select]
-        else varsToKeep <- as.character(select)
-    }
-    else NULL
-    rxDataStep(.data, outFile=outFile, rowSelection=rowSelection, varsToKeep=varsToKeep,
-               maxRowsByCols=NULL, ...)
-}
-
 

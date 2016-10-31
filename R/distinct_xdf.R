@@ -42,7 +42,7 @@ distinct_.RxFileData <- function(.data, ..., .dots, .keep_all=FALSE)
 #' @export
 distinct_.grouped_tbl_xdf <- function(.data, ..., .dots, .keep_all=FALSE)
 {
-    stopIfHdfs(x, "distinct not supported on HDFS")
+    stopIfHdfs(.data, "distinct not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
 

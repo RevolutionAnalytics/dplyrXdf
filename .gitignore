@@ -21,3 +21,6 @@ vignettes/*.pdf
 *.rproj
 *.rxproj
 .vs/
+
+# working files
+misc/
