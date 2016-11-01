@@ -28,7 +28,7 @@ do_.RxFileData <- function(.data, ..., .dots)
         dots[[".rxArgs"]] <- NULL
     }
 
-    check_named_args(dots)
+    named <- check_named_args(dots)
     oldData <- tblSource(.data)
     on.exit(if(hasTblFile(.data))
         deleteTbl(oldData))
@@ -61,10 +61,10 @@ doXdf_.RxFileData <- function(.data, ..., .dots)
     # identify Revo-specific arguments
     dots <- .rxArgs(dots)
 
-    check_named_args(dots)
+    named <- check_named_args(dots)
     oldData <- tblSource(.data)
     on.exit(deleteTbl(oldData))
-    doXdf_base(.data, dots$exprs, grps=NULL, dots$rxArgs, dots$env)
+    doXdf_base(.data, dots$exprs, grps=NULL, dots$rxArgs, dots$env, named)
 }
 
 
@@ -85,7 +85,7 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
         dots[[".rxArgs"]] <- NULL
     }
 
-    check_named_args(dots)
+    named <- check_named_args(dots)
     grps <- groups(.data)
 
     oldData <- tblSource(.data)
@@ -99,10 +99,12 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
     dolst <- rxExec(do_base, data=rxElemArg(xdflst), dots, grps, packagesToLoad="dplyrXdf")
     df <- bind_rows(dolst)
 
-    ngroupvars <- length(groups(.data))
-    if(ngroupvars > 1)
-        group_by_(df, .dots=groups(.data))  # don't strip off one level of grouping
-    else df
+    # mimic grouping behaviour of do for data frames
+    if(length(grps) == 0)
+        df
+    else if(named)
+        group_by_(df, .dots=grps)
+    else rowwise(df)
 }
 
 
@@ -118,7 +120,7 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
     rxArgs <- dots$rxArgs
     exprs <- dots$exprs
 
-    check_named_args(exprs)
+    named <- check_named_args(exprs)
     grps <- groups(.data)
 
     oldData <- tblSource(.data)
@@ -129,14 +131,16 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
     })
 
     xdflst <- split_groups(.data, oldData)
-    dolst <- rxExec(doXdf_base, data=rxElemArg(xdflst), exprs, grps, rxArgs, dots$env,
-        execObjects="check_named_args", packagesToLoad="dplyrXdf")
+    dolst <- rxExec(doXdf_base, data=rxElemArg(xdflst), exprs, grps, rxArgs, dots$env, named,
+                    packagesToLoad="dplyrXdf")
     df <- bind_rows(dolst)
 
-    ngroupvars <- length(groups(.data))
-    if(ngroupvars > 1)
-        group_by_(df, .dots=groups(.data))  # don't strip off one level of grouping
-    else df
+    # mimic grouping behaviour of do for data frames
+    if(length(grps) == 0)
+        df
+    else if(named)
+        group_by_(df, .dots=grps)
+    else rowwise(df)
 }
 
 
@@ -154,9 +158,8 @@ do_base <- function(data, dots, grps=NULL)
 
 
 # copy functionality of dplyr:::do_.data.frame, except dots must be named
-doXdf_base <- function(data, exprs, grps=NULL, rxArgs, env)
+doXdf_base <- function(data, exprs, grps=NULL, rxArgs, env, named)
 {
-    named <- check_named_args(exprs)
     datlst <- list(.=data)
     if(named)
     {
