@@ -26,11 +26,22 @@ persist <- function(data, ...)
 
 #' @rdname persist
 #' @export
-persist.tbl_xdf <- function(data, outFile, overwrite=TRUE, deleteOldTbl=FALSE, ...)
+persist.tbl_xdf <- function(data, outFile, overwrite=TRUE, deleteOldTbl=TRUE, ...)
 {
-    if(deleteOldTbl)
-        on.exit(deleteTbl(data))
-    rxDataStep(data, outFile, overwrite=overwrite, rowsPerRead=.dxOptions$rowsPerRead, ...)
+    # use OS move/copy command if on the local filesystem
+    if(inherits(rxGetFileSystem(data), "RxNativeFileSystem"))
+    {
+        if(deleteOldTbl)
+            file.rename(data@file, outFile)
+        else file.copy(data@file, outFile, overwrite=overwrite)
+        RxXdfData(outFile)
+    }
+    else  # do it the long way otherwise
+    {
+        if(deleteOldTbl)
+            on.exit(deleteTbl(data))
+        rxDataStep(data, outFile, overwrite=overwrite, rowsPerRead=.dxOptions$rowsPerRead, ...)
+    }
 }
 
 
