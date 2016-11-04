@@ -103,8 +103,8 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
     if(length(grps) == 0)
         df
     else if(named)
-        group_by_(df, .dots=grps)
-    else rowwise(df)
+        rowwise(df)
+    else group_by_(df, .dots=grps)
 }
 
 
@@ -139,8 +139,8 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
     if(length(grps) == 0)
         df
     else if(named)
-        group_by_(df, .dots=grps)
-    else rowwise(df)
+        rowwise(df)
+    else group_by_(df, .dots=grps)
 }
 
 
