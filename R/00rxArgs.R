@@ -27,10 +27,11 @@
 #' @name rxArgs
 NULL
 
-.rxArgs <- function(dots)
+rxArgs <- function(dots)
 {
     env <- if(length(dots) > 0) dots[[1]]$env else globalenv()
     exprs <- lapply(dots, "[[", "expr")
+
     if(!is.null(exprs$.rxArgs))
     {
         # some arguments have to be passed as unevaluated expressions: transforms and rowSelection
@@ -42,7 +43,19 @@ NULL
         exprs[[".rxArgs"]] <- NULL
     }
     else rxArgs <- NULL
-    list(rxArgs=rxArgs, exprs=exprs, env=env)
+
+    # capture output format
+    # NULL -> data frame output
+    # char -> target filename, xdf output
+    # missing -> xdf tbl output, coded as NA in returned value
+    if(".output" %in% names(exprs))
+    {
+        output <- exprs$.output
+        exprs$.output <- NULL
+    }
+    else output <- NA
+
+    list(rxArgs=rxArgs, exprs=exprs, output=output, env=env)
 }
 
 

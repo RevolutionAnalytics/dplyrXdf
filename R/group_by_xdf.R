@@ -131,26 +131,21 @@ make_groupvar <- function(gvars, levs)
 
 
 # paste individual groups back together
-combine_groups <- function(datlst, outXdf, groups)
+combine_groups <- function(datlst, output, grps)
 {
-    xdf <- if(inherits(datlst[[1]], "data.frame"))
-        combine_group_dfs(datlst, outXdf)
-    else combine_group_xdfs(datlst, outXdf)
-
-    # generate new grouping info if necessary
-    numGroups <- length(groups)
-    if(numGroups > 1)
-        group_by_(xdf, .dots=groups[-numGroups])
-    else xdf
+    out <- if(inherits(datlst[[1]], "data.frame"))
+        combine_group_dfs(datlst, output)
+    else combine_group_xdfs(datlst, output)
+    simpleRegroup(out, grps)
 }
 
 
 # paste individual group xdfs back together
-combine_group_xdfs <- function(xdflst, outXdf)
+combine_group_xdfs <- function(xdflst, output, grps)
 {
     on.exit(deleteTbl(xdflst))
-    if(hasTblFile(outXdf))
-        on.exit(deleteTbl(outXdf), add=TRUE)
+    if(hasTblFile(output))
+        on.exit(deleteTbl(output), add=TRUE)
 
     xdf1 <- xdflst[[1]]
 
@@ -162,16 +157,17 @@ combine_group_xdfs <- function(xdflst, outXdf)
     dropvars <- base::intersect(".group.", names(xdf1))
     if(length(dropvars) < 1)
         dropvars <- NULL
-    tbl(xdf1, newTbl(outXdf), rowsPerRead=.dxOptions$rowsPerRead, varsToDrop=dropvars, overwrite=TRUE,
-        hasTblFile=TRUE)
+
+    rxDataStep(xdf1, output, varsToDrop=dropVars, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
 }
 
 
 # paste individual group data frames back together
-combine_group_dfs <- function(dflst, outXdf)
+combine_group_dfs <- function(dflst, output)
 {
-    xdf <- rxDataStep(bind_rows(dflst), outXdf, overwrite=TRUE)
-    tbl(xdf, file=NULL, hasTblFile=TRUE)
+    if(is.null(output))
+        bind_rows(dflst)
+    else rxDataStep(bind_rows(dflst), output, overwrite=TRUE)
 }
 
 

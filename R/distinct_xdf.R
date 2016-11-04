@@ -16,10 +16,15 @@ distinct_.RxFileData <- function(.data, ..., .dots, .keep_all=FALSE)
 
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+
+    oldData <- .data
+    if(hasTblFile(.data))
+        on.exit(deleteTbl(oldData))
 
     # hack to accommodate dplyr 0.5 keep_all argument when dplyr 0.4.x is installed
     if(!is.null(exprs$.keep_all))
@@ -32,7 +37,9 @@ distinct_.RxFileData <- function(.data, ..., .dots, .keep_all=FALSE)
     if(any(needs_mutate))
         .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
-    tbl(distinct_base(.data, names(exprs), rxArgs, keep_all=.keep_all), file=NULL, hasTblFile=TRUE)
+    .output <- createOutput(.data, .output)
+    .data <- distinct_base(.data, .output, names(exprs), .rxArgs, keep_all=.keep_all)
+    simpleRegroup(.data)
 }
 
 
@@ -46,10 +53,16 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .dots, .keep_all=FALSE)
 
     dots <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
 
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+    grps <- groups(.data)
+
+    oldData <- .data
+    if(hasTblFile(.data))
+        on.exit(deleteTbl(oldData))
 
     # hack to accommodate dplyr 0.5 keep_all argument when dplyr 0.4.x is installed
     if(!is.null(exprs$.keep_all))
@@ -62,19 +75,27 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .dots, .keep_all=FALSE)
     if(any(needs_mutate))
         .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
-    outData <- tblSource(.data)
-    xdflst <- split_groups(.data, outData)
-    xdflst <- rxExec(distinct_base, data=rxElemArg(xdflst), names(exprs), rxArgs, keep_all=.keep_all,
-        tblDir=tempdir(), execObjects=c("pemaDistinct", "newTbl"), packagesToLoad="dplyrXdf")
-    combine_groups(xdflst, outData, groups(.data))
+    .output <- createOutput(.data, .output)
+    xdflst <- split_groups(.data)
+    xdflst <- rxExec(distinct_base, data=rxElemArg(xdflst), .output, names(exprs), .rxArgs, .keep_all, tempdir(),
+        execObjects=c("pemaDistinct", "newTbl"), packagesToLoad="dplyrXdf")
+    combine_groups(xdflst, .output, groups(.data))
 }
 
 
 #' @importFrom RevoPemaR pemaCompute
-distinct_base <- function(data, vars, rxArgs, keep_all, tblDir=tempdir())
+distinct_base <- function(data, output, vars, rxArgs, keep_all, tblDir=tempdir())
 {
-    df <- RevoPemaR::pemaCompute(pemaDistinct(), data=data, varNames=vars, keep_all=keep_all)
-    cl <- quote(rxDataStep(df, newTbl(data, tblDir=tblDir), overwrite=TRUE))
+    # when this is called in non-sequential compute context, ensure output file is in
+    # location specified by master node
+    if(!is.null(output))
+    {
+        outDir <- dirname(output)
+        if(outDir != tblDir)
+            output@file <- file.path(tblDir, basename(output@file))
+    }
+    df <- RevoPemaR::pemaCompute(pemaDistinct(), data=data, varNames=names(exprs), keep_all=keep_all)
+    cl <- quote(rxDataStep(df, output, overwrite=TRUE))
     cl[names(rxArgs)] <- rxArgs
     eval(cl)
 }

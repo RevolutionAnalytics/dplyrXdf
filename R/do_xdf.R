@@ -21,17 +21,25 @@ do_.RxFileData <- function(.data, ..., .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
-    # identify Revo-specific arguments
-    if(any(names(dots) == ".rxArgs"))
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
+    exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+
+    oldData <- .data
+    if(hasTblFile(.data))
+        on.exit(deleteTbl(oldData))
+
+    if(!is.null(.rxArgs))
     {
-        warning("do doesn't support .rxArgs argument", call.=FALSE)
-        dots[[".rxArgs"]] <- NULL
+        warning("do() doesn't support .rxArgs argument", call.=FALSE)
+        .rxArgs <- NULL
     }
+    if(is.character(.output))
+        warning("do() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(dots)
-    oldData <- tblSource(.data)
-    on.exit(if(hasTblFile(.data))
-        deleteTbl(oldData))
     do_base(.data, dots=dots)
 }
 
@@ -58,13 +66,21 @@ doXdf_.RxFileData <- function(.data, ..., .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
+    exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+
+    oldData <- .data
+    if(hasTblFile(.data))
+        on.exit(deleteTbl(oldData))
+
+    if(is.character(.output))
+        warning("doXdf() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(dots)
-    oldData <- tblSource(.data)
-    on.exit(deleteTbl(oldData))
-    doXdf_base(.data, dots$exprs, grps=NULL, dots$rxArgs, dots$env, named)
+    doXdf_base(.data, dots$exprs, grps=NULL, .rxArgs, dots$env, named)
 }
 
 
@@ -78,23 +94,29 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
 
     dots <- lazyeval::all_dots(.dots, ...)
 
-    # identify Revo-specific arguments
-    if(any(names(dots) == ".rxArgs"))
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
+    exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+
+    oldData <- .data
+    if(hasTblFile(.data))
+        on.exit(deleteTbl(oldData))
+
+    if(!is.null(.rxArgs))
     {
-        warning("do doesn't support .rxArgs argument", call.=FALSE)
-        dots[[".rxArgs"]] <- NULL
+        warning("do() doesn't support .rxArgs argument", call.=FALSE)
+        .rxArgs <- NULL
     }
+    if(is.character(.output))
+        warning("do() only outputs data frames", call.=FALSE)
+
 
     named <- check_named_args(dots)
     grps <- groups(.data)
 
-    oldData <- tblSource(.data)
-    hasTbl <- hasTblFile(.data)
-    on.exit({
-        deleteTbl(xdflst)
-        if(hasTbl) deleteTbl(oldData)
-    })
-
+    on.exit(deleteTbl(xdflst), add=TRUE)
     xdflst <- split_groups(.data, .data)
     dolst <- rxExec(do_base, data=rxElemArg(xdflst), dots, grps, packagesToLoad="dplyrXdf")
     df <- bind_rows(dolst)
@@ -115,23 +137,26 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .dots)
     stopIfHdfs(.data, "doXdf on grouped data not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ...)
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+
+    oldData <- .data
+    if(hasTblFile(.data))
+        on.exit(deleteTbl(oldData))
+
+    if(is.character(.output))
+        warning("doXdf() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(exprs)
     grps <- groups(.data)
 
-    oldData <- tblSource(.data)
-    hasTbl <- hasTblFile(.data)
-    on.exit({
-        deleteTbl(xdflst)
-        if(hasTbl) deleteTbl(oldData)
-    })
-
+    on.exit(deleteTbl(xdflst), add=TRUE)
     xdflst <- split_groups(.data, oldData)
-    dolst <- rxExec(doXdf_base, data=rxElemArg(xdflst), exprs, grps, rxArgs, dots$env, named,
+    dolst <- rxExec(doXdf_base, data=rxElemArg(xdflst), exprs, grps, .rxArgs, dots$env, named,
                     packagesToLoad="dplyrXdf")
     df <- bind_rows(dolst)
 

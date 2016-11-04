@@ -1,16 +1,18 @@
 #' @export
-arrange_.RxFileData <- function(.data, ..., .dots)
+arrange_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 {
     stopIfHdfs(.data, "arrange not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
-
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
     grps <- groups(.data)
+
+    # rxSort only works with xdf files, not other data sources
     if(!inherits(.data, "RxXdfData"))
         .data <- tbl(.data)
 
@@ -18,19 +20,16 @@ arrange_.RxFileData <- function(.data, ..., .dots)
     desc <- sapply(exprs, function(e) !is.name(e) && identical(e[[1]], as.name("desc")))
     vars <- sapply(exprs, function(e) all.vars(e)[1])
 
-    # write to new file to avoid issues with overwriting source    
-    oldData <- tblSource(.data)
+    oldData <- .data
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    cl <- quote(rxSort(.data, newTbl(.data), sortByVars=vars, decreasing=desc, overwrite=TRUE))
-    cl[names(rxArgs)] <- rxArgs
+    .output <- createOutput(.data, .output)
+    cl <- quote(rxSort(.data, .output, sortByVars=vars, decreasing=desc, overwrite=TRUE))
+    cl[names(.rxArgs)] <- .rxArgs
 
-    .data <- tbl(eval(cl), hasTblFile=TRUE)
-
-    if(!is.null(grps))
-        group_by_(.data, .dots=grps)
-    else .data
+    .data <- eval(cl)
+    simpleRegroup(.data, grps)
 }
 
 
