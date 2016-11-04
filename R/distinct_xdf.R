@@ -10,7 +10,7 @@
 #' @aliases distinct
 #' @rdname distinct
 #' @export
-distinct_.RxFileData <- function(.data, ..., .dots, .keep_all=FALSE)
+distinct_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots, .keep_all=FALSE)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
 
@@ -21,10 +21,6 @@ distinct_.RxFileData <- function(.data, ..., .dots, .keep_all=FALSE)
     exprs <- dots$exprs
     if(missing(.output)) .output <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
 
     # hack to accommodate dplyr 0.5 keep_all argument when dplyr 0.4.x is installed
     if(!is.null(exprs$.keep_all))
@@ -37,6 +33,10 @@ distinct_.RxFileData <- function(.data, ..., .dots, .keep_all=FALSE)
     if(any(needs_mutate))
         .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
+    oldData <- .data
+    if(hasTblFile(.data))
+        on.exit(deleteTbl(oldData))
+
     .output <- createOutput(.data, .output)
     .data <- distinct_base(.data, .output, names(exprs), .rxArgs, keep_all=.keep_all)
     simpleRegroup(.data)
@@ -47,7 +47,7 @@ distinct_.RxFileData <- function(.data, ..., .dots, .keep_all=FALSE)
 #' To process a grouped Xdf tbl, \code{distinct} splits the data into one file per group, and calls \code{\link[dplyr]{distinct}} on each. The individual data frames are \code{rbind}ed together and \code{distinct} is called on the overall result. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however that this may be slow if you have a large number of groups; and the operation will be limited by memory if the number of distinct rows is large.
 #' @rdname distinct
 #' @export
-distinct_.grouped_tbl_xdf <- function(.data, ..., .dots, .keep_all=FALSE)
+distinct_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots, .keep_all=FALSE)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
 
@@ -60,10 +60,6 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .dots, .keep_all=FALSE)
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
     grps <- groups(.data)
 
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
-
     # hack to accommodate dplyr 0.5 keep_all argument when dplyr 0.4.x is installed
     if(!is.null(exprs$.keep_all))
     {
@@ -75,29 +71,35 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .dots, .keep_all=FALSE)
     if(any(needs_mutate))
         .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
-    .output <- createOutput(.data, .output)
+    oldData <- .data
+    if(hasTblFile(.data))
+        on.exit(deleteTbl(oldData))
+
     xdflst <- split_groups(.data)
-    xdflst <- rxExec(distinct_base, data=rxElemArg(xdflst), .output, names(exprs), .rxArgs, .keep_all, tempdir(),
+    on.exit(deleteTbl(xdflst), add=TRUE)
+
+    .output <- createOutput(.data, .output)
+    outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), .output, names(exprs), .rxArgs, .keep_all, tempdir(),
         execObjects=c("pemaDistinct", "newTbl"), packagesToLoad="dplyrXdf")
-    combine_groups(xdflst, .output, groups(.data))
+    combine_groups(outlst, .output, groups(.data))
 }
 
 
 #' @importFrom RevoPemaR pemaCompute
 distinct_base <- function(data, output, vars, rxArgs, keep_all, tblDir=tempdir())
 {
+    df <- RevoPemaR::pemaCompute(pemaDistinct(), data=data, varNames=vars, keep_all=keep_all)
+
     # when this is called in non-sequential compute context, ensure output file is in
     # location specified by master node
     if(!is.null(output))
     {
-        outDir <- dirname(output)
-        if(outDir != tblDir)
-            output@file <- file.path(tblDir, basename(output@file))
+        output <- tempfile(tmpdir=tblDir, fileext=".xdf")
+        cl <- quote(rxDataStep(df, output, overwrite=TRUE))
+        cl[names(rxArgs)] <- rxArgs
+        eval(cl)
     }
-    df <- RevoPemaR::pemaCompute(pemaDistinct(), data=data, varNames=names(exprs), keep_all=keep_all)
-    cl <- quote(rxDataStep(df, output, overwrite=TRUE))
-    cl[names(rxArgs)] <- rxArgs
-    eval(cl)
+    else df
 }
 
 

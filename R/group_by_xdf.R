@@ -144,9 +144,6 @@ combine_groups <- function(datlst, output, grps)
 combine_group_xdfs <- function(xdflst, output, grps)
 {
     on.exit(deleteTbl(xdflst))
-    if(hasTblFile(output))
-        on.exit(deleteTbl(output), add=TRUE)
-
     xdf1 <- xdflst[[1]]
 
     # use rxDataStep loop for appending instead of rxMerge; latter is surprisingly slow
@@ -158,7 +155,7 @@ combine_group_xdfs <- function(xdflst, output, grps)
     if(length(dropvars) < 1)
         dropvars <- NULL
 
-    rxDataStep(xdf1, output, varsToDrop=dropVars, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+    rxDataStep(xdf1, output, varsToDrop=dropvars, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
 }
 
 

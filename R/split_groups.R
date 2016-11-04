@@ -26,8 +26,8 @@ split_groups <- function(data, outXdf=data)
     }
     else
     {
-        fname <- rxXdfFileName(outXdf)
-        fname <- tools::file_path_sans_ext(fname)
+        fname <- tools::file_path_sans_ext(rxXdfFileName(outXdf))
+        fname <- file.path(tempdir(), basename(fname))
 
         # if files exist that could interfere with splitting output, delete them
         # should never be necessary because base filename is a randomly generated tempfile
@@ -63,6 +63,7 @@ delete_split_outputs <- function(fname, grps)
     fname <- basename(fname)
     pattern <- paste(fname, paste(grps, collapse="_"), sep=".")
     existingFiles <- grep(pattern, dir(dname), value=TRUE, fixed=TRUE)
+
     if(length(existingFiles) > 0)
     {
         # should never happen, warn if it does
