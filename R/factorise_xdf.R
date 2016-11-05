@@ -51,14 +51,15 @@ factorize_ <- factorise_
 
 #' @rdname factorise
 #' @export
-factorise_.RxXdfData <- function(.data, ..., .dots)
+factorise_.RxXdfData <- function(.data, ..., .output, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     grps <- groups(.data)
     types <- varTypes(.data)
@@ -73,31 +74,32 @@ factorise_.RxXdfData <- function(.data, ..., .dots)
             else list(levels=levs)
         }, simplify=FALSE)
     )
-    oldData <- tblSource(.data)
+
+    oldData <- .data
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    cl <- quote(rxFactors(.data, factorInfo, outFile=newTbl(.data)))
-    cl[names(rxArgs)] <- rxArgs
+    .output <- createOutput(.data, .output)
+    cl <- quote(rxFactors(.data, factorInfo, outFile=.output))
+    cl[names(.rxArgs)] <- .rxArgs
 
      # rxFactors is noisy when given already-existing factors; shut it up
-    .data <- suppressWarnings(tbl(eval(cl), hasTblFile=TRUE))
-    if(!is.null(grps))
-        group_by_(.data, .dots=grps)
-    else .data
+    .data <- suppressWarnings(eval(cl))
+    simpleRegroup(.data, grps)
 }
 
 
 #' @rdname factorise
 #' @export
-factorise_.RxFileData <- function(.data, ..., .dots)
+factorise_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     grps <- groups(.data)
     types <- varTypes(.data)
@@ -111,17 +113,16 @@ factorise_.RxFileData <- function(.data, ..., .dots)
         else list(type=types[x])
     }, simplify=FALSE)
 
-    oldData <- tblSource(.data)
+    oldData <- .data
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
+    .output <- createOutput(.data, .output)
     cl <- quote(rxImport(.data, newTbl(.data), colInfo=colInfo))
-    cl[names(rxArgs)] <- rxArgs
+    cl[names(.rxArgs)] <- .rxArgs
 
     .data <- tbl(eval(cl), hasTblFile=TRUE)
-    if(!is.null(grps))
-        group_by_(.data, .dots=grps)
-    else .data
+    simpleRegroup(.data, grps)
 }
 
 

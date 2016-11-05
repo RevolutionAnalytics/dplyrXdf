@@ -10,9 +10,10 @@ factorise_.data.frame <- function(.data, ..., .dots)
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
     # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    .output <- dots$output
+    .rxArgs <- dots$rxArgs
 
     grps <- groups(.data)
     types <- sapply(.data, function(x) class(x)[1])

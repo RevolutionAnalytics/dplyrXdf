@@ -75,9 +75,8 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots, .keep
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    xdflst <- split_groups(.data)
     on.exit(deleteTbl(xdflst), add=TRUE)
-
+    xdflst <- split_groups(.data)
     .output <- createOutput(.data, .output)
     outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), .output, names(exprs), .rxArgs, .keep_all, tempdir(),
         execObjects=c("pemaDistinct", "newTbl"), packagesToLoad="dplyrXdf")

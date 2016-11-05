@@ -164,7 +164,7 @@ combine_group_dfs <- function(dflst, output)
 {
     if(is.null(output))
         bind_rows(dflst)
-    else rxDataStep(bind_rows(dflst), output, overwrite=TRUE)
+    else rxDataStep(bind_rows(dflst), output, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
 }
 
 
