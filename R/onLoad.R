@@ -419,7 +419,7 @@
     if(.dxOptions$dplyrVersion >= package_version("0.5"))
         message("dplyrXdf defines the union_all generic to allow\n",
                 "interoperability with versions of dplyr < 0.5.\n",
-                "Ignore the message about masking the same object from dplyr.")
+                "Disregard the message about masking this object from dplyr.")
 
     invisible(NULL)
 }
@@ -432,24 +432,21 @@
 .dxInit <- function()
 {
     .dxOptions$rowsPerRead <- 500000
-
-    # set the HDFS temporary directory
-    hdfsTempDir <- gsub("\\", "/", tempfile(pattern="dxTmp", tmpdir="/tmp"), fixed=TRUE)
-    .dxOptions$hdfsTempDir <- hdfsTempDir
-    .dxOptions$hdfsTempDirCreated <- FALSE
-
-    # store dplyr version
     .dxOptions$dplyrVersion <- packageVersion("dplyr")
-
+    dxSetWorkDir("native")
+    dxSetWorkDir("hdfs")
     NULL
 }
 
 
 .dxFinal <- function(e)
 {
-    # remove the HDFS temporary directory
-    if(e$hdfsTempDirCreated)
-        rxHadoopRemoveDir(e$hdfsTempDir, skipTrash=TRUE, intern=TRUE)
+    # remove the HDFS working directory
+    if(e$hdfsWorkDirCreated)
+        rxHadoopRemoveDir(e$hdfsWorkDir, skipTrash=TRUE, intern=TRUE)
+    # remove local working directory
+    if(tempdir() != .dxOptions$localWorkDir)
+        unlink(.dxOptions$localWorkDir)
     NULL
 }
 

@@ -78,14 +78,14 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots, .keep
     on.exit(deleteTbl(xdflst), add=TRUE)
     xdflst <- split_groups(.data)
     .output <- createOutput(.data, .output)
-    outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), .output, names(exprs), .rxArgs, .keep_all, tempdir(),
+    outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), .output, names(exprs), .rxArgs, .keep_all, dxGetWorkDir(),
         execObjects=c("pemaDistinct", "newTbl"), packagesToLoad="dplyrXdf")
     combine_groups(outlst, .output, groups(.data))
 }
 
 
 #' @importFrom RevoPemaR pemaCompute
-distinct_base <- function(data, output, vars, rxArgs, keep_all, tblDir=tempdir())
+distinct_base <- function(data, output, vars, rxArgs, keep_all, tblDir=dxGetWorkDir())
 {
     df <- RevoPemaR::pemaCompute(pemaDistinct(), data=data, varNames=vars, keep_all=keep_all)
 

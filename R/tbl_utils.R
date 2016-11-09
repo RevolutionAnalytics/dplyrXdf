@@ -20,15 +20,15 @@ varTypes <- function(xdf, vars=NULL)
 
 
 # generate a new Xdf data source with file pointing to a random file, other parameters taken from input data source
-newTbl <- function(xdf=NULL, fileSystem=rxGetFileSystem(xdf), tblDir=tempdir())
+newTbl <- function(xdf=NULL, fileSystem=rxGetFileSystem(xdf), tblDir=dxGetWorkDir())
 {
     fname <- if(inherits(fileSystem, "RxNativeFileSystem"))
         tempfile(tmpdir=tblDir, fileext=".xdf")
     else if(inherits(fileSystem, "RxHdfsFileSystem"))
     {
         # ensure HDFS temporary directory exists
-        makeHdfsTempDir()
-        file.path(.dxOptions$hdfsTempDir, basename(tempfile(pattern="xdfTbl")), fsep="/")
+        makeHdfsWorkDir()
+        file.path(.dxOptions$hdfsWorkDir, basename(tempfile(pattern="xdfTbl")), fsep="/")
     }
     else stop("unknown file system")
 
@@ -67,4 +67,5 @@ deleteTbl <- function(xdf)
     })
     invisible(NULL)
 }
+
 

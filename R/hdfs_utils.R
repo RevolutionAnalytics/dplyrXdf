@@ -9,11 +9,11 @@ stopIfHdfs <- function(.data, ...)
 
 # create the temporary directory in HDFS
 # must run this every time we create a new tbl, because tempdir in HDFS is not guaranteed to exist
-makeHdfsTempDir <- function()
+makeHdfsWorkDir <- function()
 {
-    if(.dxOptions$hdfsTempDirCreated)  # quit if already created
+    if(.dxOptions$hdfsWorkDirCreated)  # quit if already created
         return()
-    rxHadoopMakeDir(.dxOptions$hdfsTempDir)
-    .dxOptions$hdfsTempDirCreated <- TRUE
+    rxHadoopMakeDir(.dxOptions$hdfsWorkDir)
+    .dxOptions$hdfsWorkDirCreated <- TRUE
     NULL
 }

@@ -47,13 +47,13 @@ mutate_.grouped_tbl_xdf <- function(.data, ..., .dots)
 
     outSource <- tblSource(.data)
     xdflst <- split_groups(.data, outSource)
-    xdflst <- rxExec(mutate_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), tblDir=tempdir(),
+    xdflst <- rxExec(mutate_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), tblDir=dxGetWorkDir(),
         execObjects=c("deleteTbl", "newTbl"), packagesToLoad="dplyrXdf")
     combine_groups(xdflst, .data, groups(.data))
 }
 
 
-mutate_base <- function(data, exprs, rxArgs=NULL, gvars=NULL, tblDir=tempdir())
+mutate_base <- function(data, exprs, rxArgs=NULL, gvars=NULL, tblDir=dxGetWorkDir())
 {
     oldData <- data
     if(hasTblFile(data))

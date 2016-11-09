@@ -40,13 +40,13 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .dots)
 
     outData <- tblSource(.data)
     xdflst <- split_groups(.data, outData)
-    xdflst <- rxExec(transmute_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), tblDir=tempdir(),
+    xdflst <- rxExec(transmute_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), tblDir=dxGetWorkDir(),
         execObjects=c("deleteTbl", "newTbl"), packagesToLoad="dplyrXdf")
     combine_groups(xdflst, outData, groups(.data))
 }
 
 
-transmute_base <- function(data, exprs, rxArgs=NULL, gvars=NULL, tblDir=tempdir())
+transmute_base <- function(data, exprs, rxArgs=NULL, gvars=NULL, tblDir=dxGetWorkDir())
 {
     # identify variables to drop
     if(!is.null(rxArgs$transformFunc))  # first case: transformFunc is present

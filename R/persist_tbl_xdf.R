@@ -26,7 +26,7 @@ persist <- function(data, ...)
 
 #' @rdname persist
 #' @export
-persist.tbl_xdf <- function(data, outFile, overwrite=TRUE, deleteOldTbl=TRUE, ...)
+persist.tbl_xdf <- function(data, outFile, overwrite=TRUE, deleteOldTbl=FALSE, ...)
 {
     # use OS move/copy command if on the local filesystem
     if(inherits(rxGetFileSystem(data), "RxNativeFileSystem"))

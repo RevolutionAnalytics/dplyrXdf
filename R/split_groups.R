@@ -27,7 +27,7 @@ split_groups <- function(data, outXdf=data)
     else
     {
         fname <- tools::file_path_sans_ext(rxXdfFileName(outXdf))
-        fname <- file.path(tempdir(), basename(fname))
+        fname <- file.path(dxGetWorkDir(), basename(fname))
 
         # if files exist that could interfere with splitting output, delete them
         # should never be necessary because base filename is a randomly generated tempfile
