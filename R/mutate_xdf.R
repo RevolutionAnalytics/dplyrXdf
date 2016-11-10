@@ -19,53 +19,58 @@
 #' @aliases mutate transmute
 #' @rdname mutate
 #' @export
-mutate_.RxFileData <- function(.data, ..., .dots)
+mutate_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
     
-    tbl(mutate_base(.data, exprs, rxArgs), file=NULL, hasTblFile=TRUE)
+    .output <- createOutput(.data, .output)
+    mutate_base(.data, .output, exprs, .rxArgs)
 }
 
 
 #' @export
-mutate_.grouped_tbl_xdf <- function(.data, ..., .dots)
+mutate_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
 {
     stopIfHdfs(.data, "mutate on grouped data not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
-    
-    if(any(names(exprs) %in% groups(.data)))
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+
+    grps <- groups(.data)    
+    if(any(names(exprs) %in% grps))
         stop("cannot mutate grouping variable")
 
-    outSource <- tblSource(.data)
-    xdflst <- split_groups(.data, outSource)
-    xdflst <- rxExec(mutate_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), tblDir=dxGetWorkDir(),
+    xdflst <- split_groups(.data)
+    outlst <- createSplitOutput(.data, .output)
+    outlst <- rxExec(mutate_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), exprs, rxArgs, grps,
         execObjects=c("deleteTbl", "newTbl"), packagesToLoad="dplyrXdf")
-    combine_groups(xdflst, .data, groups(.data))
+    combine_groups(outlst, createOutput(.data, .output), grps)
 }
 
 
-mutate_base <- function(data, exprs, rxArgs=NULL, gvars=NULL, tblDir=dxGetWorkDir())
+mutate_base <- function(data, output, exprs, rxArgs=NULL, gvars=NULL)
 {
     oldData <- data
     if(hasTblFile(data))
         on.exit(deleteTbl(oldData))
 
-    # write to new file to avoid issues with deleting variables
     exprlst <- if(length(exprs) > 0)
         as.call(c(quote(list), exprs))
     else NULL
-    cl <- substitute(rxDataStep(data, newTbl(data, tblDir=tblDir), transforms=.expr),
-        list(.expr=exprlst))
 
+    cl <- substitute(rxDataStep(data, output, transforms=.expr),
+        list(.expr=exprlst))
     if(!is.null(rxArgs))
     {
         # make sure to keep grouping variable, if present

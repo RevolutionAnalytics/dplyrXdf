@@ -4,6 +4,10 @@ split_groups <- function(data, outXdf=data)
         stop("must supply output data source to split_groups")
     grps <- groups(data)
 
+    oldData <- data
+    if(hasTblFile(data))
+        on.exit(deleteTbl(oldData))
+
     # rxSplit not supported on HDFS -- fake it with multiple rxDataSteps
     # this will be very slow with large no. of factor levels
     if(inherits(rxGetFileSystem(data), "RxHdfsFileSystem"))

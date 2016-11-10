@@ -8,15 +8,17 @@ transmute_.RxFileData <- function(.data, ..., .dots)
 {
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     if(any(sapply(exprs, is.null)))
         stop("do not set variables to NULL in transmute; to delete variables, leave them out of the function call")
 
-    tbl(transmute_base(.data, exprs, rxArgs), file=NULL, hasTblFile=TRUE)
+    .output <- createOutput(.data, .output)
+    transmute_base(.data, .output, exprs, .rxArgs)
 }
 
 
@@ -28,26 +30,32 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .dots)
 
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
+    grps <- groups(data)
     if(any(sapply(exprs, is.null)))
         stop("do not set variables to NULL in transmute; to delete variables, leave them out of the function call")
     if(any(names(exprs) %in% groups(.data)))
         stop("cannot transmute grouping variable")
 
-    outData <- tblSource(.data)
-    xdflst <- split_groups(.data, outData)
-    xdflst <- rxExec(transmute_base, data=rxElemArg(xdflst), exprs, rxArgs, groups(.data), tblDir=dxGetWorkDir(),
+    xdflst <- split_groups(.data)
+    outlst <- createSplitOutput(.data, .output)
+    outlst <- rxExec(transmute_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), exprs, rxArgs, grps,
         execObjects=c("deleteTbl", "newTbl"), packagesToLoad="dplyrXdf")
-    combine_groups(xdflst, outData, groups(.data))
+    combine_groups(xdflst, createOutput(.data, .output), grps)
 }
 
 
-transmute_base <- function(data, exprs, rxArgs=NULL, gvars=NULL, tblDir=dxGetWorkDir())
+transmute_base <- function(data, output, exprs, rxArgs=NULL, gvars=NULL, tblDir=dxGetWorkDir())
 {
+    oldData <- data
+    if(hasTblFile(data))
+        on.exit(deleteTbl(oldData))
+
     # identify variables to drop
     if(!is.null(rxArgs$transformFunc))  # first case: transformFunc is present
     {
@@ -67,10 +75,7 @@ transmute_base <- function(data, exprs, rxArgs=NULL, gvars=NULL, tblDir=dxGetWor
         as.call(c(quote(list), exprs))
     else NULL
 
-    oldData <- tblSource(data)
-    if(hasTblFile(data))
-        on.exit(deleteTbl(oldData))
-    cl <- substitute(rxDataStep(data, newTbl(data, tblDir=tblDir), transforms=.expr),
+    cl <- substitute(rxDataStep(data, output, transforms=.expr),
         list(.expr=exprlst))
     cl[names(rxArgs)] <- rxArgs
 

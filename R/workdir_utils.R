@@ -18,9 +18,12 @@ dxSetWorkDir <- function(dir, fileSystem=rxGetFileSystem())
     {
         if(missing(dir))
             dir <- tempdir()
-        dir <- normalizePath(dir)
+        else
+        {
+            dir <- normalizePath(dir)
+            dir.create(dir)
+        }
         .dxOptions$localWorkDir <- dir
-        dir.create(dir)
     }
     dir
 }

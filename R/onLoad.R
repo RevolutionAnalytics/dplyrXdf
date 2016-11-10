@@ -433,8 +433,8 @@
 {
     .dxOptions$rowsPerRead <- 500000
     .dxOptions$dplyrVersion <- packageVersion("dplyr")
-    dxSetWorkDir("native")
-    dxSetWorkDir("hdfs")
+    dxSetWorkDir(fileSystem="native")
+    dxSetWorkDir(fileSystem="hdfs")
     NULL
 }
 

@@ -71,30 +71,26 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots, .keep
     if(any(needs_mutate))
         .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
-
-    on.exit(deleteTbl(xdflst), add=TRUE)
     xdflst <- split_groups(.data)
-    .output <- createOutput(.data, .output)
-    outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), .output, names(exprs), .rxArgs, .keep_all, dxGetWorkDir(),
+    outlst <- createSplitOutput(xdflst, .output)
+    outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), names(exprs), .rxArgs, .keep_all,
         execObjects=c("pemaDistinct", "newTbl"), packagesToLoad="dplyrXdf")
-    combine_groups(outlst, .output, groups(.data))
+    combine_groups(outlst, createOutput(.data, .output), grps)
 }
 
 
 #' @importFrom RevoPemaR pemaCompute
-distinct_base <- function(data, output, vars, rxArgs, keep_all, tblDir=dxGetWorkDir())
+distinct_base <- function(data, output, vars, rxArgs, keep_all)
 {
+    oldData <- data
+    if(hasTblFile(data))
+        on.exit(deleteTbl(oldData))
+
     df <- RevoPemaR::pemaCompute(pemaDistinct(), data=data, varNames=vars, keep_all=keep_all)
 
-    # when this is called in non-sequential compute context, ensure output file is in
-    # location specified by master node
-    if(!is.null(output))
+    if(inherits(output, "RxXdfData"))
     {
-        output <- tempfile(tmpdir=tblDir, fileext=".xdf")
-        cl <- quote(rxDataStep(df, output, overwrite=TRUE))
+        cl <- quote(rxDataStep(df, output))
         cl[names(rxArgs)] <- rxArgs
         eval(cl)
     }

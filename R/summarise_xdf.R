@@ -22,22 +22,17 @@
 #' @aliases summarise summarize
 #' @rdname summarise
 #' @export
-summarise_.RxFileData <- function(.data, ..., .dots)
+summarise_.RxFileData <- function(.data, ..., .output, .rxArgs, .method, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    if(!is.null(dots$.method))
-    {
-        .method <- dots$.method$expr
-        dots[[".method"]] <- NULL
-    }
-    else .method <- NULL
-
-    # identify Revo-specific arguments
-    dots <- .rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
-    attr(exprs, "env") <- dots$env
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+    if(missing(.method)) .method <- dots$.method$expr
+    dots$.method <- NULL
 
     stats <- sapply(exprs, function(term) as.character(term[[1]]))
     needs_mutate <- vapply(exprs, function(e) {
@@ -56,24 +51,23 @@ summarise_.RxFileData <- function(.data, ..., .dots)
     # 5- split into multiple xdfs, rxSummary on each, rbind xdfs together: stats in rxSummary supported (slowest, most scalable)
     .method <- select_smry_method(stats, .method, grps)
 
-    # only summarise methods 1-3 work with HDFS
-    if(.method > 3)
+    # only summarise methods 1-2 work with HDFS
+    if(.method > 2)
         stopIfHdfs(sprintf("chosen summarise method not (%d) supported on HDFS",
                            .method))
 
     smry_func <- switch(.method,
         smry_rxCube, smry_rxSummary, smry_rxSummary2, smry_rxSplit_dplyr, smry_rxSplit)
-    smry <- smry_func(.data, grps, stats, exprs, rxArgs)
+    smry <- smry_func(.data, grps, stats, exprs, .rxArgs)
 
-    .data <- if(is.data.frame(smry))
-        tbl(rxDataStep(smry, tblSource(.data), overwrite=TRUE), hasTblFile=TRUE)
-    else tbl(smry, hasTblFile=TRUE)
+    .output <- createOutput(.data, .output)
+    if(inherits(.output, "RxXdfData"))
+        smry <- rxDataStep(smry, .output, rowsPerRead=.dxOptions$rowsPerRead)
+    else if(!is.data.frame(smry))
+        smry <- as.data.frame(smry)
 
-    # generate new grouping info if necessary
-    numGroups <- length(grps)
-    if(numGroups > 1)
-        group_by_(.data, .dots=grps[-numGroups])
-    else .data
+    # strip off one level of grouping
+    simpleRegroup(smry, grps[-length(grps)])
 }
 
 
