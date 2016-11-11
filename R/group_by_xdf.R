@@ -151,9 +151,7 @@ combine_group_xdfs <- function(xdflst, output, grps)
     for(xdf in xdflst[-1])
         rxDataStep(xdf, xdf1, append="rows", computeLowHigh=FALSE)
 
-    dropvars <- base::intersect(".group.", names(xdf1))
-    if(length(dropvars) < 1)
-        dropvars <- NULL
+    dropvars <- if(".group." %in% names(xdf1)) ".group." else NULL
 
     rxDataStep(xdf1, output, varsToDrop=dropvars, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
 }

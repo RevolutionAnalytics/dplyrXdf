@@ -9,15 +9,19 @@ smry_rxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
         return(smry_rxSummary(data, grps, stats, exprs, rxArgs))
 
     outSource <- tblSource(data)
-    xdflst <- split_groups(data, outSource)
-    xdflst <- rxExec(smry_rxSummary_with_groupvars, data=rxElemArg(xdflst), grps, stats, exprs, rxArgs,
+    xdflst <- split_groups(data)
+    outlst <- rxExec(smry_rxSummary_with_groupvars, data=rxElemArg(xdflst), grps, stats, exprs, rxArgs,
         packagesToLoad="dplyrXdf")
-    combine_groups(xdflst, outSource, NULL)
+    combine_groups(outlst, outSource, NULL)
 }
 
 
 smry_rxSummary_with_groupvars <- function(data, grps, stats, exprs, rxArgs)
 {
+    oldData <- data
+    if(hasTblFile(data))
+        on.exit(deleteTbl(oldData))
+
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     smry <- smry_rxSummary(data, NULL, stats, exprs, rxArgs, dfOut=TRUE)
     cbind(gvars, smry, stringsAsFactors=FALSE)
@@ -37,7 +41,7 @@ smry_rxSplit_dplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
     }
 
     outSource <- tblSource(data)
-    xdflst <- split_groups(data, outSource)
+    xdflst <- split_groups(data)
     xdflst <- rxExec(smry_dplyr_with_groupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs,
         execObjects="invars", packagesToLoad="dplyr")
     combine_groups(xdflst, outSource, NULL)
@@ -46,6 +50,10 @@ smry_rxSplit_dplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
 
 smry_dplyr_with_groupvars <- function(data, grps, exprs, rxArgs)
 {
+    oldData <- data
+    if(hasTblFile(data))
+        on.exit(deleteTbl(oldData))
+
     invars <- invars(exprs)
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     cl <- quote(rxDataStep(data, maxRowsByCols=NULL))

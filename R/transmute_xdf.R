@@ -50,7 +50,7 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .dots)
 }
 
 
-transmute_base <- function(data, output, exprs, rxArgs=NULL, gvars=NULL, tblDir=dxGetWorkDir())
+transmute_base <- function(data, output, exprs, rxArgs=NULL, gvars=NULL, tblDir=getXdfTblDir())
 {
     oldData <- data
     if(hasTblFile(data))

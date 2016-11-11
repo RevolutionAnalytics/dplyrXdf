@@ -20,7 +20,7 @@ varTypes <- function(xdf, vars=NULL)
 
 
 # generate a new Xdf data source with file pointing to a random file, other parameters taken from input data source
-newTbl <- function(xdf=NULL, fileSystem=rxGetFileSystem(xdf), tblDir=dxGetWorkDir())
+newTbl <- function(xdf=NULL, fileSystem=rxGetFileSystem(xdf), tblDir=getXdfTblDir())
 {
     fname <- if(inherits(fileSystem, "RxNativeFileSystem"))
         tempfile(tmpdir=tblDir, fileext=".xdf")

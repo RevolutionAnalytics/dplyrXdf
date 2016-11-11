@@ -1,5 +1,5 @@
 #' @export
-dxSetWorkDir <- function(dir, fileSystem=rxGetFileSystem())
+setXdfTblDir <- function(dir, fileSystem=rxGetFileSystem())
 {
     if(is.character(fileSystem))
     {
@@ -30,7 +30,7 @@ dxSetWorkDir <- function(dir, fileSystem=rxGetFileSystem())
 
 
 #' @export
-dxGetWorkDir <- function(fileSystem=rxGetFileSystem())
+getXdfTblDir <- function(fileSystem=rxGetFileSystem())
 {
     if(is.character(fileSystem))
     {
