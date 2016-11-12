@@ -22,7 +22,7 @@ do_.RxFileData <- function(.data, ..., .output, .dots)
     dots <- lazyeval::all_dots(.dots, ...)
 
     # .output and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
+    dots <- rxArgs(dots, fromDo=TRUE)
     exprs <- dots$exprs
     .output <- dots$output
     .rxArgs <- dots$rxArgs
@@ -67,7 +67,7 @@ doXdf_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
     dots <- lazyeval::all_dots(.dots, ...)
 
     # .output and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
+    dots <- rxArgs(dots, fromDo=TRUE)
     exprs <- dots$exprs
     .output <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
@@ -95,7 +95,7 @@ do_.grouped_tbl_xdf <- function(.data, ..., .output, .dots)
     dots <- lazyeval::all_dots(.dots, ...)
 
     # .output and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
+    dots <- rxArgs(dots, fromDo=TRUE)
     exprs <- dots$exprs
     .output <- dots$output
     .rxArgs <- dots$rxArgs
@@ -112,10 +112,6 @@ do_.grouped_tbl_xdf <- function(.data, ..., .output, .dots)
     if(!is.null(.output))
         warning("do() only outputs data frames", call.=FALSE)
 
-
-    print(dots)
-    print(.output)
-    print(exprs)
     named <- check_named_args(exprs)
     grps <- groups(.data)
 
@@ -142,7 +138,7 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
     dots <- lazyeval::all_dots(.dots, ...)
 
     # .output and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
+    dots <- rxArgs(dots, fromDo=TRUE)
     exprs <- dots$exprs
     .output <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs

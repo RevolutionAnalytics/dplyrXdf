@@ -80,7 +80,7 @@ factorise_.RxXdfData <- function(.data, ..., .output, .rxArgs, .dots)
         on.exit(deleteTbl(oldData))
 
     .output <- createOutput(.data, .output)
-    cl <- quote(rxFactors(.data, factorInfo, outFile=.output))
+    cl <- quote(rxFactors(.data, factorInfo, outFile=.output, overwrite=TRUE))
     cl[names(.rxArgs)] <- .rxArgs
 
      # rxFactors is noisy when given already-existing factors; shut it up
@@ -118,10 +118,10 @@ factorise_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
         on.exit(deleteTbl(oldData))
 
     .output <- createOutput(.data, .output)
-    cl <- quote(rxImport(.data, newTbl(.data), colInfo=colInfo))
+    cl <- quote(rxImport(.data, .output, colInfo=colInfo, overwrite=TRUE))
     cl[names(.rxArgs)] <- .rxArgs
 
-    .data <- tbl(eval(cl), hasTblFile=TRUE)
+    .data <- eval(cl)
     simpleRegroup(.data, grps)
 }
 

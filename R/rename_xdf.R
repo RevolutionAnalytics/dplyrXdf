@@ -1,5 +1,5 @@
 #' @export
-rename_.RxFileData <- function(.data, ..., .output, .dots)
+rename_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
@@ -7,13 +7,7 @@ rename_.RxFileData <- function(.data, ..., .output, .dots)
     dots <- rxArgs(dots)
     exprs <- dots$exprs
     if(missing(.output)) .output <- dots$output
-    .rxArgs <- dots$rxArgs
-
-    if(!is.null(.rxArgs))
-    {
-        warning("rename() doesn't support .rxArgs argument", call.=FALSE)
-        .rxArgs <- NULL
-    }
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     grps <- groups(.data)
     vars <- rename_vars_(names(.data), exprs)
@@ -36,7 +30,9 @@ rename_.RxFileData <- function(.data, ..., .output, .dots)
         if(hasTblFile(.data))
             on.exit(deleteTbl(oldData))
 
-        .data <- rxDataStep(.data, .output, overwrite=TRUE)
+        cl <- quote(rxDataStep(.data, .output, overwrite=TRUE))
+        cl[names(.rxArgs)] <- .rxArgs
+        .data <- eval(cl)
     }
 
     names(.data) <- names(vars)

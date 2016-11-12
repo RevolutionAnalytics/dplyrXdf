@@ -27,7 +27,7 @@
 #' @name rxArgs
 NULL
 
-rxArgs <- function(dots)
+rxArgs <- function(dots, fromDo=FALSE)
 {
     env <- if(length(dots) > 0) dots[[1]]$env else globalenv()
     exprs <- lapply(dots, "[[", "expr")
@@ -52,6 +52,9 @@ rxArgs <- function(dots)
     {
         output <- exprs$.output
         exprs$.output <- NULL
+        # turn off row x col size check if outputting to dataframe AND not otherwise specified AND not called from do()
+        if(is.null(output) && !("maxRowsByCols" %in% names(rxArgs)) & !fromDo)
+            rxArgs["maxRowsByCols"] <- list(NULL)
     }
     else output <- NA
 
