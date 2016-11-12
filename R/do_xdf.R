@@ -17,7 +17,7 @@
 #' @aliases do
 #' @rdname do
 #' @export
-do_.RxFileData <- function(.data, ..., .dots)
+do_.RxFileData <- function(.data, ..., .output, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
@@ -36,7 +36,7 @@ do_.RxFileData <- function(.data, ..., .dots)
         warning("do() doesn't support .rxArgs argument", call.=FALSE)
         .rxArgs <- NULL
     }
-    if(is.character(.output))
+    if(!is.null(.output))
         warning("do() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(dots)
@@ -62,7 +62,7 @@ doXdf_ <- function(.data, ..., .dots)
 
 #' @rdname do
 #' @export
-doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
+doXdf_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
@@ -76,7 +76,7 @@ doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    if(is.character(.output))
+    if(!is.null(.output))
         warning("doXdf() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(dots)
@@ -88,7 +88,7 @@ doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
 #' To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} split the data into one file per group, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
 #' @rdname do
 #' @export
-do_.grouped_tbl_xdf <- function(.data, ..., .dots)
+do_.grouped_tbl_xdf <- function(.data, ..., .output, .dots)
 {
     stopIfHdfs(.data, "do on grouped data not supported on HDFS")
 
@@ -109,10 +109,13 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
         warning("do() doesn't support .rxArgs argument", call.=FALSE)
         .rxArgs <- NULL
     }
-    if(is.character(.output))
+    if(!is.null(.output))
         warning("do() only outputs data frames", call.=FALSE)
 
 
+    print(dots)
+    print(.output)
+    print(exprs)
     named <- check_named_args(exprs)
     grps <- groups(.data)
 
@@ -132,7 +135,7 @@ do_.grouped_tbl_xdf <- function(.data, ..., .dots)
 
 #' @rdname do
 #' @export
-doXdf_.grouped_tbl_xdf <- function(.data, ..., .rxArgs, .dots)
+doXdf_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
 {
     stopIfHdfs(.data, "doXdf on grouped data not supported on HDFS")
 
@@ -148,7 +151,7 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .rxArgs, .dots)
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    if(is.character(.output))
+    if(!is.null(.output))
         warning("doXdf() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(exprs)
