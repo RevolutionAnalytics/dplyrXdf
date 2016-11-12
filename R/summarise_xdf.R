@@ -64,7 +64,11 @@ summarise_.RxFileData <- function(.data, ..., .output, .rxArgs, .method, .dots)
 
     .output <- createOutput(.data, .output)
     if(inherits(.output, "RxXdfData"))
-        smry <- rxDataStep(smry, .output, rowsPerRead=.dxOptions$rowsPerRead)
+    {
+        if(hasTblFile(smry))
+            on.exit(deleteTbl(smry))
+        smry <- rxDataStep(smry, .output, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+    }
     else if(!is.data.frame(smry))
         smry <- as.data.frame(smry)
 

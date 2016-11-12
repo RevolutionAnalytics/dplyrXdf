@@ -31,14 +31,15 @@ subset_ <- function(.data, ...)
 
 #' @rdname subset
 #' @export
-subset_.RxFileData <- function(.data, subset=~NULL, select=~NULL, ..., .dots)
+subset_.RxFileData <- function(.data, subset=~NULL, select=~NULL, ..., .output, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
-    # identify Revo-specific arguments
-    dots <- dplyrXdf:::.rxArgs(dots)
-    rxArgs <- dots$rxArgs
+    # .output and .rxArgs will be passed in via .dots if called by NSE
+    dots <- rxArgs(dots)
     exprs <- dots$exprs
+    if(missing(.output)) .output <- dots$output
+    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     subset <- lazyeval::as.lazy(subset)$expr
     select <- lazyeval::as.lazy(select)$expr
@@ -52,19 +53,18 @@ subset_.RxFileData <- function(.data, subset=~NULL, select=~NULL, ..., .dots)
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
+    .output <- createOutput(.data, .output)
+
     # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep
     cl <- if(inherits(.data, "RxXdfData"))
-        substitute(rxDataStep(.data, newTbl(.data), rowSelection=.rows, varsToKeep=.vars, overwrite=TRUE),
+        substitute(rxDataStep(.data, .output, rowSelection=.rows, varsToKeep=.vars, overwrite=TRUE),
             list(.rows=subset, .vars=select))
-    else substitute(rxImport(.data, newTbl(.data), rowSelection=.rows, varsToKeep=.vars, overwrite=TRUE),
+    else substitute(rxImport(.data, .output, rowSelection=.rows, varsToKeep=.vars, overwrite=TRUE),
             list(.rows=subset, .vars=select))
-    cl[names(rxArgs)] <- rxArgs
+    cl[names(.rxArgs)] <- .rxArgs
 
-    .data <- tbl(eval(cl), file=NULL, hasTblFile=TRUE)
-
-    if(is.null(grps))
-        .data
-    else group_by_(.data, .dots=grps)
+    .data <- eval(cl)
+    simpleRegroup(.data)
 }
 
 

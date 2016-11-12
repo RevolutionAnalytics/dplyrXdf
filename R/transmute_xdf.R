@@ -75,7 +75,7 @@ transmute_base <- function(data, output, exprs, rxArgs=NULL, gvars=NULL, tblDir=
         as.call(c(quote(list), exprs))
     else NULL
 
-    cl <- substitute(rxDataStep(data, output, transforms=.expr),
+    cl <- substitute(rxDataStep(data, output, transforms=.expr, overwrite=TRUE),
         list(.expr=exprlst))
     cl[names(rxArgs)] <- rxArgs
 

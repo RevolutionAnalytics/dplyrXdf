@@ -90,7 +90,7 @@ distinct_base <- function(data, output, vars, rxArgs, keep_all)
 
     if(inherits(output, "RxXdfData"))
     {
-        cl <- quote(rxDataStep(df, output))
+        cl <- quote(rxDataStep(df, output, overwrite=TRUE))
         cl[names(rxArgs)] <- rxArgs
         eval(cl)
     }

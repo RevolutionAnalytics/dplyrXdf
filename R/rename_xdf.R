@@ -36,7 +36,7 @@ rename_.RxFileData <- function(.data, ..., .output, .dots)
         if(hasTblFile(.data))
             on.exit(deleteTbl(oldData))
 
-        .data <- rxDataStep(.data, .output)
+        .data <- rxDataStep(.data, .output, overwrite=TRUE)
     }
 
     names(.data) <- names(vars)

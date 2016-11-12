@@ -69,7 +69,7 @@ mutate_base <- function(data, output, exprs, rxArgs=NULL, gvars=NULL)
         as.call(c(quote(list), exprs))
     else NULL
 
-    cl <- substitute(rxDataStep(data, output, transforms=.expr),
+    cl <- substitute(rxDataStep(data, output, transforms=.expr, overwrite=TRUE),
         list(.expr=exprlst))
     if(!is.null(rxArgs))
     {

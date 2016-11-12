@@ -3,7 +3,7 @@
 #' @param data An xdf tbl
 #' @param outFile Character string giving the name of the output xdf file
 #' @param overwrite If the outfile already exists, should it be overwritten?
-#' @param deleteOldTbl Should the original tbl file be removed?
+#' @param move Should the tbl file be moved or copied?
 #' @param ... Other arguments to \code{\link[RevoScaleR]{rxDataStep}}
 #'
 #' @details

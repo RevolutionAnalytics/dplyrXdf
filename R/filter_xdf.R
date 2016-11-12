@@ -21,7 +21,7 @@ filter_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
     }
 
     .output <- createOutput(.data, .output)
-    cl <- substitute(rxDataStep(.data, .output, rowSelection=.expr),
+    cl <- substitute(rxDataStep(.data, .output, rowSelection=.expr, overwrite=TRUE),
         list(.expr=all_exprs))
     cl[names(.rxArgs)] <- .rxArgs
 
