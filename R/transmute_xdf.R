@@ -4,7 +4,7 @@ NULL
 
 #' @rdname mutate
 #' @export
-transmute_.RxFileData <- function(.data, ..., .dots)
+transmute_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
@@ -24,7 +24,7 @@ transmute_.RxFileData <- function(.data, ..., .dots)
 
 #' @rdname mutate
 #' @export
-transmute_.grouped_tbl_xdf <- function(.data, ..., .dots)
+transmute_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
 {
     stopIfHdfs(.data, "transmute on grouped data not supported on HDFS")
 
@@ -36,17 +36,17 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .dots)
     if(missing(.output)) .output <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
-    grps <- groups(data)
+    grps <- groups(.data)
     if(any(sapply(exprs, is.null)))
         stop("do not set variables to NULL in transmute; to delete variables, leave them out of the function call")
-    if(any(names(exprs) %in% groups(.data)))
+    if(any(names(exprs) %in% grps))
         stop("cannot transmute grouping variable")
 
     xdflst <- split_groups(.data)
-    outlst <- createSplitOutput(.data, .output)
-    outlst <- rxExec(transmute_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), exprs, rxArgs, grps,
+    outlst <- createSplitOutput(xdflst, .output)
+    outlst <- rxExec(transmute_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), exprs, .rxArgs, grps,
         execObjects=c("deleteTbl", "newTbl"), packagesToLoad="dplyrXdf")
-    combine_groups(xdflst, createOutput(.data, .output), grps)
+    combine_groups(outlst, createOutput(.data, .output), grps)
 }
 
 

@@ -16,7 +16,7 @@ rename_.RxFileData <- function(.data, ..., .output, .dots)
     }
 
     grps <- groups(.data)
-    vars <- rename_vars_(names(.data), dots)
+    vars <- rename_vars_(names(.data), exprs)
 
     .output <- createOutput(.data, .output)
 

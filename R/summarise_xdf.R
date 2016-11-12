@@ -31,8 +31,10 @@ summarise_.RxFileData <- function(.data, ..., .output, .rxArgs, .method, .dots)
     exprs <- dots$exprs
     if(missing(.output)) .output <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-    if(missing(.method)) .method <- dots$.method$expr
-    dots$.method <- NULL
+    if(missing(.method)) .method <- exprs$.method
+    exprs$.method <- NULL
+
+    attr(exprs, "env") <- dots$env  # needed if calling dplyr::summarise
 
     stats <- sapply(exprs, function(term) as.character(term[[1]]))
     needs_mutate <- vapply(exprs, function(e) {

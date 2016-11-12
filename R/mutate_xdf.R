@@ -52,8 +52,8 @@ mutate_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
         stop("cannot mutate grouping variable")
 
     xdflst <- split_groups(.data)
-    outlst <- createSplitOutput(.data, .output)
-    outlst <- rxExec(mutate_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), exprs, rxArgs, grps,
+    outlst <- createSplitOutput(xdflst, .output)
+    outlst <- rxExec(mutate_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), exprs, .rxArgs, grps,
         execObjects=c("deleteTbl", "newTbl"), packagesToLoad="dplyrXdf")
     combine_groups(outlst, createOutput(.data, .output), grps)
 }

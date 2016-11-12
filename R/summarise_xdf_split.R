@@ -32,7 +32,6 @@ smry_rxSplit_dplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     if(is.null(grps))
     {
-        invars <- invars(exprs)
         cl <- quote(rxDataStep(data, maxRowsByCols=NULL))
         cl[names(rxArgs)] <- rxArgs
         return(eval(cl) %>%
@@ -42,9 +41,9 @@ smry_rxSplit_dplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
 
     outSource <- tblSource(data)
     xdflst <- split_groups(data)
-    xdflst <- rxExec(smry_dplyr_with_groupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs,
-        execObjects="invars", packagesToLoad="dplyr")
-    combine_groups(xdflst, outSource, NULL)
+    outlst <- rxExec(smry_dplyr_with_groupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs,
+        packagesToLoad="dplyr")
+    combine_groups(outlst, outSource, NULL)
 }
 
 
@@ -54,7 +53,6 @@ smry_dplyr_with_groupvars <- function(data, grps, exprs, rxArgs)
     if(hasTblFile(data))
         on.exit(deleteTbl(oldData))
 
-    invars <- invars(exprs)
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     cl <- quote(rxDataStep(data, maxRowsByCols=NULL))
     cl[names(rxArgs)] <- rxArgs
