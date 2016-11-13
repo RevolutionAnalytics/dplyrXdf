@@ -1,6 +1,8 @@
-# get level sets of factors to merge on
+# align types of by-variables
 # return _changes_ to variables needed to ensure merge is successful
-setLevelsEqual <- function(x, y, by)
+# - check all non-factor types in x and y
+# - if var type not the same in both, coerce as appropriate (logical < numeric < complex < character)
+alignVarTypes <- function(x, y, by)
 {
     factorList <- function(data, vars)
     {
@@ -32,20 +34,17 @@ setLevelsEqual <- function(x, y, by)
 }
 
 
-asXdfOrDf <- function(x)
+alignInputs <- function(x, y, by, yOrig)
 {
-    if(inherits(x, c("data.frame", "RxXdfData")))
-        x
-    else if(inherits(x, "RxFileData"))
-        tbl(x, stringsAsFactors=FALSE)
-    else stop("not a local data source format", call.=FALSE)
-}
 
-
-alignInputs <- function(x, y, by)
-{
-    origxy <- list(x=if(is.data.frame(x)) NULL else x,
-                   y=if(is.data.frame(y)) NULL else y)
+    asXdfOrDf <- function(data)
+    {
+        if(inherits(data, c("data.frame", "RxXdfData")))
+            data
+        else if(inherits(data, "RxFileData"))
+            tbl(data, stringsAsFactors=FALSE)
+        else stop("not a local data source format", call.=FALSE)
+    }
 
     # data must be in xdf or data frame format, import if not
     x <- asXdfOrDf(x)
@@ -63,20 +62,36 @@ alignInputs <- function(x, y, by)
     }
     
     # check compatibility of factor types
-    combinedFactors <- setLevelsEqual(x, y, by)
+    combinedFactors <- setLevelsEqual(x, y, by$y)
     if(length(combinedFactors$x) > 0)
         x <- factorise_(x, .dots=combinedFactors$x)
     if(length(combinedFactors$y) > 0)
     {
         # make sure not to delete original y by accident after factoring
-        # origy is df -> y is df -> don't delete
-        # origy is tbl -> y is tbl -> don't delete
-        # origy is xdf -> y is xdf -> don't delete
-        # origy is txt -> y is tbl -> delete
-        if(!inherits(origxy$y, "RxXdfData") && inherits(y, "tbl_xdf"))
+        if(!is.null(yOrig) && getTblFile(y) == yOrig)
             y <- as(y, "RxXdfData")
         y <- factorise_(y, .dots=combinedFactors$y)
     }
-    list(x=x, y=y, orig=origxy)
+    list(x=x, y=y, yOrig=yOrig)
 }
 
+
+# copied from dplyr:::common_by, dplyr:::`%||%`
+dplyr_common_by <- function (by = NULL, x, y) 
+{
+    if (is.list(by)) 
+        return(by)
+    if (!is.null(by)) {
+        x <- if(is.null(names(by))) by else names(by)
+        #x <- names(by) %||% by
+        y <- unname(by)
+        x[x == ""] <- y[x == ""]
+        return(list(x = x, y = y))
+    }
+    by <- intersect(tbl_vars(x), tbl_vars(y))
+    if (length(by) == 0) {
+        stop("No common variables. Please specify `by` param.", call. = FALSE)
+    }
+    message("Joining by: ", capture.output(dput(by)))
+    list(x = by, y = by)
+}

@@ -69,3 +69,12 @@ deleteTbl <- function(xdf)
 }
 
 
+getTblFile <- function(data)
+{
+    if(is.data.frame(data))
+        NULL
+    else if(inherits(data, "RxFileData"))
+        data@file
+    else stop("not a local data source format", call.=FALSE)
+}
+

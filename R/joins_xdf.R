@@ -161,9 +161,10 @@ merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output=NA, .rxArgs=NULL
 
     # copy not used by dplyrXdf; only for dplyr compatibility
     if(copy)
-        warning("copy argument ignored")
+        warning("copy argument not currently used")
 
-    newxy <- alignInputs(x, y, by)
+    yOrig <- getTblFile(y)
+    newxy <- alignInputs(x, y, by, yOrig)
     x <- newxy$x
     y <- newxy$y
 
@@ -172,41 +173,16 @@ merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output=NA, .rxArgs=NULL
         if(hasTblFile(x))
             deleteTbl(x)
         # make sure not to delete original y by accident after factoring
-        # origy is df -> y is df -> don't delete
-        # origy is tbl -> y is tbl -> don't delete
-        # origy is xdf -> y is xdf -> don't delete
-        # origy is txt -> y is tbl -> delete
-        if(!inherits(newxy$origxy$y, "RxXdfData") && inherits(y, "tbl_xdf") && hasTblFile(y))
+        if(!is.data.frame(y) && getTblFile(y) != yOrig)
             deleteTbl(y)
      })
 
     grps <- groups(x)
     .output <- createOutput(x, .output)
-    cl <- quote(rxMerge(x, y, matchVars=by$x, outFile=output, type=type))
+    cl <- quote(rxMerge(x, y, matchVars=by$y, outFile=.output, type=type))
     cl[names(.rxArgs)] <- .rxArgs
 
     out <- eval(cl)
     simpleRegroup(out)
 }
 
-
-
-# copied from dplyr:::common_by, dplyr:::`%||%`
-dplyr_common_by <- function (by = NULL, x, y) 
-{
-    if (is.list(by)) 
-        return(by)
-    if (!is.null(by)) {
-        x <- if(is.null(names(by))) by else names(by)
-        #x <- names(by) %||% by
-        y <- unname(by)
-        x[x == ""] <- y[x == ""]
-        return(list(x = x, y = y))
-    }
-    by <- intersect(tbl_vars(x), tbl_vars(y))
-    if (length(by) == 0) {
-        stop("No common variables. Please specify `by` param.", call. = FALSE)
-    }
-    message("Joining by: ", capture.output(dput(by)))
-    list(x = by, y = by)
-}
