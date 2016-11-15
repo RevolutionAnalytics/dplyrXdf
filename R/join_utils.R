@@ -1,37 +1,110 @@
-# align types of by-variables
-# return _changes_ to variables needed to ensure merge is successful
-# - check all non-factor types in x and y
-# - if var type not the same in both, coerce as appropriate (logical < numeric < complex < character)
-alignVarTypes <- function(x, y, by)
+# align by-variables for joining
+# - check that varnames match (required by rxMerge)
+# - check vartypes match
+# - check factor levels match
+# - by default, change x to match y; exception is when factors are involved (may need to change y's levels)
+# return transformFuncs suitable for passing to mutate_ (simple inline transforms don't work)
+alignVars <- function(x, y, by, yOrig)
 {
-    factorList <- function(data, vars)
+    makeTransformFunc <- function(exprlst)
     {
-        varInfo <- rxGetVarInfo(data, varsToKeep=vars)
-        fac <- which(sapply(varInfo, "[[", "varType") == "factor")
-        if(length(fac) == 0)
+        if(all(lapply(exprlst, is.null)))
             return(NULL)
-        sapply(varInfo[fac], "[[", "levels", simplify=FALSE)
+        exprlst <- do.call(c, exprlst)                  # convert list of expressions into single expression object
+        exprblock <- as.call(c(as.name("{"), exprlst))  # from ?call
+        xFunc <- function(varlst) {}
+        body(xFunc) <- call("within", quote(varlst), exprblock)
+        xFunc
     }
 
-    factorsToChange <- function(oneFactor)
+    getTransformVars <- function(exprlst)
     {
-        out <- sapply(names(allFactors), function(f) {
-            oneFac <- oneFactor[[f]]
-            allFac <- allFactors[[f]]
-            if(length(oneFac) != length(allFac) || any(oneFac != allFac))  # could also use identical()
-                allFac
-            else NULL
-        }, simplify=FALSE)
-        out[!sapply(out, is.null)]
+        nulls <- lapply(exprlst, is.null)
+        names(exprlst)[!nulls]
     }
 
-    xFactors <- factorList(x, by$x)
-    yFactors <- factorList(y, by$y)
-    allFactors <- sapply(base::union(names(xFactors), names(yFactors)), function(f)
-        sort(base::union(xFactors[[f]], yFactors[[f]])),
-        simplify=FALSE)
-    list(x=factorsToChange(xFactors), y=factorsToChange(yFactors))
+    xVars <- names(x)
+    yVars <- names(y)
+    xTypes <- varTypes(x, by)
+    yTypes <- varTypes(y, by)
+
+    xChanges <- sapply(by, function(i) {
+        xt <- xTypes[i]
+        yt <- yTypes[i]
+        changeExpr <- NULL
+        if(xt != "factor" && yt != "factor")  # (relatively) clean bit: no factors involved
+        {
+            if(xt != yt)
+            {
+                if(yt %in% c("logical", "integer", "numeric", "complex", "character"))
+                    changeExpr <- parse(text=sprintf("%s__new__ <- as.%s(%s)", i, yt, i))
+                else stop("don't know how to convert type:", yt)
+                return(changeExpr)
+            }
+        }
+        else if(xt == "factor" && yt != "factor")
+        {
+            # un-factor x (path of least resistance)
+            changeExpr <- parse(text=sprintf("%s__new__ <- as.character(%s)"), i, i)
+            if(yt %in% c("logical", "integer", "numeric", "complex"))
+                changeExpr <- c(changeExpr, parse(text=sprintf("%s__new__ <- as.%s(%s__new__)", i, yt, i)))
+            else stop("don't know how to convert type:", yt)
+        }
+        else if(xt == "factor" && yt == "factor")
+        {
+            # ensure level sets of x and y are the same
+            xlevs <- varLevels(x)[[i]]
+            ylevs <- varLevels(y)[[i]]
+            allLevs <- sort(union(xlevs, ylevs))
+            if(!identical(xlevs, allLevs))  # rxFactors very picky
+                changeExpr <- parse(text="%s <- factor(%s, levels=%s)", i, i, deparse(allLevs)) 
+        }
+        changeExpr
+    }, simplify=FALSE)
+
+    xFunc <- makeTransformFunc(xChanges)
+    xVars <- getTransformVars(xChanges)
+
+    yChanges <- sapply(by, function(i) {
+        xt <- xTypes[i]
+        yt <- yTypes[i]
+        changeExpr <- NULL
+        # only change y if need to un-factor or relevel a factor
+        if(xt != "factor" && yt == "factor")
+        {
+            # un-factor y (path of least resistance)
+            changeExpr <- parse(text=sprintf("%s__new__ <- as.character(%s)"), i, i)
+            if(yt %in% c("logical", "integer", "numeric", "complex"))
+                changeExpr <- c(changeExpr, parse(text=sprintf("%s__new__ <- as.%s(%s__new__)", i, yt, i)))
+            else stop("don't know how to convert type:", yt)
+        }
+        else if(xt == "factor" && yt == "factor")
+        {
+            # ensure level sets of x and y are the same
+            xlevs <- varLevels(x)[[i]]
+            ylevs <- varLevels(y)[[i]]
+            allLevs <- sort(union(xlevs, ylevs))
+            if(!identical(ylevs, allLevs))  # rxFactors very picky
+                changeExpr <- parse(text="%s <- factor(%s, levels=%s)", i, i, deparse(allLevs)) 
+        }
+        changeExpr
+    }, simplify=FALSE)
+
+    yFunc <- makeTransformFunc(yChanges)
+    yVars <- getTransformVars(yChanges)
+
+    list(xFunc=xFunc, xVars=xVars, yFunc=yFunc, yVars=yVars)
 }
+
+#exprs <- list(
+    #e1=parse(text="e1 <- 1"),
+    #e2=c(parse(text="e2 <- 2"), parse(text="e2 <- e2*2")),
+    #e3=parse(text="e3 <- 3")
+#)
+#exprs <- do.call(c, exprs)
+#blk <- as.call(c(as.name("{"), exprs))
+#f <- function() {}
+#body(f) <- blk
 
 
 alignInputs <- function(x, y, by, yOrig)
@@ -50,29 +123,42 @@ alignInputs <- function(x, y, by, yOrig)
     x <- asXdfOrDf(x)
     y <- asXdfOrDf(y)
 
-    # rxMerge requires common varnames; transform x if necessary
+    # rxMerge requires identical by-variable names; rename xvars if necessary
     if(!identical(by$x, by$y))
     {
-        # if transformation will overwrite existing variables, drop them to avoid type clashes
-        drop <- base::intersect(by$y, names(x))
-        if(length(drop) == 0)
-            drop <- NULL
         xby <- setNames(by$x, by$y)
-        x <- mutate_(x, .dots=xby, .rxArgs=list(varsToDrop=drop))
+
+        # if renaming clashes with other variables, rename them as well (this is not recursive)
+        existing <- base::intersect(by$y, names(x))
+        if(length(existing) > 0)
+        {
+            names(existing) <- paste0(names(existing), ".x")
+            x <- rename_(x, .dots=existing)
+        }
+        x <- rename_(x, .dots=xby)
     }
     
-    # check compatibility of factor types
-    combinedFactors <- setLevelsEqual(x, y, by$y)
-    if(length(combinedFactors$x) > 0)
-        x <- factorise_(x, .dots=combinedFactors$x)
-    if(length(combinedFactors$y) > 0)
+    # align by-variables:
+    # - check vartypes match
+    # - check factor levels match
+    align <- alignVars(x, y, by$y)
+
+    if(!is.null(align$xFunc))
+    {
+        xRename <- paste0(align$xVars, "__new__")
+        names(xRename) <- align$xVars
+        x <- mutate(x, .rxArgs=list(transformFunc=align$xFunc, transformVars=align$xVars)) %>%
+            rename_(.dots=xRename)
+    }
+    if(!is.null(align$yFunc))
     {
         # make sure not to delete original y by accident after factoring
         if(!is.null(yOrig) && getTblFile(y) == yOrig)
             y <- as(y, "RxXdfData")
-        y <- factorise_(y, .dots=combinedFactors$y)
+        y <- mutate(y, .rxArgs=list(transformFunc=align$yFunc, transformVars=align$yVars))
     }
-    list(x=x, y=y, yOrig=yOrig)
+
+    list(x=x, y=y)
 }
 
 

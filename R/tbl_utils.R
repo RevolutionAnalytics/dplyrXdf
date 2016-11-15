@@ -2,9 +2,16 @@
 NULL
 
 # assorted unexported functions
-varTypes <- function(xdf, vars=NULL)
+varTypes <- function(x, vars=NULL)
 {
-    sapply(rxGetVarInfo(xdf, varsToKeep=vars, computeInfo=FALSE), "[[", "varType")
+    sapply(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE), "[[", "varType")
+}
+
+
+# return list of factor levels (NULL if variable is not a factor)
+varLevels <- function(x, vars=NULL)
+{
+    sapply(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE), "[[", "levels", simplify=FALSE)
 }
 
 
