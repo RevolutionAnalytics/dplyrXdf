@@ -82,47 +82,6 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
 }
 
 
-# duplicate the generic from dplyr 0.5, to allow install with dplyr <= 0.4.3
-#' @export
-union_all <- function(x, y, ...)
-UseMethod("union_all")
-
-
-#' @export
-union_all.RxFileData <- function(x, y, ...)
-{
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
-
-    # use x's tbl if it exists; otherwise create a new tbl, copy x into it
-    xTbl <- if(hasTblFile(x))
-        tblSource(x)
-    else rxDataStep(x, newTbl(x))
-
-    # if y points to same file as xTbl, make a copy
-    # should only happen with union_all(x, x) with x a tbl
-    if(inherits(y, "RxFileData") && y@file == xTbl@file)
-    {
-        y <- rxDataStep(y, newTbl(y))
-        on.exit(file.remove(y@file))
-    }
-
-    # append y to x
-    tbl(rxDataStep(y, xTbl, append="rows", ...), hasTblFile=TRUE)
-}
-
-
-#' @export
-union.RxFileData <- function(x, y, ...)
-{
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
-
-    # call union_all.RxFileData explicitly to allow use in dplyr < 0.5
-    union_all.RxFileData(x, y, ...) %>% distinct
-}
-
-
 merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output, .rxArgs=NULL)
 {
     stopIfHdfs(x, "merging not supported on HDFS")
