@@ -3,24 +3,58 @@
 # - check vartypes match
 # - check factor levels match
 # - by default, change x to match y; exception is when factors are involved (may need to change y's levels)
-# return transformFuncs suitable for passing to mutate_ (simple inline transforms don't work)
+# return transformFuncs suitable for passing to mutate_
+# - inline transforms don't work (will leave old variable behind)
+# - changing variable type in-place also doesn't work (need to create new variable, drop old variable)
 alignVars <- function(x, y, by, yOrig)
 {
-    makeTransformFunc <- function(exprlst)
+    makeTransformFunc <- function(exprlst, returnFunction=TRUE)
     {
-        if(all(lapply(exprlst, is.null)))
+        nulls <- sapply(exprlst, is.null)
+        if(all(nulls))
             return(NULL)
+        exprlst <- c(exprlst, lapply(names(exprlst)[!nulls], function(e) {
+            parse(text=sprintf("%s <- NULL", e))
+        }))
         exprlst <- do.call(c, exprlst)                  # convert list of expressions into single expression object
         exprblock <- as.call(c(as.name("{"), exprlst))  # from ?call
-        xFunc <- function(varlst) {}
-        body(xFunc) <- call("within", quote(varlst), exprblock)
-        xFunc
+        if(returnFunction)
+        {
+            xFunc <- function(varlst) {}
+            body(xFunc) <- call("within", quote(varlst), exprblock)
+            xFunc
+        }
+        else call("within", quote(y), exprblock)
     }
 
     getTransformVars <- function(exprlst)
     {
-        nulls <- lapply(exprlst, is.null)
+        nulls <- sapply(exprlst, is.null)
         names(exprlst)[!nulls]
+    }
+
+    unFactor <- function(var, type)
+    {
+        changeExpr <- parse(text=sprintf("%s__new__ <- as.character(%s)", var, var))
+        if(type %in% c("logical", "integer", "numeric", "complex"))
+            changeExpr <- c(changeExpr, parse(text=sprintf("%s__new__ <- as.%s(%s__new__)", var, type, var)))
+        else if(type != "character")
+            stop("don't know how to convert type: ", type)
+        changeExpr
+    }
+
+    reFactor <- function(var)
+    {
+        # ensure level sets of x and y are the same: rxFactors very picky
+        xlevs <- varLevels(x)[[var]]
+        ylevs <- varLevels(y)[[var]]
+        if(!identical(xlevs, ylevs))
+        {
+            levs <- sort(union(xlevs, ylevs))
+            levs <- paste(deparse(levs), collapse="")
+            parse(text=sprintf("%s__new__ <- factor(%s, levels=%s)", var, var, levs))
+        }
+        else NULL
     }
 
     xVars <- names(x)
@@ -32,79 +66,46 @@ alignVars <- function(x, y, by, yOrig)
         xt <- xTypes[i]
         yt <- yTypes[i]
         changeExpr <- NULL
+
         if(xt != "factor" && yt != "factor")  # (relatively) clean bit: no factors involved
         {
             if(xt != yt)
             {
                 if(yt %in% c("logical", "integer", "numeric", "complex", "character"))
                     changeExpr <- parse(text=sprintf("%s__new__ <- as.%s(%s)", i, yt, i))
-                else stop("don't know how to convert type:", yt)
-                return(changeExpr)
+                else stop("don't know how to convert type: ", yt)
             }
         }
-        else if(xt == "factor" && yt != "factor")
-        {
-            # un-factor x (path of least resistance)
-            changeExpr <- parse(text=sprintf("%s__new__ <- as.character(%s)"), i, i)
-            if(yt %in% c("logical", "integer", "numeric", "complex"))
-                changeExpr <- c(changeExpr, parse(text=sprintf("%s__new__ <- as.%s(%s__new__)", i, yt, i)))
-            else stop("don't know how to convert type:", yt)
-        }
-        else if(xt == "factor" && yt == "factor")
-        {
-            # ensure level sets of x and y are the same
-            xlevs <- varLevels(x)[[i]]
-            ylevs <- varLevels(y)[[i]]
-            allLevs <- sort(union(xlevs, ylevs))
-            if(!identical(xlevs, allLevs))  # rxFactors very picky
-                changeExpr <- parse(text="%s <- factor(%s, levels=%s)", i, i, deparse(allLevs)) 
-        }
+        else if(xt == "factor" && yt != "factor")  # un-factor x (path of least resistance)
+            changeExpr <- unFactor(i, yt)
+        else if(xt == "factor" && yt == "factor")  # combine x and y levels
+            changeExpr <- reFactor(i)
+
         changeExpr
     }, simplify=FALSE)
 
-    xFunc <- makeTransformFunc(xChanges)
+    xFunc <- makeTransformFunc(xChanges, inherits(x, "RxXdfData"))  # x should always inherit from RxXdfData
     xVars <- getTransformVars(xChanges)
 
     yChanges <- sapply(by, function(i) {
         xt <- xTypes[i]
         yt <- yTypes[i]
         changeExpr <- NULL
+
         # only change y if need to un-factor or relevel a factor
-        if(xt != "factor" && yt == "factor")
-        {
-            # un-factor y (path of least resistance)
-            changeExpr <- parse(text=sprintf("%s__new__ <- as.character(%s)"), i, i)
-            if(yt %in% c("logical", "integer", "numeric", "complex"))
-                changeExpr <- c(changeExpr, parse(text=sprintf("%s__new__ <- as.%s(%s__new__)", i, yt, i)))
-            else stop("don't know how to convert type:", yt)
-        }
-        else if(xt == "factor" && yt == "factor")
-        {
-            # ensure level sets of x and y are the same
-            xlevs <- varLevels(x)[[i]]
-            ylevs <- varLevels(y)[[i]]
-            allLevs <- sort(union(xlevs, ylevs))
-            if(!identical(ylevs, allLevs))  # rxFactors very picky
-                changeExpr <- parse(text="%s <- factor(%s, levels=%s)", i, i, deparse(allLevs)) 
-        }
+        if(xt != "factor" && yt == "factor")  # un-factor y (path of least resistance)
+            changeExpr <- unFactor(i, xt)
+        else if(xt == "factor" && yt == "factor")  # combine x and y levels
+            changeExpr <- reFactor(i)
+
         changeExpr
     }, simplify=FALSE)
 
-    yFunc <- makeTransformFunc(yChanges)
+    yFunc <- makeTransformFunc(yChanges, inherits(y, "RxXdfData"))
     yVars <- getTransformVars(yChanges)
 
     list(xFunc=xFunc, xVars=xVars, yFunc=yFunc, yVars=yVars)
 }
-
-#exprs <- list(
-    #e1=parse(text="e1 <- 1"),
-    #e2=c(parse(text="e2 <- 2"), parse(text="e2 <- e2*2")),
-    #e3=parse(text="e3 <- 3")
-#)
-#exprs <- do.call(c, exprs)
-#blk <- as.call(c(as.name("{"), exprs))
-#f <- function() {}
-#body(f) <- blk
 
 
 alignInputs <- function(x, y, by, yOrig)
@@ -129,6 +130,7 @@ alignInputs <- function(x, y, by, yOrig)
         xby <- setNames(by$x, by$y)
 
         # if renaming clashes with other variables, rename them as well (this is not recursive)
+        # need separate rename call because sequential renaming (a -> b -> c) bugged
         existing <- base::intersect(by$y, names(x))
         if(length(existing) > 0)
         {
@@ -138,11 +140,8 @@ alignInputs <- function(x, y, by, yOrig)
         x <- rename_(x, .dots=xby)
     }
     
-    # align by-variables:
-    # - check vartypes match
-    # - check factor levels match
+    # align by-variable types and factor levels
     align <- alignVars(x, y, by$y)
-
     if(!is.null(align$xFunc))
     {
         xRename <- paste0(align$xVars, "__new__")
@@ -152,12 +151,19 @@ alignInputs <- function(x, y, by, yOrig)
     }
     if(!is.null(align$yFunc))
     {
-        # make sure not to delete original y by accident after factoring
-        if(!is.null(yOrig) && getTblFile(y) == yOrig)
-            y <- as(y, "RxXdfData")
-        y <- mutate(y, .rxArgs=list(transformFunc=align$yFunc, transformVars=align$yVars))
+        yRename <- paste0(align$yVars, "__new__")
+        names(yRename) <- align$yVars
+        if(is.null(yOrig))
+            y <- eval(align$yFunc) %>% rename_(.dots=yRename)
+        else
+        {
+            # make sure not to delete original y by accident after factoring
+            if(!is.null(yOrig) && getTblFile(y) == yOrig)
+                y <- as(y, "RxXdfData")
+            y <- mutate(y, .rxArgs=list(transformFunc=align$yFunc, transformVars=align$yVars)) %>%
+                rename_(.dots=yRename)
+        }
     }
-
     list(x=x, y=y)
 }
 

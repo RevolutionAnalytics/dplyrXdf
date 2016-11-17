@@ -123,7 +123,7 @@ union.RxFileData <- function(x, y, ...)
 }
 
 
-merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output=NA, .rxArgs=NULL)
+merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output, .rxArgs=NULL)
 {
     stopIfHdfs(x, "merging not supported on HDFS")
     stopIfHdfs(y, "merging not supported on HDFS")
@@ -147,8 +147,10 @@ merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output=NA, .rxArgs=NULL
      })
 
     grps <- groups(x)
+    is(missing(.output))
+        .output <- NA
     .output <- createOutput(x, .output)
-    cl <- quote(rxMerge(x, y, matchVars=by$y, outFile=.output, type=type))
+    cl <- quote(rxMerge(x, y, matchVars=by$y, outFile=.output, type=type, duplicateVarExt=c("x", "y")))
     cl[names(.rxArgs)] <- .rxArgs
 
     out <- eval(cl)
