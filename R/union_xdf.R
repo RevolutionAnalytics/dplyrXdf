@@ -25,7 +25,7 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
             if(hasTblFile(data))
                 on.exit(deleteTbl(oldData))
             output <- tbl(newTbl(data), hasTblFile=TRUE)
-            file.copy(data@file, output@file)
+            file.copy(data@file, output@file, overwrite=TRUE)
             return(output)
         }
         else if(inherits(data, "RxFileData") && is.na(output))
@@ -38,7 +38,7 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
             oldData <- data
             if(hasTblFile(data))
                 on.exit(deleteTbl(oldData))
-            file.copy(data@file, output)
+            file.copy(data@file, output, overwrite=TRUE)
             return(RxXdfData(output))
         }
         else if(inherits(data, "RxFileData") && is.character(output))
@@ -64,8 +64,11 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
     if(is.null(.output))
     {
         if(.dxOptions$dplyrVersion < package_version("0.5"))
-            stop("cannot output directly to data frame with dplyr version < 0.5")
-        return(union_all(as.data.frame(x), as.data.frame(y)))
+        {
+            warning("cannot output directly to data frame with dplyr version < 0.5")
+            .output <- NA
+        }
+        else return(union_all(as.data.frame(x), as.data.frame(y)))
     }
 
     # use rxDataStep to append y to x, faster than rxMerge(type="union")
@@ -76,9 +79,9 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
     # should only happen with union_all(x, x)
     if(inherits(y, "RxFileData") && y@file == x@file)
     {
-        oldY <- y
+        oldFile <- y@file
         y <- newTbl(y)
-        file.copy(oldY@file, y@file)
+        file.copy(oldFile, y@file)
         on.exit(file.remove(y@file))
     }
 
