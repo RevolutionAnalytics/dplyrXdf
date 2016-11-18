@@ -44,7 +44,7 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
         else if(inherits(data, "RxFileData") && is.character(output))
         {
             outFile <- tbl(newTbl(data), hasTblFile=TRUE)
-            return(tbl(data, file=output@file))
+            return(tbl(data, file=output))
         }
         else stop("error handling base table in union", call.=TRUE)
     }
