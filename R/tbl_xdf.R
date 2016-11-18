@@ -36,17 +36,13 @@ tbl.RxXdfData <- function(data, file=NULL, hasTblFile=FALSE, ...)
 }
 
 
-#' @param stringsAsFactors for non-Xdf data sources, whether to import character variables as factors. Defaults to TRUE.
-#'
-#' @details
-#' By default, running \code{tbl} on a non-Xdf data source will convert any character variables to factors. This is the opposite of the usual behaviour for RevoScaleR functions that read non-Xdf data, and is for performance reasons: using factors instead of character variables can speed up functions like \code{\link[RevoScaleR]{rxCube}} and \code{\link[RevoScaleR]{rxSummary}} by significant margins.
 #' @rdname tbl
 #' @method tbl RxFileData
 #' @export
-tbl.RxFileData <- function(data, file=newTbl(data), hasTblFile=TRUE, stringsAsFactors=TRUE, ...)
+tbl.RxFileData <- function(data, file=newTbl(data), hasTblFile=TRUE, ...)
 {
     stopifnot(!is.null(file) && (is.character(file) || inherits(file, "RxXdfData")))
-    data <- rxImport(data, file, stringsAsFactors=stringsAsFactors, ...)
+    data <- rxImport(data, file, ...)
     tbl(data, file=NULL, hasTblFile=hasTblFile) 
 }
 
