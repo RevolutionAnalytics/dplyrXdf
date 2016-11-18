@@ -4,9 +4,14 @@
 #' @param subset Logical expression indicating rows to keep.
 #' @param select Columns to select. See \code{select} for the ways in which you can keep or drop columns.
 #' @param ... Other arguments; use \code{\link{.rxArgs}} to pass arguments to \code{rxDataStep}.
+#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #' @details
-#' This is a method for the \code{\link[base]{subset}} generic from base R. It combines the effects of the \code{filter} and \code{select} verbs, allowing you to subset a RevoScaleR data source (typically an xdf file) by rows and columns simultaneously. The advantage of this for an xdf file is that it significantly reduces the amount of I/O compared to doing the row and column subsetting in separate steps.
+#' This is a method for the \code{\link[base]{subset}} generic from base R. It combines the effects of the \code{filter} and \code{select} verbs, allowing you to subset a RevoScaleR data source (typically an xdf file) by rows and columns simultaneously. The advantage of this for an Xdf file is that it significantly reduces the amount of I/O compared to doing the row and column subsetting in separate steps.
+#'
+#' @return
+#' An object representing the subsetted data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
 #' \code{\link[base]{subset}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{select}}, \code{\link[RevoScaleR]{rxDataStep}}

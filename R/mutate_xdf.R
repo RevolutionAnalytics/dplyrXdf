@@ -5,6 +5,8 @@
 #'
 #' @param .data A tbl for an Xdf data source; or a raw Xdf data source.
 #' @param ... Variables to add or modify.
+#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details. See "Details" below for information on passing \code{\link[RevoScaleR]{rxTransform}} arguments.
 #'
 #' @details
@@ -14,9 +16,12 @@
 #'
 #' To modify a grouped Xdf tbl, these functions create a factor variable \code{.group.} split the data into one file per group, and call \code{rxDataStep} on each file. This ensures two things: first, that the groups will be appropriately generated regardless of the types of the grouping variables; and second, the code remains scalable to large dataset sizes. Note however that this may be slow if you have a large number of groups.
 #'
+#' @return
+#' An object representing the transformed data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+#'
 #' @seealso
 #' \code{\link[dplyr]{mutate}} and \code{\link{transmute}} in package dplyr, \code{\link[RevoScaleR]{rxDataStep}}, \code{\link[RevoScaleR]{rxTransform}} for variable transformations in RevoScaleR
-#' @aliases mutate transmute
+#' @aliases mutate transmute mutate_ transmute_
 #' @rdname mutate
 #' @export
 mutate_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
@@ -34,6 +39,7 @@ mutate_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 }
 
 
+#' @rdname mutate
 #' @export
 mutate_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
 {

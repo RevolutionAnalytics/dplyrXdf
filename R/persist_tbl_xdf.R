@@ -9,7 +9,7 @@
 #' @details
 #' By default, the underlying data for an xdf tbl is saved as a file in the R temporary directory, and is managed by dplyrXdf. This can cause confusion when a tbl is reused by later dplyrXdf operations, which can overwrite or delete the data.
 #'
-#' The \code{persist} verb is a simple shell around \code{rxDataStep} that copies the data into a new xdf file at the location given by \code{outFile}. This ensures that the data will not be modified by dplyrXdf, and will be persistent beyond the end of the R session.
+#' The \code{persist} verb is a simple routine that either copies or moves the data into a new xdf file at the location given by \code{outFile}. This ensures that the data will not be modified by dplyrXdf, and will be persistent beyond the end of the R session.
 #'
 #' @return
 #' An \code{RxXdfData} object pointing to the new xdf file.

@@ -2,6 +2,8 @@
 #'
 #' @param .data A data source.
 #' @param ... Variables to convert to factors.
+#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
 #' @details
@@ -18,6 +20,9 @@
 #' For performance reasons, factors created by \code{factorise} are not sorted; instead, the ordering of their levels will be determined by the order in which they are encountered in the data.
 #'
 #' The method for \code{RxXdfData} objects is a shell around \code{\link[RevoScaleR]{rxFactors}}, which is the standard RevoScaleR function for factor manipulation. For \code{RxFileData} objects, the method calls \code{\link[RevoScaleR]{rxImport}} with an appropriately constructed \code{colInfo} argument.
+#'
+#' @return
+#' An object representing the returned data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
 #' \code{\link[RevoScaleR]{rxFactors}}, \code{\link[RevoScaleR]{rxImport}}, \code{\link{factor}}

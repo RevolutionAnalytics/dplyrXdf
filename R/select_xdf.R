@@ -1,3 +1,21 @@
+#' Rename columns in an Xdf file
+#'
+#' @param .data A data source.
+#' @param ... Unquoted variables to select.
+#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
+#' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
+#'
+#' @details
+#' All the special functions mentioned in the documentation for \code{\link[dplyr]{select}} will also work with dplyrXdf.
+#'
+#' @return
+#' An object representing the transformed data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+#'
+#' @seealso
+#' \code{\link[dplyr]{select}} in package dplyr
+#" @aliases select select_
+#' @rdname select
 #' @export
 select_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 {

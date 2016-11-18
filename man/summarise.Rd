@@ -2,18 +2,27 @@
 % Please edit documentation in R/summarise_xdf.R
 \name{summarise_.RxFileData}
 \alias{summarise}
+\alias{summarise_}
 \alias{summarise_.RxFileData}
 \alias{summarize}
+\alias{summarize_}
 \title{Summarise multiple values to a single value}
 \usage{
-\method{summarise_}{RxFileData}(.data, ..., .dots)
+\method{summarise_}{RxFileData}(.data, ..., .output, .rxArgs, .method, .dots)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}
 
 \item{...}{Name-value pairs of summary functions like \code{\link{min}()}, \code{\link{mean}()}, \code{\link{max}()} etc.}
 
+\item{.output}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
+
+\item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
+
 \item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details. See "Details" below for how to change the summarisation method.}
+}
+\value{
+An object representing the summary. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 }
 \description{
 Summarise multiple values to a single value

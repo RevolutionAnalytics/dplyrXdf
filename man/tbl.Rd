@@ -10,8 +10,7 @@
 \usage{
 \method{tbl}{RxXdfData}(data, file = NULL, hasTblFile = FALSE, ...)
 
-\method{tbl}{RxFileData}(data, file = newTbl(data), hasTblFile = TRUE,
-  stringsAsFactors = TRUE, ...)
+\method{tbl}{RxFileData}(data, file = newTbl(data), hasTblFile = TRUE, ...)
 
 tblFile(x)
 
@@ -27,8 +26,6 @@ hasTblFile(x)
 \item{hasTblFile}{Logical, has the tbl's working file been created yet?}
 
 \item{...}{Other arguments that will be passed to \code{rxDataStep}.}
-
-\item{stringsAsFactors}{for non-Xdf data sources, whether to import character variables as factors. Defaults to TRUE.}
 
 \item{x}{A file data source, or a tbl wrapping the same.}
 }
@@ -48,8 +45,6 @@ Create a tbl from an Xdf file
 A tbl wraps a RevoScaleR data source, allowing you to carry out data manipulation operations without modifying the source itself. It does this by copying the data to a temporary file, normally at the first point where the data is accessed. Usually you can let dplyrXdf create the temporary file for you; this saves time by avoiding unnecessary copying. However, if you specify a filename as an explicit argument to \code{tbl}, it will create that file using \code{rxDataStep} to copy the data from the source Xdf.
 
 As a side-effect, any datasets created in a dplyrXdf pipeline will be lost when you close your R session. If you want to keep the pipeline results, make sure you copy them to a permanent location on disk.
-
-By default, running \code{tbl} on a non-Xdf data source will convert any character variables to factors. This is the opposite of the usual behaviour for RevoScaleR functions that read non-Xdf data, and is for performance reasons: using factors instead of character variables can speed up functions like \code{\link[RevoScaleR]{rxCube}} and \code{\link[RevoScaleR]{rxSummary}} by significant margins.
 }
 \section{Note}{
 

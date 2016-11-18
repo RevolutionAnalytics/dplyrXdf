@@ -2,12 +2,14 @@
 #'
 #' @param .data A tbl for an Xdf data source; or a raw Xdf data source.
 #' @param ... Variables to use for determining uniqueness. If left blank, all variables in \code{.data} are used to determine uniqueness.
+#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #' @param .keep_all If \code{TRUE}, keep all variables in the dataset; otherwise, only keep variables used in defining uniqueness. Only used if dplyr version 0.5 or greater is installed.
 #'
 #' @seealso
 #' \code{\link[dplyr]{distinct}} in package dplyr
-#' @aliases distinct
+#' @aliases distinct distinct_
 #' @rdname distinct
 #' @export
 distinct_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots, .keep_all=FALSE)
@@ -44,7 +46,11 @@ distinct_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots, .keep_all=
 
 
 #' @details
-#' To process a grouped Xdf tbl, \code{distinct} splits the data into one file per group, and calls \code{\link[dplyr]{distinct}} on each. The individual data frames are \code{rbind}ed together and \code{distinct} is called on the overall result. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however that this may be slow if you have a large number of groups; and the operation will be limited by memory if the number of distinct rows is large.
+#' This verb calls \code{dplyr::distinct} on each chunk in an Xdf file. The individual data frames are \code{rbind}ed together and \code{dplyr::distinct} is called on the overall result. This may be slow if there are many chunks in the file; and the operation will be limited by memory if the number of distinct rows is large.
+#'
+#' @return
+#' An object representing the unique rows. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+#'
 #' @rdname distinct
 #' @export
 distinct_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots, .keep_all=FALSE)

@@ -8,8 +8,8 @@
 \usage{
 persist(data, ...)
 
-\method{persist}{tbl_xdf}(data, outFile, overwrite = TRUE,
-  deleteOldTbl = FALSE, ...)
+\method{persist}{tbl_xdf}(data, outFile, overwrite = TRUE, move = FALSE,
+  ...)
 
 \method{persist}{RxFileData}(data, ...)
 }
@@ -22,7 +22,7 @@ persist(data, ...)
 
 \item{overwrite}{If the outfile already exists, should it be overwritten?}
 
-\item{deleteOldTbl}{Should the original tbl file be removed?}
+\item{move}{Should the tbl file be moved or copied?}
 }
 \value{
 An \code{RxXdfData} object pointing to the new xdf file.
@@ -33,7 +33,7 @@ Copy an xdf tbl to a permanent storage location.
 \details{
 By default, the underlying data for an xdf tbl is saved as a file in the R temporary directory, and is managed by dplyrXdf. This can cause confusion when a tbl is reused by later dplyrXdf operations, which can overwrite or delete the data.
 
-The \code{persist} verb is a simple shell around \code{rxDataStep} that copies the data into a new xdf file at the location given by \code{outFile}. This ensures that the data will not be modified by dplyrXdf, and will be persistent beyond the end of the R session.
+The \code{persist} verb is a simple routine that either copies or moves the data into a new xdf file at the location given by \code{outFile}. This ensures that the data will not be modified by dplyrXdf, and will be persistent beyond the end of the R session.
 
 Calling this verb on a non-tbl data source (eg a raw \code{RxXdfData} object) will give a warning and return the data source unchanged.
 }

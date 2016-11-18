@@ -4,6 +4,7 @@
 #'
 #' @param .data A tbl for an Xdf data source; or a raw Xdf data source.
 #' @param ... Expressions to apply.
+#' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
 #' @details
@@ -14,10 +15,10 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{do}} in package dplyr
-#' @aliases do
+#' @aliases do do_
 #' @rdname do
 #' @export
-do_.RxFileData <- function(.data, ..., .output, .dots)
+do_.RxFileData <- function(.data, ..., .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
@@ -62,7 +63,7 @@ doXdf_ <- function(.data, ..., .dots)
 
 #' @rdname do
 #' @export
-doXdf_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
+doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 

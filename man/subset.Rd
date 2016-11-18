@@ -12,7 +12,7 @@
 subset_(.data, ...)
 
 \method{subset_}{RxFileData}(.data, subset = ~NULL, select = ~NULL, ...,
-  .dots)
+  .output, .rxArgs, .dots)
 }
 \arguments{
 \item{.data}{A data source object, or tbl wrapping the same.}
@@ -23,13 +23,20 @@ subset_(.data, ...)
 
 \item{...}{Other arguments; use \code{\link{.rxArgs}} to pass arguments to \code{rxDataStep}.}
 
+\item{.output}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
+
+\item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
+
 \item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details.}
+}
+\value{
+An object representing the subsetted data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 }
 \description{
 Subset a data source by rows and/or columns
 }
 \details{
-This is a method for the \code{\link[base]{subset}} generic from base R. It combines the effects of the \code{filter} and \code{select} verbs, allowing you to subset a RevoScaleR data source (typically an xdf file) by rows and columns simultaneously. The advantage of this for an xdf file is that it significantly reduces the amount of I/O compared to doing the row and column subsetting in separate steps.
+This is a method for the \code{\link[base]{subset}} generic from base R. It combines the effects of the \code{filter} and \code{select} verbs, allowing you to subset a RevoScaleR data source (typically an xdf file) by rows and columns simultaneously. The advantage of this for an Xdf file is that it significantly reduces the amount of I/O compared to doing the row and column subsetting in separate steps.
 }
 \seealso{
 \code{\link[base]{subset}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{select}}, \code{\link[RevoScaleR]{rxDataStep}}

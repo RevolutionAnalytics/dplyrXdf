@@ -4,13 +4,15 @@
 #
 #' Most of the one-table dplyrXdf verbs accept an \code{.rxArgs} argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the verb in question; here is a list of the verbs and the underlying RevoScaleR function that they call:
 #' \itemize{
-#' \item \code{filter} and \code{select}: \code{rxDataStep}
-#' \item \code{mutate} and \code{transmute}: \code{rxDataStep}
-#' \item \code{summarise}: depending on the method chosen, \code{rxCube} or \code{rxSummary}
-#' \item \code{arrange}: \code{rxSort}
-#' \item \code{distinct}: \code{rxDataStep}
-#' \item \code{factorise}: \code{rxFactors}
-#' \item \code{doXdf}: \code{rxDataStep}
+#'  \item \code{subset}, \code{filter} and \code{select}: \code{rxDataStep}
+#'  \item \code{mutate} and \code{transmute}: \code{rxDataStep}
+#'  \item \code{summarise}: depending on the method chosen, \code{rxCube} or \code{rxSummary}
+#'  \item \code{arrange}: \code{rxSort}
+#'  \item \code{rename}: \code{rxDataStep} (only if data movement is required)
+#'  \item \code{distinct}: \code{rxDataStep}
+#'  \item \code{factorise}: \code{rxFactors}
+#'  \item \code{doXdf}: \code{rxDataStep}
+#'  \item \code{persist}: \code{rxDataStep}
 #' }
 #'
 #' You should use the \code{.rxArgs} argument with caution, as some verbs may modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. However, when working with big datasets this feature can help save a lot of processing time by avoiding unnecessary disk traffic.
@@ -19,7 +21,6 @@
 #' \itemize{
 #'  \item \code{group_by}: this verb doesn't do any processing; it only sets things up for subsequent verbs.
 #'  \item \code{do}: the underlying functionality is provided by data frames and \code{dplyr::do}.
-#'  \item \code{rename}: this verb only changes the metadata in an xdf file; it doesn't touch the data itself.
 #' }
 #' @seealso
 #' \code{\link{rxTransform}}

@@ -6,6 +6,7 @@
 \alias{doXdf_}
 \alias{doXdf_.RxFileData}
 \alias{doXdf_.grouped_tbl_xdf}
+\alias{do_}
 \alias{do_.RxFileData}
 \alias{do_.grouped_tbl_xdf}
 \title{Do arbitrary operations on a tbl}
@@ -16,11 +17,11 @@ doXdf(.data, ...)
 
 doXdf_(.data, ..., .dots)
 
-\method{doXdf_}{RxFileData}(.data, ..., .dots)
+\method{doXdf_}{RxFileData}(.data, ..., .rxArgs, .dots)
 
-\method{do_}{grouped_tbl_xdf}(.data, ..., .dots)
+\method{do_}{grouped_tbl_xdf}(.data, ..., .output, .dots)
 
-\method{doXdf_}{grouped_tbl_xdf}(.data, ..., .dots)
+\method{doXdf_}{grouped_tbl_xdf}(.data, ..., .output, .rxArgs, .dots)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}
@@ -28,6 +29,8 @@ doXdf_(.data, ..., .dots)
 \item{...}{Expressions to apply.}
 
 \item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details.}
+
+\item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
 }
 \value{
 The \code{do} and \code{doXdf} verbs always return a data frame, unlike the other verbs for Xdf objects. This is because they are meant to execute code that can return arbitrarily complex objects, and Xdf files can only store atomic data.

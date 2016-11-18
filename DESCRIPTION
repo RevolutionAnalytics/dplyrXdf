@@ -17,7 +17,7 @@ LazyData: true
 Collate:
     '00rxArgs.R'
     'arrange_xdf.R'
-    'copy_xdf.R'
+    'createOutput.R'
     'distinct_xdf.R'
     'do_xdf.R'
     'dplyr_pkg.R'
@@ -27,12 +27,15 @@ Collate:
     'tbl_xdf.R'
     'group_by_xdf.R'
     'hdfs_utils.R'
+    'join_utils.R'
+    'joins_unsupported.R'
     'joins_xdf.R'
     'mutate_xdf.R'
     'onLoad.R'
     'persist_tbl_xdf.R'
     'rename_xdf.R'
     'select_xdf.R'
+    'simpleRegroup.R'
     'split_groups.R'
     'subset_xdf.R'
     'summarise_xdf.R'
@@ -43,6 +46,8 @@ Collate:
     'tbl_df_methods.R'
     'tbl_utils.R'
     'transmute_xdf.R'
+    'union_xdf.R'
+    'workdir_utils.R'
 Suggests:
     knitr
 VignetteBuilder: knitr
