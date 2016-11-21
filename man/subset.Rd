@@ -19,9 +19,9 @@ subset_(.data, ...)
 
 \item{subset}{Logical expression indicating rows to keep.}
 
-\item{select}{Columns to select. See \code{select} for the ways in which you can keep or drop columns.}
+\item{select}{Columns to select. See \code{link[dplyr]{select}} for the ways in which you can keep or drop columns.}
 
-\item{...}{Other arguments; use \code{\link{.rxArgs}} to pass arguments to \code{rxDataStep}.}
+\item{...}{Other arguments passed to lower-level functions.}
 
 \item{.output}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
 

@@ -21,13 +21,14 @@
 }
 \value{
 An object representing the sorted data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
-
-\code{\link{rxSort}}, \code{\link[dplyr]{arrange}} in package dplyr
 }
 \description{
 Arrange the rows in an Xdf file
 }
 \details{
 The underlying RevoScaleR function is \code{rxSort}. This has many sorting options, including removing duplicated keys, adding a column of frequency counts, and so on.
+}
+\seealso{
+\code{\link{rxSort}}, \code{\link[dplyr]{arrange}} in package dplyr
 }
 

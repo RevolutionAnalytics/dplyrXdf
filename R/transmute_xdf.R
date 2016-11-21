@@ -45,7 +45,7 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
     xdflst <- split_groups(.data)
     outlst <- createSplitOutput(xdflst, .output)
     outlst <- rxExec(transmute_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), exprs, .rxArgs, grps,
-        execObjects=c("deleteTbl", "newTbl"), packagesToLoad="dplyrXdf")
+        execObjects="deleteTbl", packagesToLoad="dplyrXdf")
     combine_groups(outlst, createOutput(.data, .output), grps)
 }
 

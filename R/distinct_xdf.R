@@ -80,7 +80,7 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots, .keep
     xdflst <- split_groups(.data)
     outlst <- createSplitOutput(xdflst, .output)
     outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), names(exprs), .rxArgs, .keep_all,
-        execObjects=c("pemaDistinct", "newTbl"), packagesToLoad="dplyrXdf")
+        execObjects=c("pemaDistinct", "deleteTbl"), packagesToLoad="dplyrXdf")
     combine_groups(outlst, createOutput(.data, .output), grps)
 }
 

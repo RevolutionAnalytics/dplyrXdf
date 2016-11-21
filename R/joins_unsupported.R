@@ -1,10 +1,3 @@
-#' Unsupported joins/set operations
-#'
-#' These operations are currently not supported for ScaleR data sources.
-#'
-#' @param x, y ScaleR data sources, or tbls wrapping the same.
-#' @param ... Other arguments passed on to methods.
-#'
 #' @rdname setops 
 #' @export
 intersect.RxFileData <- function(x, y, ...)

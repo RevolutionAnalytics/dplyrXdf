@@ -2,8 +2,8 @@
 #'
 #' @param .data A data source object, or tbl wrapping the same.
 #' @param subset Logical expression indicating rows to keep.
-#' @param select Columns to select. See \code{select} for the ways in which you can keep or drop columns.
-#' @param ... Other arguments; use \code{\link{.rxArgs}} to pass arguments to \code{rxDataStep}.
+#' @param select Columns to select. See \code{link[dplyr]{select}} for the ways in which you can keep or drop columns.
+#' @param ... Other arguments passed to lower-level functions.
 #' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.

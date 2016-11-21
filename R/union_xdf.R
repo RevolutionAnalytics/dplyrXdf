@@ -1,9 +1,31 @@
 # duplicate the generic from dplyr 0.5, to allow install with dplyr <= 0.4.3
+
+#' Set operations on data sources
+#'
+#' @param x, y Data sources.
+#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
+#' @param ... Not currently used.
+#'
+#' @details
+#' Currently, only \code{union} and \code{union_all} are supported for RevoScaleR data sources. The code uses \code{rxDataStep(append="rows")} to do the union; this can be much faster than using \code{rxMerge(type="union")}.
+#'
+#' @return
+#' An object representing the joined data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+#'
+#' @seealso
+#' \code{\link[dplyr]{setops}} in package dplyr
+#' @aliases setops union union_all intersect setdiff setequal
+#' @name setops
+NULL
+
+#' @rdname setops
 #' @export
 union_all <- function(x, y, .output, .rxArgs, ...)
 UseMethod("union_all")
 
 
+#' @rdname setops
 #' @export
 union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
 {
@@ -56,8 +78,8 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
     dots <- rxArgs(dots)
 
     exprs <- dots$exprs
-    if(missing(.output)) .output <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+    if(missing(.output)) .output <- NA
+    if(missing(.rxArgs)) .rxArgs <- NULL
     grps <- groups(x)
 
     # if output is a data frame: convert x and y to df, run dplyr::union_all
@@ -93,6 +115,7 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
 }
 
 
+#' @rdname setops
 #' @export
 union.RxFileData <- function(x, y, .output, .rxArgs, ...)
 {

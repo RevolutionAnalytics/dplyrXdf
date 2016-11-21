@@ -14,8 +14,8 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{rename}} in package dplyr
-#" @aliases rename rename_
 #' @rdname rename
+#' @aliases rename rename_
 #' @export
 rename_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 {

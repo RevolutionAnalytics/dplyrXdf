@@ -1,4 +1,4 @@
-#' Rename columns in an Xdf file
+#' Select columns in a data source
 #'
 #' @param .data A data source.
 #' @param ... Unquoted variables to select.
@@ -14,8 +14,8 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{select}} in package dplyr
-#" @aliases select select_
 #' @rdname select
+#' @aliases select select_
 #' @export
 select_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
 {
