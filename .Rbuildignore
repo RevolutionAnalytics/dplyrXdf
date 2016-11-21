@@ -1,0 +1,6 @@
+^.*\.rproj$
+^\.vs$
+^.*\.tss$
+^.*\.rxproj$
+^.*\.sln$
+^misc$
