@@ -1,45 +1,45 @@
 #' @export
-left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
+left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
 {    
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "left", ...)
+    merge_base(x, y, by, copy, "left", .output, .rxArgs, ...)
 }
 
 
 #' @export
-right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
+right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "right", ...)
+    merge_base(x, y, by, copy, "right", .output, .rxArgs, ...)
 }
 
 
 #' @export
-inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
+inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "inner", ...)
+    merge_base(x, y, by, copy, "inner", .output, .rxArgs, ...)
 }
 
 
 #' @export
-full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
+full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "full", ...)
+    merge_base(x, y, by, copy, "full", .output, .rxArgs, ...)
 }
 
 
 #' @export
-semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
+semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -55,12 +55,12 @@ semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
         yFile <- tblSource(y)
         deleteTbl(yFile)
     })
-    merge_base(x, y, by, copy, "inner", ...)
+    merge_base(x, y, by, copy, "inner", .output, .rxArgs,  ...)
 }
 
 
 #' @export
-anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
+anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -77,17 +77,17 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, ...)
         yFile <- tblSource(y)
         deleteTbl(yFile)
     })
-    merge_base(x, y, by, copy, "left", ...) %>%
+    merge_base(x, y, by, copy, "left", .output, .rxArgs, ...) %>%
         subset(is.na(.ones), -.ones)
 }
 
 
-merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output, .rxArgs=NULL)
+merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output, .rxArgs)
 {
     stopIfHdfs(x, "merging not supported on HDFS")
     stopIfHdfs(y, "merging not supported on HDFS")
 
-    # copy not used by dplyrXdf; only for dplyr compatibility
+    # copy not used by dplyrXdf at the moment
     if(copy)
         warning("copy argument not currently used")
 
@@ -105,11 +105,14 @@ merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output, .rxArgs=NULL)
             deleteTbl(y)
      })
 
-    grps <- groups(x)
-    is(missing(.output))
+    if(missing(.output))
         .output <- NA
+    if(missing(.rxArgs))
+        .rxArgs <- NULL
+
+    grps <- groups(x)
     .output <- createOutput(x, .output)
-    cl <- quote(rxMerge(x, y, matchVars=by$y, outFile=.output, type=type, duplicateVarExt=c("x", "y")))
+    cl <- quote(rxMerge(x, y, matchVars=by$y, outFile=.output, type=type, duplicateVarExt=c("x", "y"), overwrite=TRUE))
     cl[names(.rxArgs)] <- .rxArgs
 
     out <- eval(cl)

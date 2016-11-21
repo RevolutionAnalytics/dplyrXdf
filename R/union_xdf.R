@@ -1,6 +1,6 @@
 # duplicate the generic from dplyr 0.5, to allow install with dplyr <= 0.4.3
 #' @export
-union_all <- function(x, y, ...)
+union_all <- function(x, y, .output, .rxArgs, ...)
 UseMethod("union_all")
 
 
@@ -94,12 +94,12 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
 
 
 #' @export
-union.RxFileData <- function(x, y, ...)
+union.RxFileData <- function(x, y, .output, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
 
     # call union_all.RxFileData explicitly to allow use in dplyr < 0.5
-    union_all.RxFileData(x, y, ...) %>% distinct
+    union_all.RxFileData(x, y, .output, .rxArgs, ...) %>% distinct
 }
 
