@@ -6,15 +6,15 @@
 \alias{persist.tbl_xdf}
 \title{Copy an xdf tbl to a permanent storage location.}
 \usage{
-persist(data, ...)
+persist(.data, ...)
 
-\method{persist}{tbl_xdf}(data, outFile, overwrite = TRUE, move = FALSE,
+\method{persist}{tbl_xdf}(.data, outFile, overwrite = TRUE, move = FALSE,
   ...)
 
-\method{persist}{RxFileData}(data, ...)
+\method{persist}{RxFileData}(.data, ...)
 }
 \arguments{
-\item{data}{An xdf tbl}
+\item{.data}{An xdf tbl}
 
 \item{...}{Other arguments to \code{\link[RevoScaleR]{rxDataStep}}}
 
@@ -31,7 +31,7 @@ An \code{RxXdfData} object pointing to the new xdf file.
 Copy an xdf tbl to a permanent storage location.
 }
 \details{
-By default, the underlying data for an xdf tbl is saved as a file in the R temporary directory, and is managed by dplyrXdf. This can cause confusion when a tbl is reused by later dplyrXdf operations, which can overwrite or delete the data.
+By default, the underlying data for an xdf tbl is saved as a file in the R temporary directory, and is managed by dplyrXdf. This can cause confusion and errors when a tbl is reused by later dplyrXdf operations, which can overwrite or delete the data.
 
 The \code{persist} verb is a simple routine that either copies or moves the data into a new xdf file at the location given by \code{outFile}. This ensures that the data will not be modified by dplyrXdf, and will be persistent beyond the end of the R session.
 

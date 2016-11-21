@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Using dplyrXdf}
   \usepackage[utf8]{inputenc}
 ---
 
@@ -16,48 +17,151 @@ library(dplyrXdf)
 
 This vignette goes into more details on using dplyrXdf. Most of dplyrXdf works the same way as dplyr, so if you know how to use the latter, then you also (mostly) know how to use the former. However, there are some places in which the two packages are different. These will be described below.
 
-
-## Single-table verbs
-
-We'll use the nycflights13 flights data to demonstrate the use of dplyrXdf.
+As with the introductory vignette, we'll use the nycflights13 flights data to demonstrate the use of dplyrXdf.
 
 ```{r}
 library(dplyrXdf)  # also loads dplyr
 library(nycflights13)
 
 # write the data as an xdf file
-flightsXdf <- rxDataFrameToXdf(flights, "flights.xdf", overwrite=TRUE)
+flightsXdf <- rxDataStep(flights, "flights.xdf", overwrite=TRUE)
 ```
 
-### The `.rxArgs` parameter
 
-The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don't need to touch these, it can sometimes be useful to do so. For example, when using `mutate` or `transmute`, you could specify more complicated transformations via a `transformFunc` ([see the help for `rxTransform`](http://www.rdocumentation.org/packages/RevoScaleR/functions/rxTransform)). Similarly, rather than chaining together a `mutate` and a `summarise` --- which would involve creating an intermediate file --- you could incorporate the variable transformation into the `summarise` itself. More low-level uses of such arguments include setting the block size for an xdf file, changing the compression level, limiting the number of rows, and so on.
+## Tbls and file management
+
+To facilitate the task of file management, dplyrXdf defines a new `tbl_xdf` class that extends the `RxXdfData` class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an `tbl_xdf` object is just a normal xdf data source; thus, existing code dealing with xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a `tbl_xdf`, as opposed to a normal xdf file, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.
+
+To create a `tbl_xdf` yourself, you can call the `tbl` function on an xdf data source:
+
+```{r}
+flightsTbl <- tbl(flightsXdf)
+flightsTbl
+```
+
+However this should rarely (if ever) be necessary, as dplyrXdf will automatically handle such matters.
+
+A side-effect of dplyrXdf managing files for you is that you should be careful when passing the result from an initial pipeline into subsequent pipelines. Consider the following example:
+
+```{r, eval=FALSE}
+# pipeline 1
+output1 <- flightsXdf %>%
+    mutate(delay=(arr_delay + dep_delay)/2)
+
+# use the output from pipeline 1
+output2 <- output1 %>%
+    group_by(carrier) %>%
+    summarise(delay=mean(delay))
+
+# reuse the output from pipeline 1 -- WRONG
+output3 <- output1 %>%
+    group_by(dest) %>%
+    summarise(delay=mean(delay))
+```
+
+The bug in this code is that the second pipeline will overwrite or delete its input, so the third pipeline will fail. This is consistent with dplyrXdf's philosophy of only saving the most recent output of a pipeline, where a pipeline is defined as _all operations starting from a raw xdf file._ However, in this case it isn't what we want.
+
+Similarly, dplyrXdf creates its output files in a temporary directory, which will be deleted when you quit R. This saves you having to manually delete files that are no longer in use, but it does mean that you must copy the results of your analyses to a permanent location if you want to keep it around.
+
+dplyrXdf gives you two ways to deal with these issues.
+
+### Specifying the output format
+
+First, all dplyrXdf verbs support a special argument `.output`, which controls how the output data is handled. If you don't specify a value for this argument, the data will be saved to a `tbl_xdf` which will be managed by dplyrXdf. This supports the default behaviour of dplyrXdf, whereby data files are automatically created and deleted inside a pipeline. There are two other options for `.output`:
+
+- If you specify `.output = NULL`, the data will be returned in memory as a data frame.
+
+- If `.output` is a character string giving a file name, the data will be saved to an xdf file at that location, and a persistent xdf data source will be returned.
+
+To show how this works, we can modify pipeline 1 above to save its output to a persistent location. This resets the status of the pipeline, so that subsequent operations will know not to modify the data.
+
+```{r, eval=FALSE}
+# pipeline 1 -- use .output to save the data
+output1 <- flightsXdf %>%
+    mutate(delay=(arr_delay + dep_delay)/2, .output="output1.xdf")
+
+# use the output from pipeline 1
+output2 <- output1 %>%
+    group_by(carrier) %>%
+    summarise(delay=mean(delay))
+
+# reuse the output from pipeline 1 -- this works as expected
+output3 <- output1 %>%
+    group_by(dest) %>%
+    summarise(delay=mean(delay))
+```
+
+### The `persist` verb
+
+The second way of creating a persistent xdf file is with the `persist` verb. This is a simple function that moves or copies its input to the specified location. Like the `.output` argument described above, it will also reset the status of the pipeline.
+
+```{r, eval=FALSE}
+# pipeline 1 -- use persist to save the data
+output1 <- flightsXdf %>%
+    mutate(delay=(arr_delay + dep_delay)/2) %>% persist("output1_persist.xdf")
+
+# use the output from pipeline 1
+output2 <- output1 %>%
+    group_by(carrier) %>%
+    summarise(delay=mean(delay))
+
+# reuse the output from pipeline 1 -- this also works as expected
+output3 <- output1 %>%
+    group_by(dest) %>%
+    summarise(delay=mean(delay))
+```
+
+In general, setting `.output` to save an xdf file is preferred to using the `persist` verb. You would use `persist` if you have already run a pipeline, and want to save its output after the fact.
+
+
+## The `subset` verb
+
+In dplyr, subsetting data is handled by two verbs: `filter` for subsetting by rows, and `select` for subsetting by columns. This is fine for data frames, where everything runs in memory, and for SQL databases, where the hard work is done by the database. For xdf files, however, this is suboptimal, as each verb translates into a separate I/O step where the data is read from disk, subsetted, then written out again. This can waste a lot of time with large datasets.
+
+As it turns out, base R has a `subset` generic which (as the name says) performs subsetting on both rows and columns. You've probably used it with data frames:
+
+```{r}
+subset(flights, month <= 6 & day == 1, c(dep_time, dep_delay, carrier))
+```
+
+dplyrXdf implements a method for `subset` that works for xdf files. The code is exactly the same as for a data frame, except that it creates another xdf file. This produces the same result as a `filter` followed by a `select`, but requires only half the amount of I/O.
+
+```{r}
+flightsXdfSub <- subset(flightsXdf, month <= 6 & day == 1, c(dep_time, dep_delay, carrier))
+class(flightsXdfSub)
+head(flightsXdfSub)
+```
+
+
+## The `.rxArgs` parameter
+
+The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don't need to touch these, it can sometimes be useful to do so. For example, when using `mutate` or `transmute`, you could specify [more complicated transformations via a `transformFunc`](https://msdn.microsoft.com/en-us/microsoft-r/scaler/rxtransform). Similarly, rather than chaining together a `mutate` and a `summarise` --- which would involve creating an intermediate file --- you could incorporate the variable transformation into the `summarise` itself. More low-level uses of such arguments include setting the block size for an xdf file, changing the compression level, limiting the number of rows, and so on.
 
 Most of the one-table dplyrXdf verbs accept an `.rxArgs` argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the verb in question; here is a list of the verbs and the underlying RevoScaleR function that they call:
 
-* `filter` and `select`: `rxDataStep`
+* `subset`, `filter` and `select`: `rxDataStep`
 * `mutate` and `transmute`: `rxDataStep`
 * `summarise`: depending on the method chosen, `rxCube` or `rxSummary`
 * `arrange`: `rxSort`
 * `distinct`: `rxDataStep`
 * `factorise`: depending on the data source, `rxFactors` (for an xdf) or `rxImport` (for a non-xdf file source)
 * `doXdf`: `rxDataStep`
+* Two-table verbs (`left_join`, `right_join` et al): `rxMerge`
 
-You should use the `.rxArgs` argument with caution, as some verbs may modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. However, when working with big datasets this feature can help save a lot of processing time by avoiding unnecessary disk traffic.
-
-See the help for each of the RevoScaleR functions for which arguments they support, and that you can pass via `.rxArgs`.
-
-
-### Transforming data with `mutate` and `transmute`
-
-These verbs work much the same way as in dplyr. You can also use the `.rxArgs` parameter to specify additional transformation arguments to `rxDataStep`. Here are some examples to illustrate the use of `mutate` and `transmute`:
+Here are some examples to illustrate the use of `.rxArgs`:
 
 ```{r}
-# a simple transformation
-flightsMut <- mutate(flightsXdf, delay = (dep_delay + arr_delay)/2)
-head(flightsMut)
+# subset, transform and summarise in the one step
+flightsSubsetSmry <- flightsXdf %>% group_by(day) %>%
+    summarise(delay=mean(delay), n=n(),
+        .rxArgs=list(
+            transforms=list(delay=(dep_delay + arr_delay)/2),
+            rowSelection=carrier == "UA"
+        )
+    )
+head(flightsSubsetSmry)
 
-# a more complex transformation involving a transformFunc
+# a complex transformation involving a transformFunc
 flightsTrans <- transmute(flightsXdf, 
     .rxArgs=list(
         transformFunc=function(varlist) with(varlist, {
@@ -88,38 +192,10 @@ flightsScores <- transmute(flightsXdf,
 head(flightsScores)
 ```
 
-It's important to note that any arguments passed in a `.transformFunc` are processed _after_ the transformations in the main call to `mutate` and `transmute`. For example, this won't work:
-
-```{r, eval=FALSE}
-mutate(flightsXdf, delayHrs=delay/60, 
-    .rxArgs=list(
-        transformFunc=function(varlist) with(varlist, {
-            delay <- (dep_delay + arr_delay)/2
-            list(delay=delay)
-        }),
-        transformVars=c("dep_delay", "arr_delay")
-    )
-)
-#> Error in doTryCatch(return(expr), name, parentenv, handler) : 
-#>   Error in executing R code: object 'delay' not found
-```
-
-Here, the variable `delayHrs` depends on `delay`, which is defined in a `transformFunc`. However, when dplyrXdf tries to compute `delayHrs`, the `transformFunc` has not yet been executed and so the code fails.
+You should use `.rxArgs` with caution, as some verbs modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. Nevertheless, if you are working with very large datasets and speed is important, this is one way to improve the efficiency of your code.
 
 
-### Summarising data with `summarise`
-
-You can incorporate much of the functionality of `filter` and `mutate` by including selection and transformation parameters in the `.rxArg` argument. Here is an example:
-
-```{r}
-flightsSmry <- flightsXdf %>%
-    group_by(carrier) %>%
-    summarise(sumdist=sum(dist_km),
-              .rxArgs=list(rowSelection=month > 6,
-                           transforms=list(dist_km=distance * 1.6093))
-    )
-head(flightsSmry)
-```
+## Setting the summary method for `summarise`
 
 For best performance, when using `summarise` you should request only those summary statistics supported by `rxCube` and/or `rxSummary`: sum, mean, min, max, sd, var and n (the count of observations). If you request something else, dplyrXdf will split the dataset into multiple data frames, one per group, and call `dplyr::summarise` on each data frame; this will generally work as intended, but may be slow.
 
@@ -131,7 +207,7 @@ The dplyrXdf version of `summarise` can choose from a number of methods for comp
 4. Split the dataset into multiple data frames, call `dplyr::summarise` on each
 5. Split the dataset into multiple xdf files, call `rxSummary` on each
 
-Only methods 1 and 2 support the use of `.rxArgs`.
+Only methods 1, 2 and 3 support the use of `.rxArgs`.
 
 In addition, dplyrXdf `summarise` doesn't support expressions as summary statistics. For example, something like `summarise(datasrc, weightedMean=sum(x*wt)/sum(wt))` works when `datasrc` is a data frame, but not when it is an xdf. To get the desired result, one workaround would be to use three verbs in a pipeline:
 
@@ -150,12 +226,7 @@ datasrc %>%
 ```
 
 
-### Selecting variables with `select`
-
-The dplyrXdf version of `select` doesn't support renaming variables as part of the selection. Instead, use a `rename` following the `select` to rename variables. The `rename` verb is very fast since it only modifies the metadata portion of an xdf file, rather than the data itself.
-
-
-### Creating factors with `factorise`
+## Creating factors with `factorise`
 
 Many RevoScaleR functions are optimised to work best with factors, or require factors as input. dplyrXdf provides a simple shell to the `rxFactors` function to convert non-factor variables to factors. The syntax is as follows:
 
@@ -177,7 +248,8 @@ There are a number of ways to specify the variables to convert, in addition to n
 
 By default, if no variables are specified in the `factorise` call, then all character variables will be converted to factors. As with `select`, renaming variables as part of the factor conversion is not supported.
 
-### Executing code with `do` and `doXdf`
+
+## Executing code with `do` and `doXdf`
 
 The `do` verb is an exception to the rule that `dplyrXdf` verbs write their output as xdf files. This is because `do` executes arbitrary R code, and can return arbitrary R objects; while a data frame is capable of storing these objects, an xdf file is limited to character and numeric vectors only.
 
@@ -192,18 +264,28 @@ flightsMods <- flightsXdf %>%
 flightsMods$model[[1]]
 ```
 
-## Two-table verbs
 
-dplyrXdf currently supports the main table-join verbs from dplyr: `left_join`, `right_join`, `inner_join`, `full_join`, `semi_join` and `anti_join`. The syntax is the same as for the dplyr versions, including joining on non-matching column names. It's also possible to join xdf files with data frames.
+## Setting the tbl directory
 
-The set operations `intersect`, `union` and `setdiff` are not supported. A workaround for `union` is to use `rxMerge` with `type="union"` (which does a UNION ALL, in SQL lingo), followed by a `distinct`:
+By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large xdf files. You can view the location of the current xdf tbl directory with `getXdfTblDir`:
 
 ```{r}
-# same as union(flightsXdf, flightsXdf)
-flightsUnion <- rxMerge(flightsXdf, flightsXdf, outFile="flightsUnion.xdf",
-                        type="union", overwrite=TRUE) %>% distinct
-nrow(flightsXdf)
-nrow(flightsUnion)  # same as nrow(flightsXdf)
+getXdfTblDir()
 ```
 
+Similarly, you can change the location of the xdf tbl directory with the `setXdfTblDir` function:
+
+```{r, eval=FALSE}
+# set the tbl directory to a network drive (on Windows)
+setXdfTblDir("n:/Rtemp")
+```
+
+## Data frame methods
+
+dplyrXdf includes a number of convenience functions for exporting data from xdf to data frames:
+
+- An `as.data.frame` method for xdf files (and other RevoScaleR data sources).
+- Methods for `$` and `[[` that will extract a given column as a vector in memory.
+
+These are simple wrappers around RevoScaleR's `rxDataStep` function that turn off the default size check. Make sure you have enough memory to hold the data before using them!
 

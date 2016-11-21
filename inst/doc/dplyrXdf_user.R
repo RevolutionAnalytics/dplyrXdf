@@ -8,14 +8,77 @@ library(dplyrXdf)  # also loads dplyr
 library(nycflights13)
 
 # write the data as an xdf file
-flightsXdf <- rxDataFrameToXdf(flights, "flights.xdf", overwrite=TRUE)
+flightsXdf <- rxDataStep(flights, "flights.xdf", overwrite=TRUE)
 
 ## ------------------------------------------------------------------------
-# a simple transformation
-flightsMut <- mutate(flightsXdf, delay = (dep_delay + arr_delay)/2)
-head(flightsMut)
+flightsTbl <- tbl(flightsXdf)
+flightsTbl
 
-# a more complex transformation involving a transformFunc
+## ---- eval=FALSE---------------------------------------------------------
+#  # pipeline 1
+#  output1 <- flightsXdf %>%
+#      mutate(delay=(arr_delay + dep_delay)/2)
+#  
+#  # use the output from pipeline 1
+#  output2 <- output1 %>%
+#      group_by(carrier) %>%
+#      summarise(delay=mean(delay))
+#  
+#  # reuse the output from pipeline 1 -- WRONG
+#  output3 <- output1 %>%
+#      group_by(dest) %>%
+#      summarise(delay=mean(delay))
+
+## ---- eval=FALSE---------------------------------------------------------
+#  # pipeline 1 -- use .output to save the data
+#  output1 <- flightsXdf %>%
+#      mutate(delay=(arr_delay + dep_delay)/2, .output="output1.xdf")
+#  
+#  # use the output from pipeline 1
+#  output2 <- output1 %>%
+#      group_by(carrier) %>%
+#      summarise(delay=mean(delay))
+#  
+#  # reuse the output from pipeline 1 -- this works as expected
+#  output3 <- output1 %>%
+#      group_by(dest) %>%
+#      summarise(delay=mean(delay))
+
+## ---- eval=FALSE---------------------------------------------------------
+#  # pipeline 1 -- use persist to save the data
+#  output1 <- flightsXdf %>%
+#      mutate(delay=(arr_delay + dep_delay)/2) %>% persist("output1_persist.xdf")
+#  
+#  # use the output from pipeline 1
+#  output2 <- output1 %>%
+#      group_by(carrier) %>%
+#      summarise(delay=mean(delay))
+#  
+#  # reuse the output from pipeline 1 -- this also works as expected
+#  output3 <- output1 %>%
+#      group_by(dest) %>%
+#      summarise(delay=mean(delay))
+
+## ------------------------------------------------------------------------
+subset(flights, month <= 6 & day == 1, c(dep_time, dep_delay, carrier))
+
+## ------------------------------------------------------------------------
+flightsXdfSub <- subset(flightsXdf, month <= 6 & day == 1, c(dep_time, dep_delay, carrier))
+class(flightsXdfSub)
+head(flightsXdfSub)
+
+## ------------------------------------------------------------------------
+# subset, transform and summarise in the one step
+flightsSubsetSmry <- flightsXdf %>% group_by(day) %>%
+    summarise(delay=mean(delay), n=n(),
+        .rxArgs=list(
+            transforms=list(delay=(dep_delay + arr_delay)/2),
+            rowSelection=carrier == "UA"
+        )
+    )
+head(flightsSubsetSmry)
+
+# a complex transformation involving a transformFunc
 flightsTrans <- transmute(flightsXdf, 
     .rxArgs=list(
         transformFunc=function(varlist) with(varlist, {
@@ -46,28 +109,6 @@ flightsScores <- transmute(flightsXdf,
 head(flightsScores)
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  mutate(flightsXdf, delayHrs=delay/60,
-#      .rxArgs=list(
-#          transformFunc=function(varlist) with(varlist, {
-#              delay <- (dep_delay + arr_delay)/2
-#              list(delay=delay)
-#          }),
-#          transformVars=c("dep_delay", "arr_delay")
-#      )
-#  )
-#  #> Error in doTryCatch(return(expr), name, parentenv, handler) :
-#  #>   Error in executing R code: object 'delay' not found
-
-## ------------------------------------------------------------------------
-flightsSmry <- flightsXdf %>%
-    group_by(carrier) %>%
-    summarise(sumdist=sum(dist_km),
-              .rxArgs=list(rowSelection=month > 6,
-                           transforms=list(dist_km=distance * 1.6093))
-    )
-head(flightsSmry)
-
-## ---- eval=FALSE---------------------------------------------------------
 #  datasrc %>%
 #      mutate(xwt=sum(x*wt)) %>%
 #      summarise(xwt=sum(xwt), wt=sum(wt)) %>%
@@ -92,9 +133,9 @@ flightsMods <- flightsXdf %>%
 flightsMods$model[[1]]
 
 ## ------------------------------------------------------------------------
-# same as union(flightsXdf, flightsXdf)
-flightsUnion <- rxMerge(flightsXdf, flightsXdf, outFile="flightsUnion.xdf",
-                        type="union", overwrite=TRUE) %>% distinct
-nrow(flightsXdf)
-nrow(flightsUnion)  # same as nrow(flightsXdf)
+getXdfTblDir()
+
+## ---- eval=FALSE---------------------------------------------------------
+#  # set the tbl directory to a network drive (on Windows)
+#  setXdfTblDir("n:/Rtemp")
 

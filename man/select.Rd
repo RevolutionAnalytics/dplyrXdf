@@ -26,7 +26,7 @@ An object representing the transformed data. This depends on the \code{.output} 
 Select columns in a data source
 }
 \details{
-All the special functions mentioned in the documentation for \code{\link[dplyr]{select}} will also work with dplyrXdf.
+All the special functions mentioned in the documentation for \code{\link[dplyr]{select}} will also work with dplyrXdf. Note that renaming a variable is \emph{not} supported in dplyrXdf \code{select}. If you want to do this, follow the \code{select} with a \code{rename}; the latter is very fast, as it only modifies the metadata portion of an xdf file, not the data itself.
 }
 \seealso{
 \code{\link[dplyr]{select}} in package dplyr

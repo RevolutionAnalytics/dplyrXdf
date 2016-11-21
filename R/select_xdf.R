@@ -7,7 +7,7 @@
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
 #' @details
-#' All the special functions mentioned in the documentation for \code{\link[dplyr]{select}} will also work with dplyrXdf.
+#' All the special functions mentioned in the documentation for \code{\link[dplyr]{select}} will also work with dplyrXdf. Note that renaming a variable is \emph{not} supported in dplyrXdf \code{select}. If you want to do this, follow the \code{select} with a \code{rename}; the latter is very fast, as it only modifies the metadata portion of an xdf file, not the data itself.
 #'
 #' @return
 #' An object representing the transformed data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.

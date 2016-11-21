@@ -8,7 +8,7 @@ library(dplyrXdf)  # also loads dplyr
 library(nycflights13)
 
 # write the data as an xdf file
-flightsXdf <- rxDataFrameToXdf(flights, "flights.xdf", overwrite=TRUE)
+flightsXdf <- rxDataStep(flights, "flights.xdf", overwrite=TRUE)
 
 ## ------------------------------------------------------------------------
 # select the rows
@@ -56,44 +56,10 @@ flightsSmry <- flightsXdf %>%
 head(flightsSmry)
 
 ## ------------------------------------------------------------------------
-airportsXdf <- rxDataFrameToXdf(airports, "airports.xdf", overwrite=TRUE)
+airportsXdf <- rxDataStep(airports, "airports.xdf", overwrite=TRUE)
 flightsJoin <- left_join(
     flightsXdf %>% select(year:day, hour, origin, dest, tailnum, carrier),
     airportsXdf,
     by=c("dest"="faa"))
 head(flightsJoin)
-
-## ---- eval=FALSE---------------------------------------------------------
-#  # pipeline 1
-#  output1 <- flightsXdf %>%
-#      mutate(delay=(arr_delay + dep_delay)/2)
-#  
-#  # use the output from pipeline 1
-#  output2 <- output1 %>%
-#      group_by(airline) %>%
-#      summarise(delay=mean(delay))
-#  
-#  # reuse the output from pipeline 1 -- WRONG
-#  output3 <- output1 %>%
-#      group_by(dest) %>%
-#      summarise(delay=mean(delay))
-
-## ---- eval=FALSE---------------------------------------------------------
-#  # pipeline 1 -- use persist to save the data
-#  output1 <- flightsXdf %>%
-#      mutate(delay=(arr_delay + dep_delay)/2) %>% persist("output1.xdf")
-#  
-#  # use the output from pipeline 1
-#  output2 <- output1 %>%
-#      group_by(carrier) %>%
-#      summarise(delay=mean(delay))
-#  
-#  # reuse the output from pipeline 1 -- this works as expected
-#  output3 <- output1 %>%
-#      group_by(dest) %>%
-#      summarise(delay=mean(delay))
-
-## ------------------------------------------------------------------------
-flightsTbl <- tbl(flightsXdf)
-flightsTbl
 
