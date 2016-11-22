@@ -37,7 +37,7 @@ do_.RxFileData <- function(.data, ..., .dots)
         warning("do() doesn't support .rxArgs argument", call.=FALSE)
         .rxArgs <- NULL
     }
-    if(!is.null(.output))
+    if(!is.null(.output) && !is.na(.output))
         warning("do() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(dots)
@@ -77,7 +77,7 @@ doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    if(!is.null(.output))
+    if(!is.null(.output) && !is.na(.output))
         warning("doXdf() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(dots)
@@ -110,7 +110,7 @@ do_.grouped_tbl_xdf <- function(.data, ..., .output, .dots)
         warning("do() doesn't support .rxArgs argument", call.=FALSE)
         .rxArgs <- NULL
     }
-    if(!is.null(.output))
+    if(!is.null(.output) && !is.na(.output))
         warning("do() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(exprs)
@@ -148,7 +148,7 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    if(!is.null(.output))
+    if(!is.null(.output) && !is.na(.output))
         warning("doXdf() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(exprs)
