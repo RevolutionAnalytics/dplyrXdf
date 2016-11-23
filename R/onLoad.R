@@ -446,7 +446,7 @@
         rxHadoopRemoveDir(e$hdfsWorkDir, skipTrash=TRUE, intern=TRUE)
     # remove local working directory
     if(tempdir() != .dxOptions$localWorkDir)
-        unlink(.dxOptions$localWorkDir)
+        unlink(.dxOptions$localWorkDir, recursive=TRUE)
     NULL
 }
 

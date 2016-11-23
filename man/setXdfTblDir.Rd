@@ -5,23 +5,22 @@
 \alias{setXdfTblDir}
 \title{Get and set the xdf tbl directory}
 \usage{
-setXdfTblDir(dir, fileSystem = rxGetFileSystem())
+setXdfTblDir(path, fileSystem = rxGetFileSystem())
 
 getXdfTblDir(fileSystem = rxGetFileSystem())
 }
 \arguments{
-\item{dir}{Directory to use for saving xdf tbls}
+\item{path}{Location in which to save xdf tbls. If missing, defaults to the R temporary directory.}
 
-\item{fileSystem}{The filesystem for which to set the tbl directory; can be either "hdfs" or "local". Currently only the local filesystem is supported.}
+\item{fileSystem}{The filesystem for which to set or get the tbl directory; can be either "hdfs" or "local". Currently only the local filesystem is supported.}
 }
 \description{
-Get and set the xdf tbl directory
+By default, dplyrXdf will save the xdf files it creates in the R temporary directory. This can be a problem if it is in a location with limited disk space. Use \code{setXdfTblDir} to change the xdf tbl directory, and \code{getXdfTblDir} to view it.
 }
 \details{
-By default, dplyrXdf will save the xdf files it creates to the R temporary directory. This can be a problem if the temporary directory is in a location with limited disk space. To change the directory to another location, use \code{setXdfTblDir}; to view the current location, use \code{getXdfTblDir}.
+If \code{path} is supplied, \code{setXdfTblDir} creates a new directory (with a unique name) located \emph{under} \code{path}. This ensures that the files managed by dplyrXdf are properly separated from the rest of the filesystem.
 }
-\section{warning}{
- 
-You should only set the tbl directory at the beginning of an R session. If you change the directory in the middle of a session, dplyrXdf will no longer be able to find its tbls, which means they may become inaccessible.
+\seealso{
+\code{\link{rxGetFileSystem}}, \code{\link{rxSetFileSystem}}
 }
 
