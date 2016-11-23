@@ -24,3 +24,5 @@ vignettes/*.pdf
 
 # working files
 misc/
+tests/testthat/dx*
+tests/testthat/*.xdf
