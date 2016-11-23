@@ -49,6 +49,7 @@ Collate:
     'union_xdf.R'
     'workdir_utils.R'
 Suggests:
-    knitr
+    knitr,
+    testthat
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
