@@ -24,6 +24,7 @@ NULL
 union_all <- function(x, y, .output, .rxArgs, ...)
 UseMethod("union_all")
 
+#' @importFrom dplyr union
 
 #' @rdname setops
 #' @export
