@@ -1,4 +1,4 @@
-context("joins, left source = csv, output = xdf")
+context("Joins, left source = csv, output = xdf")
 
 df1 <- data.frame(a=letters[1:20], b=1:20, c=11:30, stringsAsFactors=FALSE)
 df2 <- data.frame(a=letters[7:26], d=as.character(1:20), e=11:30, stringsAsFactors=FALSE)
