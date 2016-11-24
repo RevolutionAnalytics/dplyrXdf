@@ -18,7 +18,7 @@ getXdfTblDir(fileSystem = rxGetFileSystem())
 By default, dplyrXdf will save the xdf files it creates in the R temporary directory. This can be a problem if it is in a location with limited disk space. Use \code{setXdfTblDir} to change the xdf tbl directory, and \code{getXdfTblDir} to view it.
 }
 \details{
-If \code{path} is supplied, \code{setXdfTblDir} creates a new directory (with a unique name) located \emph{under} \code{path}. This ensures that the files managed by dplyrXdf are properly separated from the rest of the filesystem.
+If \code{path} is supplied, \code{setXdfTblDir} creates a new directory (with a unique name) located \emph{under} \code{path}. This ensures that the files managed by dplyrXdf are properly isolated from the rest of the filesystem.
 }
 \seealso{
 \code{\link{rxGetFileSystem}}, \code{\link{rxSetFileSystem}}
