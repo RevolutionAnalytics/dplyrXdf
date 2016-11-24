@@ -112,6 +112,8 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
     cl[names(.rxArgs)] <- .rxArgs
 
     x <- eval(cl)
+    if(is.character(.output))  # do we want a persistent file?
+        x <- as(x, "RxXdfData")
     simpleRegroup(x, grps)
 }
 
