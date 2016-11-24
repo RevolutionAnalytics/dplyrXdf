@@ -104,8 +104,19 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ..
         yFile <- tblSource(y)
         deleteTbl(yFile)
     })
-    merge_base(x, y, by, copy, "left", .output, .rxArgs, ...) %>%
-        subset(is.na(.ones), -.ones)
+    if(missing(.output))
+    {
+        merge_base(x, y, by, copy, "left", .rxArgs, ...) %>%
+            subset(is.na(.ones), -.ones)
+    }
+    else
+    {
+        # horrible hack
+        # TODO: figure out a better way of passing .output
+        cl <- substitute(merge_base(x, y, by, copy, "left", .rxArgs, ...) %>%
+            subset(is.na(.ones), -.ones, .output=.output), list(.output=.output))
+        eval(cl)
+    }
 }
 
 

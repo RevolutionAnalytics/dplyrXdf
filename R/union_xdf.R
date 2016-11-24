@@ -124,6 +124,15 @@ union.RxFileData <- function(x, y, .output, .rxArgs, ...)
     stopIfHdfs(y, "joining not supported on HDFS")
 
     # call union_all.RxFileData explicitly to allow use in dplyr < 0.5
-    union_all.RxFileData(x, y, .output, .rxArgs, ...) %>% distinct
+    if(missing(.output))
+        union_all.RxFileData(x, y, .rxArgs, ...) %>% distinct
+    else
+    {
+        # horrible hack
+        # TODO: figure out a better way of passing .output
+        cl <- substitute(union_all.RxFileData(x, y, .rxArgs, ...) %>% distinct(.output=.output),
+            list(.output=.output))
+        eval(cl)
+    }
 }
 
