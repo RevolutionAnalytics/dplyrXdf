@@ -26,3 +26,4 @@ vignettes/*.pdf
 misc/
 tests/testthat/dx*
 tests/testthat/*.xdf
+tests/testthat/*.csv
