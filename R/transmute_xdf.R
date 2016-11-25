@@ -4,36 +4,36 @@ NULL
 
 #' @rdname mutate
 #' @export
-transmute_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
+transmute_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots)
     exprs <- dots$exprs
-    if(missing(.output)) .output <- dots$output
+    if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     if(any(sapply(exprs, is.null)))
         stop("do not set variables to NULL in transmute; to delete variables, leave them out of the function call")
 
-    .output <- createOutput(.data, .output)
-    transmute_base(.data, .output, exprs, .rxArgs)
+    .outFile <- createOutput(.data, .outFile)
+    transmute_base(.data, .outFile, exprs, .rxArgs)
 }
 
 
 #' @rdname mutate
 #' @export
-transmute_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
+transmute_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots)
 {
     stopIfHdfs(.data, "transmute on grouped data not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots)
     exprs <- dots$exprs
-    if(missing(.output)) .output <- dots$output
+    if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     grps <- groups(.data)
@@ -43,10 +43,10 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
         stop("cannot transmute grouping variable")
 
     xdflst <- split_groups(.data)
-    outlst <- createSplitOutput(xdflst, .output)
+    outlst <- createSplitOutput(xdflst, .outFile)
     outlst <- rxExec(transmute_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), exprs, .rxArgs, grps,
         execObjects="deleteTbl", packagesToLoad="dplyrXdf")
-    combine_groups(outlst, createOutput(.data, .output), grps)
+    combine_groups(outlst, createOutput(.data, .outFile), grps)
 }
 
 

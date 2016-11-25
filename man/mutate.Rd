@@ -11,27 +11,27 @@
 \alias{transmute_.grouped_tbl_xdf}
 \title{Add or modify variables}
 \usage{
-\method{mutate_}{RxFileData}(.data, ..., .output, .rxArgs, .dots)
+\method{mutate_}{RxFileData}(.data, ..., .outFile, .rxArgs, .dots)
 
-\method{mutate_}{grouped_tbl_xdf}(.data, ..., .output, .rxArgs, .dots)
+\method{mutate_}{grouped_tbl_xdf}(.data, ..., .outFile, .rxArgs, .dots)
 
-\method{transmute_}{RxFileData}(.data, ..., .output, .rxArgs, .dots)
+\method{transmute_}{RxFileData}(.data, ..., .outFile, .rxArgs, .dots)
 
-\method{transmute_}{grouped_tbl_xdf}(.data, ..., .output, .rxArgs, .dots)
+\method{transmute_}{grouped_tbl_xdf}(.data, ..., .outFile, .rxArgs, .dots)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}
 
 \item{...}{Variables to add or modify.}
 
-\item{.output}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
+\item{.outFile}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
 
 \item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
 
 \item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details. See "Details" below for information on passing \code{\link[RevoScaleR]{rxTransform}} arguments.}
 }
 \value{
-An object representing the transformed data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+An object representing the transformed data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 }
 \description{
 Use \code{mutate} to add new variables and preserve existing ones; use \code{transmute} to keep only new and modified variables.

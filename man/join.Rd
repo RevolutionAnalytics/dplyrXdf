@@ -16,22 +16,22 @@
 \alias{semi_join.RxFileData}
 \title{Join two data sources together}
 \usage{
-\method{left_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .output,
+\method{left_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
   .rxArgs, ...)
 
-\method{right_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .output,
+\method{right_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
   .rxArgs, ...)
 
-\method{inner_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .output,
+\method{inner_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
   .rxArgs, ...)
 
-\method{full_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .output,
+\method{full_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
   .rxArgs, ...)
 
-\method{semi_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .output,
+\method{semi_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
   .rxArgs, ...)
 
-\method{anti_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .output,
+\method{anti_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
   .rxArgs, ...)
 }
 \arguments{
@@ -41,14 +41,14 @@
 
 \item{copy}{If the data sources are not stored in the same system, whether to copy y to x's location. Not currently used.}
 
-\item{.output}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
+\item{.outFile}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
 
 \item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
 
 \item{...}{Not currently used.}
 }
 \value{
-An object representing the joined data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+An object representing the joined data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 }
 \description{
 Join two data sources together

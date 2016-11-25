@@ -2,7 +2,7 @@
 #'
 #' @param .data A data source.
 #' @param ... Variables to convert to factors.
-#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
@@ -22,7 +22,7 @@
 #' The method for \code{RxXdfData} objects is a shell around \code{\link[RevoScaleR]{rxFactors}}, which is the standard RevoScaleR function for factor manipulation. For \code{RxFileData} objects, the method calls \code{\link[RevoScaleR]{rxImport}} with an appropriately constructed \code{colInfo} argument.
 #'
 #' @return
-#' An object representing the returned data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+#' An object representing the returned data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
 #' \code{\link[RevoScaleR]{rxFactors}}, \code{\link[RevoScaleR]{rxImport}}, \code{\link{factor}}
@@ -56,14 +56,14 @@ factorize_ <- factorise_
 
 #' @rdname factorise
 #' @export
-factorise_.RxXdfData <- function(.data, ..., .output, .rxArgs, .dots)
+factorise_.RxXdfData <- function(.data, ..., .outFile, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots)
     exprs <- dots$exprs
-    if(missing(.output)) .output <- dots$output
+    if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     grps <- groups(.data)
@@ -84,15 +84,15 @@ factorise_.RxXdfData <- function(.data, ..., .output, .rxArgs, .dots)
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    .output <- createOutput(.data, .output)
-    cl <- quote(rxFactors(.data, factorInfo, outFile=.output, overwrite=TRUE))
+    .outFile <- createOutput(.data, .outFile)
+    cl <- quote(rxFactors(.data, factorInfo, outFile=.outFile, overwrite=TRUE))
     cl[names(.rxArgs)] <- .rxArgs
 
      # rxFactors is noisy when given already-existing factors; shut it up
     .data <- suppressWarnings(eval(cl))
 
     # rxFactors won't preserve class of output object, unlike rxDataStep
-    if(inherits(.output, "tbl_xdf"))
+    if(inherits(.outFile, "tbl_xdf"))
     {
         .data <- as(.data, "tbl_xdf")
         .data@hasTblFile <- TRUE
@@ -103,14 +103,14 @@ factorise_.RxXdfData <- function(.data, ..., .output, .rxArgs, .dots)
 
 #' @rdname factorise
 #' @export
-factorise_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
+factorise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots)
     exprs <- dots$exprs
-    if(missing(.output)) .output <- dots$output
+    if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     grps <- groups(.data)
@@ -129,8 +129,8 @@ factorise_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots)
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    .output <- createOutput(.data, .output)
-    cl <- quote(rxImport(.data, .output, colInfo=colInfo, overwrite=TRUE))
+    .outFile <- createOutput(.data, .outFile)
+    cl <- quote(rxImport(.data, .outFile, colInfo=colInfo, overwrite=TRUE))
     cl[names(.rxArgs)] <- .rxArgs
 
     .data <- eval(cl)

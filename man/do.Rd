@@ -19,9 +19,9 @@ doXdf_(.data, ..., .dots)
 
 \method{doXdf_}{RxFileData}(.data, ..., .rxArgs, .dots)
 
-\method{do_}{grouped_tbl_xdf}(.data, ..., .output, .dots)
+\method{do_}{grouped_tbl_xdf}(.data, ..., .outFile, .dots)
 
-\method{doXdf_}{grouped_tbl_xdf}(.data, ..., .output, .rxArgs, .dots)
+\method{doXdf_}{grouped_tbl_xdf}(.data, ..., .outFile, .rxArgs, .dots)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}

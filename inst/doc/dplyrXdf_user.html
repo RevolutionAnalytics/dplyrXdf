@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-11-22" />
+<meta name="date" content="2016-11-26" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-11-22</em></h4>
+<h4 class="date"><em>2016-11-26</em></h4>
 </div>
 
 
@@ -113,15 +113,15 @@ output3 &lt;-<span class="st"> </span>output1 %&gt;%
 <p>dplyrXdf gives you two ways to deal with these issues.</p>
 <div id="specifying-the-output-format" class="section level3">
 <h3>Specifying the output format</h3>
-<p>First, all dplyrXdf verbs support a special argument <code>.output</code>, which controls how the output data is handled. If you don’t specify a value for this argument, the data will be saved to a <code>tbl_xdf</code> which will be managed by dplyrXdf. This supports the default behaviour of dplyrXdf, whereby data files are automatically created and deleted inside a pipeline. There are two other options for <code>.output</code>:</p>
+<p>First, all dplyrXdf verbs support a special argument <code>.outFile</code>, which controls how the output data is handled. If you don’t specify a value for this argument, the data will be saved to a <code>tbl_xdf</code> which will be managed by dplyrXdf. This supports the default behaviour of dplyrXdf, whereby data files are automatically created and deleted inside a pipeline. There are two other options for <code>.outFile</code>:</p>
 <ul>
-<li><p>If you specify <code>.output = NULL</code>, the data will be returned in memory as a data frame.</p></li>
-<li><p>If <code>.output</code> is a character string giving a file name, the data will be saved to an xdf file at that location, and a persistent xdf data source will be returned.</p></li>
+<li><p>If you specify <code>.outFile = NULL</code>, the data will be returned in memory as a data frame.</p></li>
+<li><p>If <code>.outFile</code> is a character string giving a file name, the data will be saved to an xdf file at that location, and a persistent xdf data source will be returned.</p></li>
 </ul>
 <p>To show how this works, we can modify pipeline 1 above to save its output to a persistent location. This resets the status of the pipeline, so that subsequent operations will know not to modify the data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># pipeline 1 -- use .output to save the data</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># pipeline 1 -- use .outFile to save the data</span>
 output1 &lt;-<span class="st"> </span>flightsXdf %&gt;%
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>, <span class="dt">.output=</span><span class="st">&quot;output1.xdf&quot;</span>)
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>, <span class="dt">.outFile=</span><span class="st">&quot;output1.xdf&quot;</span>)
 
 <span class="co"># use the output from pipeline 1</span>
 output2 &lt;-<span class="st"> </span>output1 %&gt;%
@@ -135,7 +135,7 @@ output3 &lt;-<span class="st"> </span>output1 %&gt;%
 </div>
 <div id="the-persist-verb" class="section level3">
 <h3>The <code>persist</code> verb</h3>
-<p>The second way of creating a persistent xdf file is with the <code>persist</code> verb. This is a simple function that moves or copies its input to the specified location. Like the <code>.output</code> argument described above, it will also reset the status of the pipeline.</p>
+<p>The second way of creating a persistent xdf file is with the <code>persist</code> verb. This is a simple function that moves or copies its input to the specified location. Like the <code>.outFile</code> argument described above, it will also reset the status of the pipeline.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># pipeline 1 -- use persist to save the data</span>
 output1 &lt;-<span class="st"> </span>flightsXdf %&gt;%
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>) %&gt;%<span class="st"> </span><span class="kw">persist</span>(<span class="st">&quot;output1_persist.xdf&quot;</span>)
@@ -149,7 +149,7 @@ output2 &lt;-<span class="st"> </span>output1 %&gt;%
 output3 &lt;-<span class="st"> </span>output1 %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(dest) %&gt;%
 <span class="st">    </span><span class="kw">summarise</span>(<span class="dt">delay=</span><span class="kw">mean</span>(delay))</code></pre></div>
-<p>In general, setting <code>.output</code> to save an xdf file is preferred to using the <code>persist</code> verb. You would use <code>persist</code> if you have already run a pipeline, and want to save its output after the fact.</p>
+<p>In general, setting <code>.outFile</code> to save an xdf file is preferred to using the <code>persist</code> verb. You would use <code>persist</code> if you have already run a pipeline, and want to save its output after the fact.</p>
 </div>
 </div>
 <div id="the-subset-verb" class="section level2">
@@ -299,7 +299,6 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 flightsMods &lt;-<span class="st"> </span>flightsXdf %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
 <span class="st">    </span><span class="kw">doXdf</span>(<span class="dt">model=</span><span class="kw">rxLinMod</span>(arr_delay ~<span class="st"> </span>dep_delay +<span class="st"> </span>hour, <span class="dt">data=</span>.))
-<span class="co">#&gt; Warning: doXdf() only outputs data frames</span>
 
 flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Call:</span>
@@ -307,7 +306,8 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
-<span class="co">#&gt; File name: d:/misc/Rtemp\RtmpYvVzEp/flights.carrier.9E.xdf</span>
+<span class="co">#&gt; File name:</span>
+<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\RtmpAT07ti/flights.carrier.9E.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 17294</span>
@@ -323,7 +323,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <h2>Setting the tbl directory</h2>
 <p>By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large xdf files. You can view the location of the current xdf tbl directory with <code>getXdfTblDir</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">getXdfTblDir</span>()
-<span class="co">#&gt; [1] &quot;d:/misc/Rtemp\\RtmpYvVzEp&quot;</span></code></pre></div>
+<span class="co">#&gt; [1] &quot;C:\\Users\\hongooi\\AppData\\Local\\Temp\\RtmpAT07ti&quot;</span></code></pre></div>
 <p>Similarly, you can change the location of the xdf tbl directory with the <code>setXdfTblDir</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># set the tbl directory to a network drive (on Windows)</span>
 <span class="kw">setXdfTblDir</span>(<span class="st">&quot;n:/Rtemp&quot;</span>)</code></pre></div>

@@ -1,7 +1,7 @@
 ---
 title: "Using the dplyrXdf package"
 author: "Hong Ooi"
-date: "`r Sys.Date()`"
+date: "2016-11-26"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
@@ -67,18 +67,18 @@ dplyrXdf gives you two ways to deal with these issues.
 
 ### Specifying the output format
 
-First, all dplyrXdf verbs support a special argument `.output`, which controls how the output data is handled. If you don't specify a value for this argument, the data will be saved to a `tbl_xdf` which will be managed by dplyrXdf. This supports the default behaviour of dplyrXdf, whereby data files are automatically created and deleted inside a pipeline. There are two other options for `.output`:
+First, all dplyrXdf verbs support a special argument `.outFile`, which controls how the output data is handled. If you don't specify a value for this argument, the data will be saved to a `tbl_xdf` which will be managed by dplyrXdf. This supports the default behaviour of dplyrXdf, whereby data files are automatically created and deleted inside a pipeline. There are two other options for `.outFile`:
 
-- If you specify `.output = NULL`, the data will be returned in memory as a data frame.
+- If you specify `.outFile = NULL`, the data will be returned in memory as a data frame.
 
-- If `.output` is a character string giving a file name, the data will be saved to an xdf file at that location, and a persistent xdf data source will be returned.
+- If `.outFile` is a character string giving a file name, the data will be saved to an xdf file at that location, and a persistent xdf data source will be returned.
 
 To show how this works, we can modify pipeline 1 above to save its output to a persistent location. This resets the status of the pipeline, so that subsequent operations will know not to modify the data.
 
 ```{r, eval=FALSE}
-# pipeline 1 -- use .output to save the data
+# pipeline 1 -- use .outFile to save the data
 output1 <- flightsXdf %>%
-    mutate(delay=(arr_delay + dep_delay)/2, .output="output1.xdf")
+    mutate(delay=(arr_delay + dep_delay)/2, .outFile="output1.xdf")
 
 # use the output from pipeline 1
 output2 <- output1 %>%
@@ -93,7 +93,7 @@ output3 <- output1 %>%
 
 ### The `persist` verb
 
-The second way of creating a persistent xdf file is with the `persist` verb. This is a simple function that moves or copies its input to the specified location. Like the `.output` argument described above, it will also reset the status of the pipeline.
+The second way of creating a persistent xdf file is with the `persist` verb. This is a simple function that moves or copies its input to the specified location. Like the `.outFile` argument described above, it will also reset the status of the pipeline.
 
 ```{r, eval=FALSE}
 # pipeline 1 -- use persist to save the data
@@ -111,7 +111,7 @@ output3 <- output1 %>%
     summarise(delay=mean(delay))
 ```
 
-In general, setting `.output` to save an xdf file is preferred to using the `persist` verb. You would use `persist` if you have already run a pipeline, and want to save its output after the fact.
+In general, setting `.outFile` to save an xdf file is preferred to using the `persist` verb. You would use `persist` if you have already run a pipeline, and want to save its output after the fact.
 
 
 ## The `subset` verb

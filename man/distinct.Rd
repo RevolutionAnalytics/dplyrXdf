@@ -7,10 +7,10 @@
 \alias{distinct_.grouped_tbl_xdf}
 \title{Select distinct/unique rows}
 \usage{
-\method{distinct_}{RxFileData}(.data, ..., .output, .rxArgs, .dots,
+\method{distinct_}{RxFileData}(.data, ..., .outFile, .rxArgs, .dots,
   .keep_all = FALSE)
 
-\method{distinct_}{grouped_tbl_xdf}(.data, ..., .output, .rxArgs, .dots,
+\method{distinct_}{grouped_tbl_xdf}(.data, ..., .outFile, .rxArgs, .dots,
   .keep_all = FALSE)
 }
 \arguments{
@@ -18,7 +18,7 @@
 
 \item{...}{Variables to use for determining uniqueness. If left blank, all variables in \code{.data} are used to determine uniqueness.}
 
-\item{.output}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
+\item{.outFile}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
 
 \item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
 
@@ -27,7 +27,7 @@
 \item{.keep_all}{If \code{TRUE}, keep all variables in the dataset; otherwise, only keep variables used in defining uniqueness. Only used if dplyr version 0.5 or greater is installed.}
 }
 \value{
-An object representing the unique rows. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+An object representing the unique rows. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 }
 \description{
 Select distinct/unique rows

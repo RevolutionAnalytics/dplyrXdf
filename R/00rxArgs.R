@@ -49,10 +49,10 @@ rxArgs <- function(dots, fromDo=FALSE)
     # NULL -> data frame output
     # char -> target filename, xdf output
     # missing -> xdf tbl output, coded as NA in returned value
-    if(".output" %in% names(exprs))
+    if(".outFile" %in% names(exprs))
     {
-        output <- exprs$.output
-        exprs$.output <- NULL
+        output <- exprs$.outFile
+        exprs$.outFile <- NULL
         # turn off row x col size check if outputting to dataframe AND not otherwise specified AND not called from do()
         if(is.null(output) && !("maxRowsByCols" %in% names(rxArgs)) & !fromDo)
             rxArgs["maxRowsByCols"] <- list(NULL)

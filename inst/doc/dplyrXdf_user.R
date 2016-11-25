@@ -30,9 +30,9 @@ flightsTbl
 #      summarise(delay=mean(delay))
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  # pipeline 1 -- use .output to save the data
+#  # pipeline 1 -- use .outFile to save the data
 #  output1 <- flightsXdf %>%
-#      mutate(delay=(arr_delay + dep_delay)/2, .output="output1.xdf")
+#      mutate(delay=(arr_delay + dep_delay)/2, .outFile="output1.xdf")
 #  
 #  # use the output from pipeline 1
 #  output2 <- output1 %>%

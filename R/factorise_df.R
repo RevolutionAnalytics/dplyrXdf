@@ -12,7 +12,7 @@ factorise_.data.frame <- function(.data, ..., .dots)
     # identify Revo-specific arguments
     dots <- rxArgs(dots)
     exprs <- dots$exprs
-    .output <- dots$output
+    .outFile <- dots$output
     .rxArgs <- dots$rxArgs
 
     grps <- groups(.data)

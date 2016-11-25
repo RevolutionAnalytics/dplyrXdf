@@ -2,7 +2,7 @@
 #'
 #' @param .data A tbl for an Xdf data source; or a raw Xdf data source.
 #' @param ... Variables to use for determining uniqueness. If left blank, all variables in \code{.data} are used to determine uniqueness.
-#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #' @param .keep_all If \code{TRUE}, keep all variables in the dataset; otherwise, only keep variables used in defining uniqueness. Only used if dplyr version 0.5 or greater is installed.
@@ -12,16 +12,16 @@
 #' @aliases distinct distinct_
 #' @rdname distinct
 #' @export
-distinct_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots, .keep_all=FALSE)
+distinct_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots, .keep_all=FALSE)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots)
     exprs <- dots$exprs
-    if(missing(.output)) .output <- dots$output
+    if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     # hack to accommodate dplyr 0.5 keep_all argument when dplyr 0.4.x is installed
@@ -39,8 +39,8 @@ distinct_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots, .keep_all=
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    .output <- createOutput(.data, .output)
-    .data <- distinct_base(.data, .output, names(exprs), .rxArgs, keep_all=.keep_all)
+    .outFile <- createOutput(.data, .outFile)
+    .data <- distinct_base(.data, .outFile, names(exprs), .rxArgs, keep_all=.keep_all)
     simpleRegroup(.data)
 }
 
@@ -49,20 +49,20 @@ distinct_.RxFileData <- function(.data, ..., .output, .rxArgs, .dots, .keep_all=
 #' This verb calls \code{dplyr::distinct} on each chunk in an Xdf file. The individual data frames are \code{rbind}ed together and \code{dplyr::distinct} is called on the overall result. This may be slow if there are many chunks in the file; and the operation will be limited by memory if the number of distinct rows is large.
 #'
 #' @return
-#' An object representing the unique rows. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+#' An object representing the unique rows. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @rdname distinct
 #' @export
-distinct_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots, .keep_all=FALSE)
+distinct_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots, .keep_all=FALSE)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots)
     exprs <- dots$exprs
-    if(missing(.output)) .output <- dots$output
+    if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
     grps <- groups(.data)
 
@@ -78,10 +78,10 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots, .keep
         .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
     xdflst <- split_groups(.data)
-    outlst <- createSplitOutput(xdflst, .output)
+    outlst <- createSplitOutput(xdflst, .outFile)
     outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), names(exprs), .rxArgs, .keep_all,
         execObjects=c("pemaDistinct", "deleteTbl"), packagesToLoad="dplyrXdf")
-    combine_groups(outlst, createOutput(.data, .output), grps)
+    combine_groups(outlst, createOutput(.data, .outFile), grps)
 }
 
 

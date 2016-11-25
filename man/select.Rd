@@ -6,21 +6,21 @@
 \alias{select_.RxFileData}
 \title{Select columns in a data source}
 \usage{
-\method{select_}{RxFileData}(.data, ..., .output, .rxArgs, .dots)
+\method{select_}{RxFileData}(.data, ..., .outFile, .rxArgs, .dots)
 }
 \arguments{
 \item{.data}{A data source.}
 
 \item{...}{Unquoted variables to select.}
 
-\item{.output}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
+\item{.outFile}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
 
 \item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
 
 \item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details.}
 }
 \value{
-An object representing the transformed data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+An object representing the transformed data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 }
 \description{
 Select columns in a data source

@@ -22,10 +22,10 @@ do_.RxFileData <- function(.data, ..., .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots, fromDo=TRUE)
     exprs <- dots$exprs
-    .output <- dots$output
+    .outFile <- dots$output
     .rxArgs <- dots$rxArgs
 
     oldData <- .data
@@ -37,7 +37,7 @@ do_.RxFileData <- function(.data, ..., .dots)
         warning("do() doesn't support .rxArgs argument", call.=FALSE)
         .rxArgs <- NULL
     }
-    if(!is.null(.output) && !is.na(.output))
+    if(!is.null(.outFile) && !is.na(.outFile))
         warning("do() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(dots)
@@ -67,17 +67,17 @@ doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots, fromDo=TRUE)
     exprs <- dots$exprs
-    .output <- dots$output
+    .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     oldData <- .data
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    if(!is.null(.output) && !is.na(.output))
+    if(!is.null(.outFile) && !is.na(.outFile))
         warning("doXdf() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(dots)
@@ -89,16 +89,16 @@ doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
 #' To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} split the data into one file per group, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
 #' @rdname do
 #' @export
-do_.grouped_tbl_xdf <- function(.data, ..., .output, .dots)
+do_.grouped_tbl_xdf <- function(.data, ..., .outFile, .dots)
 {
     stopIfHdfs(.data, "do on grouped data not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ...)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots, fromDo=TRUE)
     exprs <- dots$exprs
-    .output <- dots$output
+    .outFile <- dots$output
     .rxArgs <- dots$rxArgs
 
     oldData <- .data
@@ -110,7 +110,7 @@ do_.grouped_tbl_xdf <- function(.data, ..., .output, .dots)
         warning("do() doesn't support .rxArgs argument", call.=FALSE)
         .rxArgs <- NULL
     }
-    if(!is.null(.output) && !is.na(.output))
+    if(!is.null(.outFile) && !is.na(.outFile))
         warning("do() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(exprs)
@@ -132,23 +132,23 @@ do_.grouped_tbl_xdf <- function(.data, ..., .output, .dots)
 
 #' @rdname do
 #' @export
-doXdf_.grouped_tbl_xdf <- function(.data, ..., .output, .rxArgs, .dots)
+doXdf_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots)
 {
     stopIfHdfs(.data, "doXdf on grouped data not supported on HDFS")
 
     dots <- lazyeval::all_dots(.dots, ...)
 
-    # .output and .rxArgs will be passed in via .dots if called by NSE
+    # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots, fromDo=TRUE)
     exprs <- dots$exprs
-    .output <- dots$output
+    .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     oldData <- .data
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    if(!is.null(.output) && !is.na(.output))
+    if(!is.null(.outFile) && !is.na(.outFile))
         warning("doXdf() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(exprs)

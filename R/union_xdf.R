@@ -3,7 +3,7 @@
 #' Set operations on data sources
 #'
 #' @param x, y Data sources.
-#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param ... Not currently used.
 #'
@@ -11,7 +11,7 @@
 #' Currently, only \code{union} and \code{union_all} are supported for RevoScaleR data sources. The code uses \code{rxDataStep(append="rows")} to do the union; this can be much faster than using \code{rxMerge(type="union")}.
 #'
 #' @return
-#' An object representing the joined data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+#' An object representing the joined data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
 #' \code{\link[dplyr]{setops}} in package dplyr
@@ -21,14 +21,14 @@ NULL
 
 #' @rdname setops
 #' @export
-union_all <- function(x, y, .output, .rxArgs, ...)
+union_all <- function(x, y, .outFile, .rxArgs, ...)
 UseMethod("union_all")
 
 #' @importFrom dplyr union
 
 #' @rdname setops
 #' @export
-union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
+union_all.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
 {
     # need to create a new copy of x?
     # tbl -> tbl: ok
@@ -79,24 +79,24 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
     dots <- rxArgs(dots)
 
     exprs <- dots$exprs
-    if(missing(.output)) .output <- NA
+    if(missing(.outFile)) .outFile <- NA
     if(missing(.rxArgs)) .rxArgs <- NULL
     grps <- groups(x)
 
     # if output is a data frame: convert x and y to df, run dplyr::union_all
-    if(is.null(.output))
+    if(is.null(.outFile))
     {
         if(.dxOptions$dplyrVersion < package_version("0.5"))
         {
             warning("cannot output directly to data frame with dplyr version < 0.5")
-            .output <- NA
+            .outFile <- NA
         }
         else return(union_all(as.data.frame(x), as.data.frame(y)))
     }
 
     # use rxDataStep to append y to x, faster than rxMerge(type="union")
     # first, make a copy of x if necessary
-    x <- copyBaseTable(x, .output)
+    x <- copyBaseTable(x, .outFile)
 
     # if y points to same file as x, also make a copy
     # should only happen with union_all(x, x)
@@ -112,7 +112,7 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
     cl[names(.rxArgs)] <- .rxArgs
 
     x <- eval(cl)
-    if(is.character(.output))  # do we want a persistent file?
+    if(is.character(.outFile))  # do we want a persistent file?
         x <- as(x, "RxXdfData")
     simpleRegroup(x, grps)
 }
@@ -120,20 +120,20 @@ union_all.RxFileData <- function(x, y, .output, .rxArgs, ...)
 
 #' @rdname setops
 #' @export
-union.RxFileData <- function(x, y, .output, .rxArgs, ...)
+union.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
 
     # call union_all.RxFileData explicitly to allow use in dplyr < 0.5
-    if(missing(.output))
+    if(missing(.outFile))
         union_all.RxFileData(x, y, .rxArgs, ...) %>% distinct
     else
     {
         # horrible hack
-        # TODO: figure out a better way of passing .output
-        cl <- substitute(union_all.RxFileData(x, y, .rxArgs, ...) %>% distinct(.output=.output),
-            list(.output=.output))
+        # TODO: figure out a better way of passing .outFile
+        cl <- substitute(union_all.RxFileData(x, y, .rxArgs, ...) %>% distinct(.outFile=.outFile),
+            list(.outFile=.outFile))
         eval(cl)
     }
 }

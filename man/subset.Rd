@@ -12,7 +12,7 @@
 subset_(.data, ...)
 
 \method{subset_}{RxFileData}(.data, subset = ~NULL, select = ~NULL, ...,
-  .output, .rxArgs, .dots)
+  .outFile, .rxArgs, .dots)
 }
 \arguments{
 \item{.data}{A data source object, or tbl wrapping the same.}
@@ -23,14 +23,14 @@ subset_(.data, ...)
 
 \item{...}{Other arguments passed to lower-level functions.}
 
-\item{.output}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
+\item{.outFile}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
 
 \item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
 
 \item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details.}
 }
 \value{
-An object representing the subsetted data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+An object representing the subsetted data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 }
 \description{
 Subset a data source by rows and/or columns

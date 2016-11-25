@@ -3,7 +3,7 @@
 #' @param x, y Data sources to join.
 #' @param by Character vector of variables to join by. See \code{\link[dplyr]{join}} for details.
 #' @param copy If the data sources are not stored in the same system, whether to copy y to x's location. Not currently used.
-#' @param .output Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
+#' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param ... Not currently used.
 #'
@@ -11,7 +11,7 @@
 #' Currently joining only supports the local file system.
 #'
 #' @return
-#' An object representing the joined data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+#' An object representing the joined data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
 #' \code{\link[dplyr]{join}} in package dplyr
@@ -21,51 +21,51 @@ NULL
 
 #' @rdname join
 #' @export
-left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
+left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
 {    
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "left", .output, .rxArgs, ...)
+    merge_base(x, y, by, copy, "left", .outFile, .rxArgs, ...)
 }
 
 
 #' @rdname join
 #' @export
-right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
+right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "right", .output, .rxArgs, ...)
+    merge_base(x, y, by, copy, "right", .outFile, .rxArgs, ...)
 }
 
 
 #' @rdname join
 #' @export
-inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
+inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "inner", .output, .rxArgs, ...)
+    merge_base(x, y, by, copy, "inner", .outFile, .rxArgs, ...)
 }
 
 
 #' @rdname join
 #' @export
-full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
+full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
     by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "full", .output, .rxArgs, ...)
+    merge_base(x, y, by, copy, "full", .outFile, .rxArgs, ...)
 }
 
 
 #' @rdname join
 #' @export
-semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
+semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -81,13 +81,13 @@ semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ..
         yFile <- tblSource(y)
         deleteTbl(yFile)
     })
-    merge_base(x, y, by, copy, "inner", .output, .rxArgs,  ...)
+    merge_base(x, y, by, copy, "inner", .outFile, .rxArgs,  ...)
 }
 
 
 #' @rdname join
 #' @export
-anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ...)
+anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -104,7 +104,7 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ..
         yFile <- tblSource(y)
         deleteTbl(yFile)
     })
-    if(missing(.output))
+    if(missing(.outFile))
     {
         merge_base(x, y, by, copy, "left", .rxArgs, ...) %>%
             subset(is.na(.ones), -.ones)
@@ -112,15 +112,15 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .output, .rxArgs, ..
     else
     {
         # horrible hack
-        # TODO: figure out a better way of passing .output
+        # TODO: figure out a better way of passing .outFile
         cl <- substitute(merge_base(x, y, by, copy, "left", .rxArgs, ...) %>%
-            subset(is.na(.ones), -.ones, .output=.output), list(.output=.output))
+            subset(is.na(.ones), -.ones, .outFile=.outFile), list(.outFile=.outFile))
         eval(cl)
     }
 }
 
 
-merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output, .rxArgs)
+merge_base <- function(x, y, by=NULL, copy=FALSE, type, .outFile, .rxArgs)
 {
     stopIfHdfs(x, "merging not supported on HDFS")
     stopIfHdfs(y, "merging not supported on HDFS")
@@ -143,14 +143,14 @@ merge_base <- function(x, y, by=NULL, copy=FALSE, type, .output, .rxArgs)
             deleteTbl(y)
      })
 
-    if(missing(.output))
-        .output <- NA
+    if(missing(.outFile))
+        .outFile <- NA
     if(missing(.rxArgs))
         .rxArgs <- NULL
 
     grps <- groups(x)
-    .output <- createOutput(x, .output)
-    cl <- quote(rxMerge(x, y, matchVars=by$y, outFile=.output, type=type, duplicateVarExt=c("x", "y"), overwrite=TRUE))
+    .outFile <- createOutput(x, .outFile)
+    cl <- quote(rxMerge(x, y, matchVars=by$y, outFile=.outFile, type=type, duplicateVarExt=c("x", "y"), overwrite=TRUE))
     cl[names(.rxArgs)] <- .rxArgs
 
     out <- eval(cl)

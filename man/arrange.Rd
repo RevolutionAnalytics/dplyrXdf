@@ -6,12 +6,12 @@
 \alias{arrange_.RxFileData}
 \title{Arrange the rows in an Xdf file}
 \usage{
-\method{arrange_}{RxFileData}(.data, ..., .output, .rxArgs, .dots)
+\method{arrange_}{RxFileData}(.data, ..., .outFile, .rxArgs, .dots)
 }
 \arguments{
 \item{...}{List of unquoted variable names. Use \code{desc} to sort in descending order.}
 
-\item{.output}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
+\item{.outFile}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
 
 \item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
 
@@ -20,7 +20,7 @@
 \item{data}{An Xdf data source, tbl, or other RevoScaleR file data source.}
 }
 \value{
-An object representing the sorted data. This depends on the \code{.output} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+An object representing the sorted data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 }
 \description{
 Arrange the rows in an Xdf file
