@@ -1,7 +1,7 @@
 ---
 title: "Introducing the dplyrXdf package"
 author: "Hong Ooi"
-date: "`r Sys.Date()`"
+date: "2016-11-26"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}

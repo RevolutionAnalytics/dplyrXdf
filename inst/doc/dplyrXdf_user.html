@@ -185,7 +185,7 @@ output3 &lt;-<span class="st"> </span>output1 %&gt;%
 <div id="the-.rxargs-parameter" class="section level2">
 <h2>The <code>.rxArgs</code> parameter</h2>
 <p>The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don’t need to touch these, it can sometimes be useful to do so. For example, when using <code>mutate</code> or <code>transmute</code>, you could specify <a href="https://msdn.microsoft.com/en-us/microsoft-r/scaler/rxtransform">more complicated transformations via a <code>transformFunc</code></a>. Similarly, rather than chaining together a <code>mutate</code> and a <code>summarise</code> — which would involve creating an intermediate file — you could incorporate the variable transformation into the <code>summarise</code> itself. More low-level uses of such arguments include setting the block size for an xdf file, changing the compression level, limiting the number of rows, and so on.</p>
-<p>Most of the one-table dplyrXdf verbs accept an <code>.rxArgs</code> argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the verb in question; here is a list of the verbs and the underlying RevoScaleR function that they call:</p>
+<p>Most of the dplyrXdf verbs accept a <code>.rxArgs</code> argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the RevoScaleR function that is called, which will in turn depend on the verb. Here is a list of the verbs and the underlying RevoScaleR function that they call:</p>
 <ul>
 <li><code>subset</code>, <code>filter</code> and <code>select</code>: <code>rxDataStep</code></li>
 <li><code>mutate</code> and <code>transmute</code>: <code>rxDataStep</code></li>
@@ -257,7 +257,7 @@ flightsScores &lt;-<span class="st"> </span><span class="kw">transmute</span>(fl
 <span class="co">#&gt; 4 -8.433385</span>
 <span class="co">#&gt; 5 -8.433385</span>
 <span class="co">#&gt; 6 -8.433385</span></code></pre></div>
-<p>You should use <code>.rxArgs</code> with caution, as some verbs modify the data as part of their normal functioning, so the results you get back may not be as expected. It’s also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. Nevertheless, if you are working with very large datasets and speed is important, this is one way to improve the efficiency of your code.</p>
+<p>You should use <code>.rxArgs</code> with caution, as some verbs modify the data as part of their normal functioning, so the results you get back may not be as expected. It’s also easy to write convoluted code that makes your pipelines hard to read. Nevertheless, if you are working with very large datasets and speed is important, this is one way to improve the efficiency of your code.</p>
 </div>
 <div id="setting-the-summary-method-for-summarise" class="section level2">
 <h2>Setting the summary method for <code>summarise</code></h2>
@@ -306,8 +306,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
-<span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     C:\Users\hongooi\AppData\Local\Temp\RtmpAT07ti/flights.carrier.9E.xdf</span>
+<span class="co">#&gt; File name: d:/misc/Rtemp\Rtmpm8VGol/flights.carrier.9E.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 17294</span>
@@ -323,10 +322,11 @@ flightsMods$model[[<span class="dv">1</span>]]
 <h2>Setting the tbl directory</h2>
 <p>By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large xdf files. You can view the location of the current xdf tbl directory with <code>getXdfTblDir</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">getXdfTblDir</span>()
-<span class="co">#&gt; [1] &quot;C:\\Users\\hongooi\\AppData\\Local\\Temp\\RtmpAT07ti&quot;</span></code></pre></div>
+<span class="co">#&gt; [1] &quot;d:/misc/Rtemp\\Rtmpm8VGol&quot;</span></code></pre></div>
 <p>Similarly, you can change the location of the xdf tbl directory with the <code>setXdfTblDir</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># set the tbl directory to a network drive (on Windows)</span>
 <span class="kw">setXdfTblDir</span>(<span class="st">&quot;n:/Rtemp&quot;</span>)</code></pre></div>
+<p>For best results, you should avoid setting the xdf tbl directory to a remote location/network drive unless you have a fast network connection.</p>
 </div>
 <div id="data-frame-methods" class="section level2">
 <h2>Data frame methods</h2>

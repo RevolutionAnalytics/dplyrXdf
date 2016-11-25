@@ -1,7 +1,7 @@
 ---
 title: "Using the dplyrXdf package"
 author: "Hong Ooi"
-date: "`r Sys.Date()`"
+date: "2016-11-26"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
@@ -137,7 +137,7 @@ head(flightsXdfSub)
 
 The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don't need to touch these, it can sometimes be useful to do so. For example, when using `mutate` or `transmute`, you could specify [more complicated transformations via a `transformFunc`](https://msdn.microsoft.com/en-us/microsoft-r/scaler/rxtransform). Similarly, rather than chaining together a `mutate` and a `summarise` --- which would involve creating an intermediate file --- you could incorporate the variable transformation into the `summarise` itself. More low-level uses of such arguments include setting the block size for an xdf file, changing the compression level, limiting the number of rows, and so on.
 
-Most of the one-table dplyrXdf verbs accept an `.rxArgs` argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the verb in question; here is a list of the verbs and the underlying RevoScaleR function that they call:
+Most of the dplyrXdf verbs accept a `.rxArgs` argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the RevoScaleR function that is called, which will in turn depend on the verb. Here is a list of the verbs and the underlying RevoScaleR function that they call:
 
 * `subset`, `filter` and `select`: `rxDataStep`
 * `mutate` and `transmute`: `rxDataStep`
@@ -192,7 +192,7 @@ flightsScores <- transmute(flightsXdf,
 head(flightsScores)
 ```
 
-You should use `.rxArgs` with caution, as some verbs modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your dplyrXdf pipelines harder to read. Nevertheless, if you are working with very large datasets and speed is important, this is one way to improve the efficiency of your code.
+You should use `.rxArgs` with caution, as some verbs modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your pipelines hard to read. Nevertheless, if you are working with very large datasets and speed is important, this is one way to improve the efficiency of your code.
 
 
 ## Setting the summary method for `summarise`
@@ -279,6 +279,9 @@ Similarly, you can change the location of the xdf tbl directory with the `setXdf
 # set the tbl directory to a network drive (on Windows)
 setXdfTblDir("n:/Rtemp")
 ```
+
+For best results, you should avoid setting the xdf tbl directory to a remote location/network drive unless you have a fast network connection.
+
 
 ## Data frame methods
 

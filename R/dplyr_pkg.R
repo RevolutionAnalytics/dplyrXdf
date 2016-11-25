@@ -1,15 +1,24 @@
 #' dplyr backend for Xdf files
 #'
-#' The dplyrXdf package implements a \code{\link[dplyr]{dplyr}} backend for Revolution Analytics' Xdf file format. Xdf files are a way of breaking the memory barrier in R, by storing data on disk rather than in memory.
+#' The dplyrXdf package implements a \code{\link[dplyr]{dplyr}} backend for Microsoft R Server (MRS). A key feature of MRS is that it allows you to break R’s memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the .xdf extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.
 #'
-#' dplyrXdf implements Xdf-aware methods for all the basic dplyr verbs: \code{select}, \code{filter}, \code{mutate}, \code{transmute}, \code{group_by}, \code{summarise}, \code{do}, \code{arrange}, \code{rename}, and \code{distinct}. In addition, it implements the following two-table verbs: \code{left_join}, \code{right_join}, \code{inner_join}, and \code{full_join}. This should cover the vast bulk of data management tasks.
+#' dplyrXdf supports all the basic dplyr single-table verbs, plus some additions:
+#' \itemize{
+#'   \item \code{subset}, \code{filter} and \code{select} to choose rows and columns
+#'   \item \code{mutate} and \code{transmute} to do data transformation
+#'   \item \code{group_by} to define groups
+#'   \item \code{summarise}, \code{do} and \code{doXdf} to carry out computations on grouped data
+#'   \item \code{arrange} to sort by variables
+#'   \item \code{rename} to rename columns
+#'   \item \code{distinct} to drop duplicates
+#'   \item \code{factorise} to create factors
+#'   \item \code{persist} to move/copy an Xdf file to a persistent location (see below).
+#' }
+#' In addition, dplyrXdf also supports all the table-join verbs from dplyr, \emph{except} for the set operations \code{intersect} and \code{setdiff}. 
 #'
 #' A basic idea behind dplyrXdf is that all operations should be isolated from the original data source. The benefit of this is that it protects your data: if you accidentally delete a variable or make a wrong transformation, your original file remains intact. This principle is also consistent with dplyr pipelines and R data operations in general.
 #'
-#' dplyrXdf implements this idea by using a temporary file to store the results of each step in a dplyr pipeline. To facilitate file management, it defines a new class \code{tbl_xdf}, which is a simple wrapper around the \code{\link[RevoScaleR]{RxXdfData}} class. An Xdf tbl is, in all respects, an ordinary Xdf. You can pass it to any RevoScaleR function that accepts \code{RxXdfData} objects. The exception is when you pass it to a dplyr pipeline, in which case the verbs in the pipeline know whether to overwrite the data it contains.
-#'
-#' @section Grouping:
-#' The RevoScaleR functions generally require \emph{factor} variables to carry out grouped analyses, but will not generate these factors themselves. There is a good reason for this, namely that obtaining all the levels of a factor can be an expensive operation when the dataset is large, but it nonetheless makes working with grouped data cumbersome at times. dplyrXdf automatically deals with this complication when summarising or manipulating grouped data.
+#' Another benefit of dplyrXdf is that it handles file management duties for you. All the data files in a pipeline are created in a special working directory, and only the final output of a pipeline is retained, which keeps intermediate files from cluttering up your filesystem. When you quit R, all data files created are deleted. To persist a file beyond the end of a session, dplyrXdf provides the special \code{persist} verb, as well as a \code{.outFile} argument for all verbs to specify the location.
 #'
 #' @section Non-Xdf and non-local data sources:
 #' dplyrXdf handles non-Xdf (file) data sources by importing the data into a temporary Xdf file when it is first accessed. Data sources handled this way include delimited text (\code{\link{RxTextData}}), SAS (\code{\link{RxSasData}}) and SPSS (\code{\link{RxSpssData}}). For SQL database sources (\code{\link{RxOdbcData}} and \code{\link{RxTeradata}}), consider using the dplyr backend specific to your database, or if that is not available, importing the data as Xdf.
