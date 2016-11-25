@@ -24,6 +24,7 @@ test_that("do works", {
 })
 
 test_that("factorise works", {
+    expect_s4_class(mtt %>% group_by(gear) %>% factorise(mpg, cyl), "tbl_xdf")
     expect(all(sapply(rxGetVarInfo(mtt %>% group_by(gear) %>% factorise(mpg, cyl))[c("mpg", "cyl")],
                       "[[", "varType") == "factor"),
            "factor conversion failed")

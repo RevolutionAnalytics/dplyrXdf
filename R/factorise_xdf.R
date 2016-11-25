@@ -90,6 +90,13 @@ factorise_.RxXdfData <- function(.data, ..., .output, .rxArgs, .dots)
 
      # rxFactors is noisy when given already-existing factors; shut it up
     .data <- suppressWarnings(eval(cl))
+
+    # rxFactors won't preserve class of output object, unlike rxDataStep
+    if(inherits(.output, "tbl_xdf"))
+    {
+        .data <- as(.data, "tbl_xdf")
+        .data@hasTblFile <- TRUE
+    }
     simpleRegroup(.data, grps)
 }
 

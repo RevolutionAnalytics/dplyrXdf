@@ -24,6 +24,7 @@ test_that("do works", {
 })
 
 test_that("factorise works", {
+    expect_s4_class(mtx %>% factorise(mpg, cyl), "tbl_xdf")
     expect(all(sapply(rxGetVarInfo(mtx %>% factorise(mpg, cyl))[c("mpg", "cyl")],
                       "[[", "varType") == "factor"),
            "factor conversion failed")
