@@ -113,17 +113,11 @@ Here are a couple of additional features that may not be immediately apparent fr
 dplyrXdf supports all the basic dplyr single-table verbs: 
 
 * `filter` and `select` to choose rows and columns
-
 * `mutate` and `transmute` to do data transformation
-
 * `group_by` to define groups
-
 * `summarise` and `do` to carry out computations on grouped data
-
 * `arrange` to sort by variables
-
 * `rename` to rename columns
-
 * `distinct` to drop duplicates
 
 Under the hood, they work by translating your pipeline into calls to the base RevoScaleR functions for working with xdf files: for example, `mutate` calls `rxDataStep` to compute transformations; `arrange` calls `rxSort`, and so on.
@@ -133,9 +127,15 @@ These verbs work exactly as they do in dplyr. Thus if you know how to use dplyr,
 
 ### Two-table verbs
 
-dplyrXdf supports all the table-join verbs from dplyr, except for the set operations `intersect` and `setdiff`. The syntax is the same as for the dplyr versions, including joining on non-matching column names. The underlying implementation uses `rxMerge` with the appropriate arguments for each type of join.
+dplyrXdf supports all the table-join verbs from dplyr, except for the set operations `intersect`, `setdiff` and `setequal`:
 
-For example, one of the joins in the [dplyr two-table verbs vignette](https://cran.rstudio.com/web/packages/dplyr/vignettes/two-table.html) joins the flights table with the airports table, using the columns `dest` (in flights) and `faa` (in airports). The same code in dplyr also works in dplyrXdf:
+* `left_join`, `right_join`, `inner_join` and `full_join`
+* `anti_join` and `semi_join`
+* `union` and `union_all`
+
+The syntax is again the same as for the dplyr versions, including joining on non-matching column names. The underlying implementation uses `rxMerge` with the appropriate arguments for each type of join.
+
+For example, one of the joins in the [dplyr two-table verbs vignette](https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html) joins the flights table with the airports table, using the columns `dest` (in flights) and `faa` (in airports). The same code in dplyr also works in dplyrXdf:
 
 ```{r}
 airportsXdf <- rxDataStep(airports, "airports.xdf", overwrite=TRUE)

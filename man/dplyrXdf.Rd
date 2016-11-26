@@ -7,7 +7,7 @@
 \alias{dplyrXdf_package}
 \title{dplyr backend for Xdf files}
 \description{
-The dplyrXdf package implements a \code{\link[dplyr]{dplyr}} backend for Microsoft R Server (MRS). A key feature of MRS is that it allows you to break R's memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the .xdf extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.
+The dplyrXdf package implements a \code{\link[dplyr]{dplyr}} backend for Microsoft R Server (MRS). A key feature of MRS is that it allows you to break R’s memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the .xdf extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.
 }
 \details{
 dplyrXdf supports all the basic dplyr single-table verbs, plus some additions:
@@ -22,16 +22,21 @@ dplyrXdf supports all the basic dplyr single-table verbs, plus some additions:
   \item \code{factorise} to create factors
   \item \code{persist} to move/copy an Xdf file to a persistent location (see below).
 }
-In addition, dplyrXdf also supports all the table-join verbs from dplyr, \emph{except} for the set operations \code{intersect} and \code{setdiff}.
+Similarly, dplyrXdf also supports all the table-join verbs from dplyr, \emph{except} for the set operations \code{intersect}, \code{setdiff} and \code{setequal}:
+\itemize{
+  \item \code{left_join}, \code{right_join}, \code{inner_join} and \code{full_join}
+  \item \code{anti_join} and \code{semi_join}
+  \item \code{union} and \code{union_all}
+}
 
 A basic idea behind dplyrXdf is that all operations should be isolated from the original data source. The benefit of this is that it protects your data: if you accidentally delete a variable or make a wrong transformation, your original file remains intact. This principle is also consistent with dplyr pipelines and R data operations in general.
 
-Another benefit of dplyrXdf is that it handles file management duties for you. All the data files in a pipeline are created in a special working directory, and only the final output of a pipeline is retained, which keeps intermediate files from cluttering up your filesystem. When you quit R, all data files created are deleted. To persist a file beyond the end of a session, dplyrXdf provides the special \code{persist} verb, as well as a \code{.outFile} argument for all verbs to specify the location.
+Another benefit of dplyrXdf is that it handles file management duties for you. All the data files in a pipeline are created in a special working directory, and only the final output of a pipeline is retained, which keeps intermediate files from cluttering up your filesystem. When you quit R, all data files created are deleted. To persist a file beyond the end of a session, dplyrXdf provides the special \code{persist} verb, as well as a \code{.outFile} argument for all verbs to specify a location for saving the output.
 }
 \section{Non-Xdf and non-local data sources}{
 
 dplyrXdf handles non-Xdf (file) data sources by importing the data into a temporary Xdf file when it is first accessed. Data sources handled this way include delimited text (\code{\link{RxTextData}}), SAS (\code{\link{RxSasData}}) and SPSS (\code{\link{RxSpssData}}). For SQL database sources (\code{\link{RxOdbcData}} and \code{\link{RxTeradata}}), consider using the dplyr backend specific to your database, or if that is not available, importing the data as Xdf.
 
-dplyrXdf currently works with the local filesystem only. Support for HDFS file system objects is forthcoming.
+dplyrXdf currently works with the local filesystem only. Support for files stored in HDFS is forthcoming.
 }
 

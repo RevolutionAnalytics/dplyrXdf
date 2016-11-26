@@ -168,21 +168,27 @@ flights_rx5 &lt;-<span class="st"> </span>flights_rx5[<span class="kw">order</sp
 <h3>Single-table verbs</h3>
 <p>dplyrXdf supports all the basic dplyr single-table verbs:</p>
 <ul>
-<li><p><code>filter</code> and <code>select</code> to choose rows and columns</p></li>
-<li><p><code>mutate</code> and <code>transmute</code> to do data transformation</p></li>
-<li><p><code>group_by</code> to define groups</p></li>
-<li><p><code>summarise</code> and <code>do</code> to carry out computations on grouped data</p></li>
-<li><p><code>arrange</code> to sort by variables</p></li>
-<li><p><code>rename</code> to rename columns</p></li>
-<li><p><code>distinct</code> to drop duplicates</p></li>
+<li><code>filter</code> and <code>select</code> to choose rows and columns</li>
+<li><code>mutate</code> and <code>transmute</code> to do data transformation</li>
+<li><code>group_by</code> to define groups</li>
+<li><code>summarise</code> and <code>do</code> to carry out computations on grouped data</li>
+<li><code>arrange</code> to sort by variables</li>
+<li><code>rename</code> to rename columns</li>
+<li><code>distinct</code> to drop duplicates</li>
 </ul>
 <p>Under the hood, they work by translating your pipeline into calls to the base RevoScaleR functions for working with xdf files: for example, <code>mutate</code> calls <code>rxDataStep</code> to compute transformations; <code>arrange</code> calls <code>rxSort</code>, and so on.</p>
 <p>These verbs work exactly as they do in dplyr. Thus if you know how to use dplyr, then you also know how to use the bulk of dplyrXdf.</p>
 </div>
 <div id="two-table-verbs" class="section level3">
 <h3>Two-table verbs</h3>
-<p>dplyrXdf supports all the table-join verbs from dplyr, except for the set operations <code>intersect</code> and <code>setdiff</code>. The syntax is the same as for the dplyr versions, including joining on non-matching column names. The underlying implementation uses <code>rxMerge</code> with the appropriate arguments for each type of join.</p>
-<p>For example, one of the joins in the <a href="https://cran.rstudio.com/web/packages/dplyr/vignettes/two-table.html">dplyr two-table verbs vignette</a> joins the flights table with the airports table, using the columns <code>dest</code> (in flights) and <code>faa</code> (in airports). The same code in dplyr also works in dplyrXdf:</p>
+<p>dplyrXdf supports all the table-join verbs from dplyr, except for the set operations <code>intersect</code>, <code>setdiff</code> and <code>setequal</code>:</p>
+<ul>
+<li><code>left_join</code>, <code>right_join</code>, <code>inner_join</code> and <code>full_join</code></li>
+<li><code>anti_join</code> and <code>semi_join</code></li>
+<li><code>union</code> and <code>union_all</code></li>
+</ul>
+<p>The syntax is again the same as for the dplyr versions, including joining on non-matching column names. The underlying implementation uses <code>rxMerge</code> with the appropriate arguments for each type of join.</p>
+<p>For example, one of the joins in the <a href="https://cran.r-project.org/web/packages/dplyr/vignettes/two-table.html">dplyr two-table verbs vignette</a> joins the flights table with the airports table, using the columns <code>dest</code> (in flights) and <code>faa</code> (in airports). The same code in dplyr also works in dplyrXdf:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">airportsXdf &lt;-<span class="st"> </span><span class="kw">rxDataStep</span>(airports, <span class="st">&quot;airports.xdf&quot;</span>, <span class="dt">overwrite=</span><span class="ot">TRUE</span>)
 flightsJoin &lt;-<span class="st"> </span><span class="kw">left_join</span>(
     flightsXdf %&gt;%<span class="st"> </span><span class="kw">select</span>(year:day, hour, origin, dest, tailnum, carrier),
