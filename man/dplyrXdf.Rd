@@ -7,7 +7,7 @@
 \alias{dplyrXdf_package}
 \title{dplyr backend for Xdf files}
 \description{
-The dplyrXdf package implements a \code{\link[dplyr]{dplyr}} backend for Microsoft R Server (MRS). A key feature of MRS is that it allows you to break R’s memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the .xdf extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.
+The dplyrXdf package implements a \code{\link[dplyr]{dplyr}} backend for Microsoft R Server (MRS). A key feature of MRS is that it allows you to break R's memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the .xdf extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.
 }
 \details{
 dplyrXdf supports all the basic dplyr single-table verbs, plus some additions:

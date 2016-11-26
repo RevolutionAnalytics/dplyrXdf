@@ -61,30 +61,6 @@ tbl.grouped_tbl_xdf <- function(data, file=NULL, hasTblFile=FALSE, ...)
 }
 
 
-#' @param x A file data source, or a tbl wrapping the same.
-#' @return
-#' The \code{tblFile} function returns the location where the intermediate and final results of a dplyr pipeline will be stored. If the tbl has not had any results written to it yet, or if this function is called on a non-tbl data source, a random filename is returned. The \code{tblSource} function is similar but returns a full data source, encapsulating file system information.
-#'
-#' The \code{tblFile} is deprecated; \code{tblSource} is preferred as it retains information about the file system and other parameters of the original data source.
-#' @rdname tbl
-#' @export
-tblFile <- function(x)
-{
-    .Deprecated("tblSource", old="tblFile")
-    if(hasTblFile(x)) x@file else newTbl(x)@file
-}
-
-
-#' @rdname tbl
-#' @export
-tblSource <- function(x)
-{
-    if(hasTblFile(x))
-        as(x, "RxXdfData")  # do coerce to remove any grouping info
-    else newTbl(x)
-}
-
-
 #' @return
 #' The \code{hasTblFile} function returns TRUE if a tbl has a temporary file assigned to it (which also implies that it contains results from previous dplyr pipeline steps). It returns FALSE if no temporary file has yet been assigned, or if it is called on a non-tbl data source.
 #' @rdname tbl

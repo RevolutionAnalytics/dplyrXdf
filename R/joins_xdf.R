@@ -77,10 +77,7 @@ semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, .
     if(inherits(y, "tbl_xdf"))
         y@hasTblFile <- FALSE
     y <- select_(y, by$y) %>% distinct
-    on.exit({
-        yFile <- tblSource(y)
-        deleteTbl(yFile)
-    })
+    on.exit(deleteTbl(y))
     merge_base(x, y, by, copy, "inner", .outFile, .rxArgs,  ...)
 }
 
@@ -100,10 +97,7 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, .
         y@hasTblFile <- FALSE
     ones <- sprintf("rep(1L, length(%s))", by$x[1])
     y <- transmute_(y, by$y, .ones=ones) %>% distinct
-    on.exit({
-        yFile <- tblSource(y)
-        deleteTbl(yFile)
-    })
+    on.exit(deleteTbl(y))
     if(missing(.outFile))
     {
         merge_base(x, y, by, copy, "left", .rxArgs, ...) %>%

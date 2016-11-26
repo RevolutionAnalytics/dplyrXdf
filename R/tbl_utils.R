@@ -54,6 +54,8 @@ deleteTbl <- function(xdf)
 {
     if(is.character(xdf))
         stop("must supply xdf data source or list of data sources")
+    if(is.data.frame(xdf))
+        return(invisible(NULL))
     if(!is.list(xdf))
         xdf <- list(xdf)
     lapply(xdf, function(xdf) {
