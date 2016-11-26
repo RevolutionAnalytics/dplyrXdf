@@ -58,7 +58,7 @@ test_that("subset works", {
 test_that("summarise works", {
     expect_warning(mtt %>% summarise(m=mean(mpg), .method=1))
     expect_s4_class(mtt %>% summarise(m=mean(mpg), .method=2), "tbl_xdf")
-    expect_s4_class(mtt %>% summarise(m=mean(mpg), .method=3), "tbl_xdf")
+    expect_warning(mtt %>% summarise(m=mean(mpg), .method=3))
     expect_s4_class(mtt %>% summarise(m=mean(mpg), .method=4), "tbl_xdf")
     expect_s4_class(mtt %>% summarise(m=mean(mpg), .method=5), "tbl_xdf")
 })

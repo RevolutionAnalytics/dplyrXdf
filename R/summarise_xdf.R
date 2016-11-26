@@ -105,6 +105,11 @@ select_smry_method <- function(stats, method, groups=NULL)
             warning("rxCube method only works for grouped data", call.=FALSE)
             method <- Recall(stats=stats, method=NULL, groups=groups)
         }
+        else if(method == 3 && !grouped)
+        {
+            warning("grouping variables method required for .method = 3", call.=FALSE)
+            method <- Recall(stats=stats, method=NULL, groups=groups)
+        }
         else if(method == 1 && !cubeStats)
         {
             warning("requested summary statistics not supported by rxCube", call.=FALSE)
@@ -131,11 +136,14 @@ rebuild_groupvars <- function(x, grps, data)
 
     x <- mapply(function(x, varInfo) {
         type <- varInfo$varType
-        if(type %in% c("logical", "integer", "numeric"))
+        if(type == "logical")
+            x <- as.numeric(levels(x)[x]) == 1
+        else if(type %in% c("integer", "numeric"))
             x <- as(as.character(x), type)
         else if(type %in% c("Date", "POSIXct"))
         {
             # underlying code in as.Date.numeric, as.POSIXct.numeric just adds an offset
+            # TODO: verify time zones handled properly
             x <- as.numeric(as.character(x))
             class(x) <- type
         }

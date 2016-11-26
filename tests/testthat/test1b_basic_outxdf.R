@@ -61,7 +61,7 @@ test_that("subset works", {
 test_that("summarise works", {
     expect_warning(mtx %>% summarise(m=mean(mpg), .method=1, .outFile="test1b.xdf"))
     expect(mtx %>% summarise(m=mean(mpg), .method=2, .outFile="test1b.xdf") %>% class == "RxXdfData", "not RxXdfData")
-    expect(mtx %>% summarise(m=mean(mpg), .method=3, .outFile="test1b.xdf") %>% class == "RxXdfData", "not RxXdfData")
+    expect_warning(mtx %>% summarise(m=mean(mpg), .method=3, .outFile="test1b.xdf"))
     expect(mtx %>% summarise(m=mean(mpg), .method=4, .outFile="test1b.xdf") %>% class == "RxXdfData", "not RxXdfData")
     expect(mtx %>% summarise(m=mean(mpg), .method=5, .outFile="test1b.xdf") %>% class == "RxXdfData", "not RxXdfData")
 })

@@ -23,6 +23,10 @@ smry_rxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(any(is_char))
         data <- factorise_(data, .dots=grps[is_char])
 
+    oldData <- data
+    if(hasTblFile(data))
+        on.exit(deleteTbl(oldData))
+
     cl <- build_smry_formula_rhs(data, grps,
         quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE)))
     levs <- cl$levs
@@ -69,7 +73,7 @@ build_smry_formula_rhs <- function(data, grps, call)
     {
         n_rhs <- length(grps)
         call$transformFunc <- quote(function(varlst) {
-            varlst[[".n."]] <- rep(1, length(varlst[[1]]))
+            varlst[[".n."]] <- rep(1, .rxNumRows)
             varlst
         })
         call$transformVars <- quote(grps[1])

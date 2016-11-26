@@ -61,7 +61,7 @@ test_that("subset works", {
 test_that("summarise works", {
     expect_warning(mtx %>% summarise(m=mean(mpg), .method=1, .outFile=NULL))
     expect_s3_class(mtx %>% summarise(m=mean(mpg), .method=2, .outFile=NULL), "data.frame")
-    expect_s3_class(mtx %>% summarise(m=mean(mpg), .method=3, .outFile=NULL), "data.frame")
+    expect_warning(mtx %>% summarise(m=mean(mpg), .method=3, .outFile=NULL))
     expect_s3_class(mtx %>% summarise(m=mean(mpg), .method=4, .outFile=NULL), "data.frame")
     expect_s3_class(mtx %>% summarise(m=mean(mpg), .method=5, .outFile=NULL), "data.frame")
 })

@@ -26,6 +26,10 @@ smry_rxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs
     if(any(is_char))
         data <- factorise_(data, .dots=grps[is_char])
 
+    oldData <- data
+    if(hasTblFile(data))
+        on.exit(deleteTbl(oldData))
+
     cl <- build_smry_formula_rhs(data, grps,
         quote(rxSummary(fm, data, summaryStats=unique_stat, useSparseCube=TRUE, removeZeroCounts=TRUE)))
     cl$call[names(rxArgs)] <- rxArgs
@@ -73,6 +77,10 @@ smry_rxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfO
     outvars <- names(exprs)
     invars <- invars(exprs)
 
+    oldData <- data
+    if(hasTblFile(data))
+        on.exit(deleteTbl(oldData))
+
     cl <- quote(rxSummary(fm, data, summaryStats=unique_stat, useSparseCube=TRUE, removeZeroCounts=TRUE, transformFunc=function(varlst) {
         varlst[[".n."]] <- rep(1, length(varlst[[1]]))
         varlst
@@ -111,7 +119,7 @@ smry_rxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfO
 
     if(dfOut)  # output as data frame
         df
-    else rxDataStep(as.data.frame(df), tblSource(data), overwrite=TRUE)
+    else rxDataStep(as.data.frame(df), tbl(newTbl(data), hasTblFile=TRUE), overwrite=TRUE)
 }
 
 
