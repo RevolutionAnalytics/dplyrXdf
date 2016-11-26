@@ -5,14 +5,19 @@ NULL
 #'
 #' @param x A data source object, or tbl wrapping the same.
 #' @param maxRowsByCols the maximum dataset size to convert, expressed in terms of rows times columns. Defaults to NULL, meaning no maximum.
+#' @param row.names,optional For compatibility with the \code{as.data.frame} generic. Not used.
 #' @param ... Other arguments to \code{rxDataStep}.
 #' @details
 #' These are simple wrappers around \code{\link[RevoScaleR]{rxDataStep}}, with the check on the maximum table size turned off. You should ensure that you have enough memory for your data.
 #'
 #' \code{as.data.frame} converts a data source object (typically an xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
+#'
+#' @seealso
+#' \code{\link[base]{as.data.frame}}
+#' @aliases as.data.frame
 #' @rdname as.data.frame
 #' @export
-as.data.frame.RxXdfData <- function(x, maxRowsByCols=NULL, ...)
+as.data.frame.RxXdfData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
 {
     rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
 }
@@ -20,7 +25,7 @@ as.data.frame.RxXdfData <- function(x, maxRowsByCols=NULL, ...)
 
 #' @rdname as.data.frame
 #' @export
-as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, ...)
+as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
 {
     rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
 }

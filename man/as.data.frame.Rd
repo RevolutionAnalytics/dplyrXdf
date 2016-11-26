@@ -3,13 +3,16 @@
 \name{as.data.frame.RxXdfData}
 \alias{$.RxFileData}
 \alias{[[.RxFileData}
+\alias{as.data.frame}
 \alias{as.data.frame.RxFileData}
 \alias{as.data.frame.RxXdfData}
 \title{Convert a data source or tbl to a data frame}
 \usage{
-\method{as.data.frame}{RxXdfData}(x, maxRowsByCols = NULL, ...)
+\method{as.data.frame}{RxXdfData}(x, maxRowsByCols = NULL, row.names = NULL,
+  optional = TRUE, ...)
 
-\method{as.data.frame}{RxFileData}(x, maxRowsByCols = NULL, ...)
+\method{as.data.frame}{RxFileData}(x, maxRowsByCols = NULL,
+  row.names = NULL, optional = TRUE, ...)
 
 \method{$}{RxFileData}(x, name)
 
@@ -19,6 +22,8 @@
 \item{x}{A data source object, or tbl wrapping the same.}
 
 \item{maxRowsByCols}{the maximum dataset size to convert, expressed in terms of rows times columns. Defaults to NULL, meaning no maximum.}
+
+\item{row.names, optional}{For compatibility with the \code{as.data.frame} generic. Not used.}
 
 \item{...}{Other arguments to \code{rxDataStep}.}
 
@@ -31,5 +36,8 @@ Convert a data source or tbl to a data frame
 These are simple wrappers around \code{\link[RevoScaleR]{rxDataStep}}, with the check on the maximum table size turned off. You should ensure that you have enough memory for your data.
 
 \code{as.data.frame} converts a data source object (typically an xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
+}
+\seealso{
+\code{\link[base]{as.data.frame}}
 }
 
