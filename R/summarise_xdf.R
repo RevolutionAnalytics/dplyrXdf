@@ -72,13 +72,12 @@ summarise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method, .dots)
     {
         if(hasTblFile(smry))
             on.exit(deleteTbl(smry))
-        smry <- rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+        .outFile <- rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
     }
-    else if(!is.data.frame(smry))
-        smry <- as.data.frame(smry)
+    else .outFile <- as.data.frame(smry)
 
     # strip off one level of grouping
-    simpleRegroup(smry, grps[-length(grps)])
+    simpleRegroup(.outFile, grps[-length(grps)])
 }
 
 

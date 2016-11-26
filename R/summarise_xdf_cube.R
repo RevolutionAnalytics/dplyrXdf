@@ -71,6 +71,9 @@ build_smry_formula_rhs <- function(data, grps, call)
     # use fast rxCube/rxSummary if possible, otherwise construct grouping factor
     if(all(gvarTypes %in% c("factor", numeric_logical)))
     {
+        # using F() assumes that numeric columns are integers; do a check on this
+        if(any(gvarTypes %in% numeric_logical))
+            verify_numerics_are_integers(data, grps)
         n_rhs <- length(grps)
         call$transformFunc <- quote(function(varlst) {
             varlst[[".n."]] <- rep(1, .rxNumRows)
@@ -115,3 +118,23 @@ set_smry_classes <- function(df, origdata, invars, outvars)
         x
     }, df, smrytypes, SIMPLIFY=FALSE)
 }
+
+
+verify_numerics_are_integers <- function(data, grps)
+{
+    data <- rxDataStep(data, varsToKeep=grps, numRows=1000)
+    n <- 1
+    while(n <= ncol(data))
+    {
+        x <- data[[n]]
+        if(is.numeric(x) && any(x != floor(x)))
+        {
+            stop("non-integer values found for grouping variable ", names(data)[n],
+                ": use factorise to get correct groups", call.=FALSE)
+            break
+        }
+        n <- n + 1
+    }
+    NULL
+}
+

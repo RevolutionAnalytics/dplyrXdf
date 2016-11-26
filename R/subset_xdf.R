@@ -69,7 +69,7 @@ subset_.RxFileData <- function(.data, subset=~NULL, select=~NULL, ..., .outFile,
     cl[names(.rxArgs)] <- .rxArgs
 
     .data <- eval(cl)
-    simpleRegroup(.data)
+    simpleRegroup(.data, grps)
 }
 
 
