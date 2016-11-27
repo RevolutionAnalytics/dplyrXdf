@@ -101,10 +101,6 @@ do_.grouped_tbl_xdf <- function(.data, ..., .outFile, .dots)
     .outFile <- dots$output
     .rxArgs <- dots$rxArgs
 
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
-
     if(!is.null(.rxArgs))
     {
         warning("do() doesn't support .rxArgs argument", call.=FALSE)
@@ -143,10 +139,6 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots)
     exprs <- dots$exprs
     .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
 
     if(!is.null(.outFile) && !is.na(.outFile))
         warning("doXdf() only outputs data frames", call.=FALSE)

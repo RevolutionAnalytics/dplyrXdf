@@ -35,10 +35,6 @@ distinct_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots, .keep_all
     if(any(needs_mutate))
         .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
-
     .outFile <- createOutput(.data, .outFile)
     .data <- distinct_base(.data, .outFile, names(exprs), .rxArgs, keep_all=.keep_all)
     simpleRegroup(.data)

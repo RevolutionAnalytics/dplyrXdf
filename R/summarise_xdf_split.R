@@ -18,10 +18,6 @@ smry_rxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
 
 smry_rxSummary_with_groupvars <- function(data, grps, stats, exprs, rxArgs)
 {
-    oldData <- data
-    if(hasTblFile(data))
-        on.exit(deleteTbl(oldData))
-
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     smry <- smry_rxSummary(data, NULL, stats, exprs, rxArgs, dfOut=TRUE)
     cbind(gvars, smry, stringsAsFactors=FALSE)

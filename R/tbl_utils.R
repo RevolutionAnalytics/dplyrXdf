@@ -52,10 +52,9 @@ newTbl <- function(xdf=NULL, fileSystem=rxGetFileSystem(xdf), tblDir=getXdfTblDi
 # delete one or more xdf tbls (vectorised)
 deleteTbl <- function(xdf)
 {
-    if(is.character(xdf))
-        stop("must supply xdf data source or list of data sources")
+    # sanity check if passed a data frame
     if(is.data.frame(xdf))
-        return(invisible(NULL))
+        return(NULL)
     if(!is.list(xdf))
         xdf <- list(xdf)
     lapply(xdf, function(xdf) {
@@ -63,9 +62,11 @@ deleteTbl <- function(xdf)
         filename <- xdf@file
         if(inherits(filesystem, "RxNativeFileSystem"))
         {
+            if(!file.exists(filename))
+                warning("tbl file not found: ", filename)
             # use unlink because file.remove can't handle directories on Windows
             # (composite xdfs are directories)
-            if(file.exists(filename)) unlink(filename, recursive=TRUE)
+            unlink(filename, recursive=TRUE)
         }
         else if(inherits(filesystem, "RxHdfsFileSystem"))
         {
@@ -74,7 +75,7 @@ deleteTbl <- function(xdf)
         }
         else stop("unknown file system, cannot remove file")
     })
-    invisible(NULL)
+    NULL
 }
 
 

@@ -60,7 +60,6 @@ group_by_.RxXdfData <- function(.data, ..., .dots, add=FALSE)
         groups <- c(groups(.data), groups)
     groups <- groups[!duplicated(groups)]
 
-
     .data <- as(.data, "grouped_tbl_xdf")
     .data@hasTblFile <- hasTblFile(.data)
     .data@groups <- groups
