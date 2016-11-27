@@ -10,7 +10,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-11-26" />
+<meta name="date" content="2016-11-27" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-11-26</em></h4>
+<h4 class="date"><em>2016-11-27</em></h4>
 </div>
 
 
@@ -306,7 +306,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
-<span class="co">#&gt; File name: d:/misc/Rtemp\Rtmp655PXb/flights.carrier.9E.xdf</span>
+<span class="co">#&gt; File name: d:\misc\Rtemp\RtmpkRg8L2/flights.carrier.9E.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 17294</span>
@@ -322,7 +322,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <h2>Setting the tbl directory</h2>
 <p>By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large xdf files. You can view the location of the current xdf tbl directory with <code>getXdfTblDir</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">getXdfTblDir</span>()
-<span class="co">#&gt; [1] &quot;d:/misc/Rtemp\\Rtmp655PXb&quot;</span></code></pre></div>
+<span class="co">#&gt; [1] &quot;d:\\misc\\Rtemp\\RtmpkRg8L2&quot;</span></code></pre></div>
 <p>Similarly, you can change the location of the xdf tbl directory with the <code>setXdfTblDir</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># set the tbl directory to a network drive (on Windows)</span>
 <span class="kw">setXdfTblDir</span>(<span class="st">&quot;n:/Rtemp&quot;</span>)</code></pre></div>
