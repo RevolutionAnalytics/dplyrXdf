@@ -52,3 +52,6 @@ test_that("named arguments work, csv input", {
     expect_true(verifyData(tbl, "tbl_xdf") && ncol(tbl) == 5 && nFactorCols(tbl) == 3)
 })
 
+
+# cleanup
+file.remove("ftest.xdf", "ftest.csv")

@@ -29,3 +29,6 @@ test_that("subset works", {
     expect_true(verifyData(tbl, "tbl_xdf") && ncol(tbl) == 2)
 })
 
+
+# cleanup
+file.remove("mtx.xdf")
