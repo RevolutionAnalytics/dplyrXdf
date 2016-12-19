@@ -14,7 +14,11 @@ test_that("arrange works", {
 
 test_that("distinct works", {
     tbl <- mtx %>% distinct(cyl, gear, .outFile=NULL)
-    expect_true(verifyData(tbl, "tbl_df"))  # distinct outputs a tibble
+    # distinct outputs a tibble if dplyr <= 0.4.3, data.frame if > 0.5
+    tblcls <- if(package_version(.dxOptions$dplyrVersion) < package_version("0.5"))
+        "tbl_df"
+    else "data.frame"
+    expect_true(verifyData(tbl, tblcls))
 
     # .keep_all will have no effect when dplyr < 0.5 installed
     skip_if_not(packageVersion("dplyr") >= package_version("0.5"))

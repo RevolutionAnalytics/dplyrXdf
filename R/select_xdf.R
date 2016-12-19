@@ -28,7 +28,9 @@ select_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
     grps <- groups(.data)
-    vars <- c(grps, select_vars_(names(.data), exprs))
+    vars <- c(grps, select_vars_(names(.data), lapply(exprs, lazyeval::as.lazy, dots$env)))
+    if(length(vars) == 0)
+        vars <- NULL
 
     oldData <- .data
     if(hasTblFile(.data))

@@ -1,6 +1,7 @@
 #' @include tbl_xdf.R
 NULL
 
+
 # assorted unexported functions
 varTypes <- function(x, vars=NULL)
 {

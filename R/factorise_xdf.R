@@ -68,7 +68,7 @@ factorise_.RxXdfData <- function(.data, ..., .outFile, .rxArgs, .dots)
 
     grps <- groups(.data)
     types <- varTypes(.data)
-    vars <- factorise_vars(types, exprs)
+    vars <- factoriseVars(types, lapply(exprs, lazyeval::as.lazy, dots$env))
 
     factorInfo <- c(
         sapply(vars$blankArgs, function(nam) list(varName=nam), simplify=FALSE),
@@ -115,10 +115,10 @@ factorise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
 
     grps <- groups(.data)
     types <- varTypes(.data)
-    vars <- factorise_vars(types, exprs)
+    vars <- factoriseVars(types, lapply(exprs, lazyeval::as.lazy, dots$env))
 
     colInfo <- sapply(names(.data), function(x) {
-        if(x %in% names(vars$blankArgs))
+        if(x %in% (vars$blankArgs))
             list(type="factor")
         else if(x %in% names(vars$newlevelArgs))
             list(type="factor", levels=as.character(vars$newlevelArgs[[x]]))
@@ -138,46 +138,72 @@ factorise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
 }
 
 
-factorise_vars <- function(types, args)
+factoriseVars <- function(types, args)
 {
-    # extra selection functions
-    selectionFuncs <- list(
-        all_character=function(...) vars[types %in% "character"],
-        all_numeric=function(...) vars[types %in% c("numeric", "logical", "integer")],
-        all_integer=function(...) vars[types %in% c("logical", "integer")]
-    )
+    .factoriseEnv$.varTypes <- types
+    on.exit(.factoriseEnv$.varTypes <- NULL)
+    
+    # variable selector functions for factoring
+    selectionFuncs <- c("all_character", "all_numeric", "all_integer",
+                        "starts_with", "ends_with", "contains", "matches", "num_range", "one_of", "everything")
 
-    vars <- names(types)
     if(length(args) == 0)
-        return(list(blankArgs=selectionFuncs$all_character(), newlevelArgs=NULL))
+        return(list(blankArgs=all_character(types), newlevelArgs=NULL))
 
     # do blank arguments and arguments specifying new factor levels separately
     # unlike select, named arguments always treated as specifying factor levels, not indices
     # blank arguments can also include variable selector functions
-    isBlankArgs <- sapply(names(args), function(n) {
-        e <- args[[n]]
-        is.name(e) || deparse(e) == n || as.character(e[[1]]) %in% c("all_character", "all_numeric", "all_integer",
-                                                                     "starts_with", "ends_with", "contains", "matches",
-                                                                     "one_of", "everything")
+    isBlankArg <- sapply(names(args), function(n) {
+        e <- args[[n]]$expr
+        deparse(e) == n || (is.call(e) && deparse(e[[1]]) %in% selectionFuncs)
     })
-    blankArgs <- args[isBlankArgs]
-    newlevelArgs <- args[!isBlankArgs]
 
-    newArgs <- list()
-    for(i in seq_along(blankArgs))
-    {
-        arg <- blankArgs[[i]]
-        i <- match(deparse(arg), names(selectionFuncs), nomatch=0)
-        if(i > 0)
-        {
-            arg <- lazyeval::as.lazy_dots(selectionFuncs[[i]]())
-            newArgs <- c(newArgs, arg)
-        }
-        else newArgs <- c(newArgs, list(arg))
-    }
-    blankArgs <- select_vars_(vars, newArgs)
-    newlevelArgs <- lapply(newlevelArgs, eval)
+    blankArgs <- select_vars_(names(types), args[isBlankArg])
+    names(blankArgs) <- sapply(blankArgs, as.character)
+    newlevelArgs <- lapply(args[!isBlankArg], lazyeval::lazy_eval)
 
     list(blankArgs=blankArgs, newlevelArgs=newlevelArgs)
 }
+
+
+# extra selection functions
+#' @rdname factorise
+#' @export
+all_character <- function(vars=.varTypes)
+{
+    factorise_sel(vars, "character")
+}
+
+
+#' @rdname factorise
+#' @export
+all_integer <- function(vars=.varTypes)
+{
+    factorise_sel(vars, c("logical", "integer"))
+}
+
+
+#' @rdname factorise
+#' @export
+all_numeric <- function(vars=.varTypes)
+{
+    factorise_sel(vars, c("numeric", "logical", "integer"))
+}
+
+
+factorise_sel <- function(vars, target)
+{
+    n <- which(vars %in% target)
+    if(length(n) == 0)
+        -seq_len(length(vars))
+    else n
+}
+
+
+# environment for storing var names/types for factoring
+.factoriseEnv <- new.env()
+environment(factoriseVars) <- .factoriseEnv
+environment(all_character) <- .factoriseEnv
+environment(all_integer) <- .factoriseEnv
+environment(all_numeric) <- .factoriseEnv
 

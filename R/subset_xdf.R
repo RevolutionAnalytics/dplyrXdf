@@ -36,23 +36,26 @@ subset_ <- function(.data, ...)
 
 #' @rdname subset
 #' @export
-subset_.RxFileData <- function(.data, subset=~NULL, select=~NULL, ..., .outFile, .rxArgs, .dots)
+subset_.RxFileData <- function(.data, subset=~NULL, select=~NULL, .outFile, .rxArgs, .dots)
 {
-    dots <- lazyeval::all_dots(.dots, ...)
+    dots <- lazyeval::all_dots(.dots)
 
     # .outFile and .rxArgs will be passed in via .dots if called by NSE
     dots <- rxArgs(dots)
     exprs <- dots$exprs
     if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-
     subset <- lazyeval::as.lazy(subset)$expr
-    select <- lazyeval::as.lazy(select)$expr
-    if(is.null(select))
+    if(!is.character(select))
+        select <- lazyeval::as.lazy(select)
+
+    if(is.null(select) || (inherits(select, "lazy") && is.null(select$expr)))
         select <- names(.data)
 
     grps <- groups(.data)
     select <- c(grps, select_vars_(names(.data), select))
+    if(length(select) == 0)
+        stop("No variables selected", call.=FALSE)
 
     oldData <- .data
     if(hasTblFile(.data))

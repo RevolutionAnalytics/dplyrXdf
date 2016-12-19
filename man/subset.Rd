@@ -11,7 +11,7 @@
 
 subset_(.data, ...)
 
-\method{subset_}{RxFileData}(.data, subset = ~NULL, select = ~NULL, ...,
+\method{subset_}{RxFileData}(.data, subset = ~NULL, select = ~NULL,
   .outFile, .rxArgs, .dots)
 }
 \arguments{
