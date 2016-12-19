@@ -18,6 +18,9 @@ test_that("select works", {
     expect_true(verifyData(tbl, "tbl_xdf") && ncol(tbl) == 2)
     tbl <- mtx %>% select_(.dots=c("mpg", "cyl"))
     expect_true(verifyData(tbl, "tbl_xdf") && ncol(tbl) == 2)
+    expect_error(mtx %>% select(matches("xyz")))
+    expect_error(mtx %>% select(starts_with("xyz")))
+    expect_error(mtx %>% select(contains("xyz")))
 })
 
 test_that("subset works", {
@@ -27,6 +30,9 @@ test_that("subset works", {
     expect_true(verifyData(tbl, "tbl_xdf") && ncol(tbl) == 4)
     tbl <- mtx %>% subset_(, c("mpg", "cyl"))
     expect_true(verifyData(tbl, "tbl_xdf") && ncol(tbl) == 2)
+    expect_error(mtx %>% subset(, matches("xyz")))
+    expect_error(mtx %>% subset(, starts_with("xyz")))
+    expect_error(mtx %>% subset(, contains("xyz")))
 })
 
 
