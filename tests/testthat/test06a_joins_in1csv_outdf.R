@@ -46,8 +46,8 @@ test_that("csv to data frame joining -> data frame works", {
     expect_s3_class(inner_join(txt1, df2, by=c("c"="d"), .outFile=NULL), "data.frame")
 
     skip_if_not(packageVersion("dplyr") >= package_version("0.5"))
-    expect_s3_class(union(txt1, df1), .outFile=NULL, "data.frame")
-    expect_s3_class(union_all(txt1, df1), .outFile=NULL, "data.frame")
+    expect_s3_class(union(txt1, df1, .outFile=NULL), "data.frame")
+    expect_s3_class(union_all(txt1, df1, .outFile=NULL), "data.frame")
 })
 
 

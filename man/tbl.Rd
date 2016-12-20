@@ -6,7 +6,7 @@
 \alias{tbl.RxXdfData}
 \title{Create a tbl from an Xdf file}
 \usage{
-tbl.RxXdfData(data, file = NULL, hasTblFile = FALSE, ...)
+\method{tbl}{RxXdfData}(data, file = NULL, hasTblFile = FALSE, ...)
 
 \method{tbl}{RxFileData}(data, file = newTbl(data), hasTblFile = TRUE, ...)
 

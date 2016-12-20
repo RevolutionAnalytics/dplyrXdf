@@ -14,13 +14,11 @@
 \alias{union_all.RxFileData}
 \title{Set operations on data sources}
 \usage{
-intersect.RxFileData(x, y, ...)
+\method{intersect}{RxFileData}(x, y, ...)
 
-setdiff.RxFileData(x, y, ...)
+\method{setdiff}{RxFileData}(x, y, ...)
 
-setequal.RxFileData(x, y, ...)
-
-union_all(x, y, .outFile, .rxArgs, ...)
+\method{setequal}{RxFileData}(x, y, ...)
 
 \method{union_all}{RxFileData}(x, y, .outFile, .rxArgs, ...)
 
@@ -43,6 +41,8 @@ Set operations on data sources
 }
 \details{
 Currently, only \code{union} and \code{union_all} are supported for RevoScaleR data sources. The code uses \code{rxDataStep(append="rows")} to do the union; this can be much faster than using \code{rxMerge(type="union")}.
+
+For technical reasons, \code{union_all} is only exported as a method for RevoScaleR objects if you have dplyr version 0.5 or higher. If an earlier version of dplyr is installed, you can still call it but you'll have to specify the full function name: \code{union_all.RxFileData}. If this doesn't make sense to you, just assume that \code{union_all} requires dplyr 0.5.
 }
 \seealso{
 \code{\link[dplyr]{setops}} in package dplyr

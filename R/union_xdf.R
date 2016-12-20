@@ -1,5 +1,3 @@
-# duplicate the generic from dplyr 0.5, to allow install with dplyr <= 0.4.3
-
 #' Set operations on data sources
 #'
 #' @param x, y Data sources.
@@ -10,6 +8,8 @@
 #' @details
 #' Currently, only \code{union} and \code{union_all} are supported for RevoScaleR data sources. The code uses \code{rxDataStep(append="rows")} to do the union; this can be much faster than using \code{rxMerge(type="union")}.
 #'
+#' For technical reasons, \code{union_all} is only exported as a method for RevoScaleR objects if you have dplyr version 0.5 or higher. If an earlier version of dplyr is installed, you can still call it but you'll have to specify the full function name: \code{union_all.RxFileData}. If this doesn't make sense to you, just assume that \code{union_all} requires dplyr 0.5.
+#'
 #' @return
 #' An object representing the joined data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
@@ -19,15 +19,10 @@
 #' @name setops
 NULL
 
-#' @rdname setops
-#' @export
-union_all <- function(x, y, .outFile, .rxArgs, ...)
-UseMethod("union_all")
-
 #' @importFrom dplyr union
 
 #' @rdname setops
-#' @export
+#' @export union_all.RxFileData
 union_all.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
 {
     # need to create a new copy of x?

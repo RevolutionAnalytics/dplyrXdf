@@ -14,6 +14,8 @@ df2f <- data.frame(a=factor(letters[7:26]), d=as.character(1:20), e=11:30, strin
 xdf1f <- rxDataStep(df1f, "xdf1f.xdf", overwrite=TRUE)
 xdf2f <- rxDataStep(df2f, "xdf2f.xdf", overwrite=TRUE)
 
+isDplyr5 <- packageVersion("dplyr") >= package_version("0.5")
+
 
 test_that("csv to xdf joining works", {
     expect(class(left_join(txt1, xdf2, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
@@ -23,7 +25,7 @@ test_that("csv to xdf joining works", {
     expect(class(semi_join(txt1, xdf2, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
     expect(class(anti_join(txt1, xdf2, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
     expect(class(union(txt1, txt1, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
-    expect(class(union_all(txt1, txt1, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
+    if(isDplyr5) expect(class(union_all(txt1, txt1, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
 
     expect(class(inner_join(txt1, xdf2, by=c("b"="d"), .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
     expect(class(inner_join(txt1, xdf2, by=c("b"="e"), .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
@@ -39,7 +41,7 @@ test_that("csv to data frame joining works", {
     expect(class(semi_join(txt1, df2, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
     expect(class(anti_join(txt1, df2, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
     expect(class(union(txt1, df1, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
-    expect(class(union_all(txt1, df1, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
+    if(isDplyr5) expect(class(union_all(txt1, df1, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
 
     expect(class(inner_join(txt1, df2, by=c("b"="d"), .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
     expect(class(inner_join(txt1, df2, by=c("b"="e"), .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
@@ -55,7 +57,7 @@ test_that("csv to csv joining works", {
     expect(class(semi_join(txt1, txt2, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
     expect(class(anti_join(txt1, txt2, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
     expect(class(union(txt1, txt1, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
-    expect(class(union_all(txt1, txt1, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
+    if(isDplyr5) expect(class(union_all(txt1, txt1, .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
 
     expect(class(inner_join(txt1, txt2, by=c("b"="d"), .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")
     expect(class(inner_join(txt1, txt2, by=c("b"="e"), .outFile="test7a.xdf")) == "RxXdfData", "not RxXdfData")

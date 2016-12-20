@@ -14,6 +14,8 @@ df2f <- data.frame(a=factor(letters[7:26]), d=as.character(1:20), e=11:30, strin
 xdf1f <- rxDataStep(df1f, "xdf1f.xdf", overwrite=TRUE)
 xdf2f <- rxDataStep(df2f, "xdf2f.xdf", overwrite=TRUE)
 
+isDplyr5 <- packageVersion("dplyr") >= package_version("0.5")
+
 
 test_that("xdf to xdf joining works", {
     expect_s4_class(left_join(xdf1, xdf2), "tbl_xdf")
@@ -23,7 +25,7 @@ test_that("xdf to xdf joining works", {
     expect_s4_class(semi_join(xdf1, xdf2), "tbl_xdf")
     expect_s4_class(anti_join(xdf1, xdf2), "tbl_xdf")
     expect_s4_class(union(xdf1, xdf1), "tbl_xdf")
-    expect_s4_class(union_all(xdf1, xdf1), "tbl_xdf")
+    if(isDplyr5) expect_s4_class(union_all(xdf1, xdf1), "tbl_xdf")
 
     expect_s4_class(inner_join(xdf1, xdf2, by=c("b"="d")), "tbl_xdf")
     expect_s4_class(inner_join(xdf1, xdf2, by=c("b"="e")), "tbl_xdf")
@@ -43,7 +45,7 @@ test_that("xdf to data frame joining works", {
     expect_s4_class(semi_join(xdf1, df2), "tbl_xdf")
     expect_s4_class(anti_join(xdf1, df2), "tbl_xdf")
     expect_s4_class(union(xdf1, df1), "tbl_xdf")
-    expect_s4_class(union_all(xdf1, df1), "tbl_xdf")
+    if(isDplyr5) expect_s4_class(union_all(xdf1, df1), "tbl_xdf")
 
     expect_s4_class(inner_join(xdf1, df2, by=c("b"="d")), "tbl_xdf")
     expect_s4_class(inner_join(xdf1, df2, by=c("b"="e")), "tbl_xdf")
@@ -63,7 +65,7 @@ test_that("xdf to csv joining works", {
     expect_s4_class(semi_join(xdf1, txt2), "tbl_xdf")
     expect_s4_class(anti_join(xdf1, txt2), "tbl_xdf")
     expect_s4_class(union(xdf1, txt1), "tbl_xdf")
-    expect_s4_class(union_all(xdf1, txt1), "tbl_xdf")
+    if(isDplyr5) expect_s4_class(union_all(xdf1, txt1), "tbl_xdf")
 
     expect_s4_class(inner_join(xdf1, txt2, by=c("b"="d")), "tbl_xdf")
     expect_s4_class(inner_join(xdf1, txt2, by=c("b"="e")), "tbl_xdf")

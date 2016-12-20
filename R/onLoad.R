@@ -415,12 +415,6 @@
     .dxInit()
     reg.finalizer(.dxOptions, .dxFinal, onexit=TRUE)
 
-    # warn about warning
-    if(.dxOptions$dplyrVersion >= package_version("0.5"))
-        message("dplyrXdf defines the union_all generic to allow\n",
-                "interoperability with versions of dplyr < 0.5.\n",
-                "Disregard the message about masking this object from dplyr.")
-
     invisible(NULL)
 }
 
