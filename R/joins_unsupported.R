@@ -1,3 +1,6 @@
+#' @importFrom dplyr intersect setdiff setequal
+NULL
+
 #' @rdname setops 
 #' @export
 intersect.RxFileData <- function(x, y, ...)
