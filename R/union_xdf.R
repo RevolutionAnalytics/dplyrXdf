@@ -1,6 +1,6 @@
 #' Set operations on data sources
 #'
-#' @param x, y Data sources.
+#' @param x,y Data sources.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param ... Not currently used.
