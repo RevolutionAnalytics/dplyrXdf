@@ -88,11 +88,26 @@ distinct_base <- function(data, output, vars, rxArgs, keep_all)
     if(hasTblFile(data))
         on.exit(deleteTbl(oldData))
 
-    df <- RevoPemaR::pemaCompute(pemaDistinct(), data=data, varNames=vars, keep_all=keep_all)
+    dplyr5 <- .dxOptions$dplyrVersion >= package_version("0.5")
+    df <- rxDataStep(data, transformFunc=function(varlst) {
+            df <- if(dplyr5)
+                dplyr::distinct_(data.frame(varlst), .dots=.vars, .keep_all=.keep_all)
+            else dplyr::distinct_(data.frame(varlst), .dots=.vars)
+            if(!.rxIsTestChunk)
+                .out <<- c(.out, list(df))
+            NULL
+        },
+        transformObjects=list(.vars=vars, .keep_all=keep_all, .dplyr5=dplyr5, .out=list()),
+        transformPackages="dplyr",
+        returnTransformObjects=TRUE)$.out %>% dplyr::bind_rows(.)
 
+    df <- if(dplyr5)
+        dplyr::distinct_(df, .dots=vars, .keep_all=keep_all)
+    else dplyr::distinct_(df, .dots=vars)
+    
     if(inherits(output, "RxXdfData"))
     {
-        cl <- quote(rxDataStep(df, output, overwrite=TRUE))
+        cl <- quote(rxDataStep(df, output, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead))
         cl[names(rxArgs)] <- rxArgs
         eval(cl)
     }
@@ -100,45 +115,45 @@ distinct_base <- function(data, output, vars, rxArgs, keep_all)
 }
 
 
-#' @importFrom RevoPemaR setPemaClass
-#' @importClassesFrom RevoPemaR PemaBaseClass
-pemaDistinct <- RevoPemaR::setPemaClass("PemaDistinct",
-    contains="PemaBaseClass",
+##' @importFrom RevoPemaR setPemaClass
+##' @importClassesFrom RevoPemaR PemaBaseClass
+#pemaDistinct <- RevoPemaR::setPemaClass("PemaDistinct",
+    #contains="PemaBaseClass",
 
-    fields=list(dfList="list", varNames="character", keep_all="logical", dplyr5="logical"),
+    #fields=list(dfList="list", varNames="character", keep_all="logical", dplyr5="logical"),
 
-    methods=list(
-        initialize=function(varNames="", keep_all=logical(0), ...) {
-            callSuper(...)
-            usingMethods(.pemaMethods)
-            dfList <<- vector("list", 0)
-            varNames <<- varNames
-            # keep_all option only for dplyr versions >= 0.5
-            keep_all <<- keep_all
-            dplyr5 <<- .dxOptions$dplyrVersion >= package_version("0.5")
-        },
+    #methods=list(
+        #initialize=function(varNames="", keep_all=logical(0), ...) {
+            #callSuper(...)
+            #usingMethods(.pemaMethods)
+            #dfList <<- vector("list", 0)
+            #varNames <<- varNames
+            ## keep_all option only for dplyr versions >= 0.5
+            #keep_all <<- keep_all
+            #dplyr5 <<- .dxOptions$dplyrVersion >= package_version("0.5")
+        #},
 
-        processData=function(chunk) {
-            # keep_all option only for dplyr versions >= 0.5
-            if(dplyr5 && !keep_all && length(varNames) > 0)
-                chunk <- chunk[varNames]
-            dfChunk <- as.data.frame(chunk, stringsAsFactors=FALSE)
-            dfList <<- if(dplyr5)
-                c(dfList, list(distinct_(dfChunk, .dots=varNames, .keep_all=keep_all)))
-            else c(dfList, list(distinct_(dfChunk, .dots=varNames)))
-            invisible(NULL)
-        },
+        #processData=function(chunk) {
+            ## keep_all option only for dplyr versions >= 0.5
+            #if(dplyr5 && !keep_all && length(varNames) > 0)
+                #chunk <- chunk[varNames]
+            #dfChunk <- as.data.frame(chunk, stringsAsFactors=FALSE)
+            #dfList <<- if(dplyr5)
+                #c(dfList, list(distinct_(dfChunk, .dots=varNames, .keep_all=keep_all)))
+            #else c(dfList, list(distinct_(dfChunk, .dots=varNames)))
+            #invisible(NULL)
+        #},
 
-        updateResults=function(pemaDistinctObj) {
-            dfList <<- c(dfList, pemaDistinctObj$dfList)
-            invisible(NULL)
-        },
+        #updateResults=function(pemaDistinctObj) {
+            #dfList <<- c(dfList, pemaDistinctObj$dfList)
+            #invisible(NULL)
+        #},
 
-        processResults=function() {
-            # keep_all option only for dplyr versions >= 0.5
-            if(dplyr5)
-                distinct_(bind_rows(dfList), .dots=varNames, .keep_all=keep_all)
-            else distinct_(bind_rows(dfList), .dots=varNames)
-        }
-))
+        #processResults=function() {
+            ## keep_all option only for dplyr versions >= 0.5
+            #if(dplyr5)
+                #distinct_(bind_rows(dfList), .dots=varNames, .keep_all=keep_all)
+            #else distinct_(bind_rows(dfList), .dots=varNames)
+        #}
+#))
 
