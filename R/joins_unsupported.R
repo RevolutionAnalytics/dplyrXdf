@@ -1,5 +1,14 @@
-#' @importFrom dplyr intersect setdiff setequal
-NULL
+#' @importFrom dplyr intersect
+#' @export
+dplyr::intersect
+
+#' @importFrom dplyr setdiff
+#' @export
+dplyr::setdiff
+
+#' @importFrom dplyr setequal
+#' @export
+dplyr::setequal
 
 #' @rdname setops 
 #' @export

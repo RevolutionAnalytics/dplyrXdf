@@ -20,6 +20,8 @@
 NULL
 
 #' @importFrom dplyr union
+#' @export
+dplyr::union
 
 #' @rdname setops
 #' @export union_all.RxFileData
