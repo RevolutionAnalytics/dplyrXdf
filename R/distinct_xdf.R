@@ -81,7 +81,6 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots, .kee
 }
 
 
-#' @importFrom RevoPemaR pemaCompute
 distinct_base <- function(data, output, vars, rxArgs, keep_all)
 {
     oldData <- data
@@ -90,7 +89,7 @@ distinct_base <- function(data, output, vars, rxArgs, keep_all)
 
     dplyr5 <- .dxOptions$dplyrVersion >= package_version("0.5")
     df <- rxDataStep(data, transformFunc=function(varlst) {
-            df <- if(dplyr5)
+            df <- if(.dplyr5)
                 dplyr::distinct_(data.frame(varlst), .dots=.vars, .keep_all=.keep_all)
             else dplyr::distinct_(data.frame(varlst), .dots=.vars)
             if(!.rxIsTestChunk)
@@ -115,6 +114,7 @@ distinct_base <- function(data, output, vars, rxArgs, keep_all)
 }
 
 
+##' @importFrom RevoPemaR pemaCompute
 ##' @importFrom RevoPemaR setPemaClass
 ##' @importClassesFrom RevoPemaR PemaBaseClass
 #pemaDistinct <- RevoPemaR::setPemaClass("PemaDistinct",

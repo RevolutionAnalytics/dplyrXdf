@@ -14,18 +14,18 @@
 \alias{union_all.RxFileData}
 \title{Set operations on data sources}
 \usage{
-\method{intersect}{RxFileData}(x, y, ...)
+intersect.RxFileData(x, y, ...)
 
-\method{setdiff}{RxFileData}(x, y, ...)
+setdiff.RxFileData(x, y, ...)
 
-\method{setequal}{RxFileData}(x, y, ...)
+setequal.RxFileData(x, y, ...)
 
 \method{union_all}{RxFileData}(x, y, .outFile, .rxArgs, ...)
 
-\method{union}{RxFileData}(x, y, .outFile, .rxArgs, ...)
+union.RxFileData(x, y, .outFile, .rxArgs, ...)
 }
 \arguments{
-\item{x, }{y Data sources.}
+\item{x, y}{Data sources.}
 
 \item{...}{Not currently used.}
 
