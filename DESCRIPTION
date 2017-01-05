@@ -17,6 +17,7 @@ LazyData: true
 Collate:
     '00rxArgs.R'
     'arrange_xdf.R'
+    'collect_xdf.R'
     'createOutput.R'
     'distinct_xdf.R'
     'do_xdf.R'
