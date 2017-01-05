@@ -13,16 +13,8 @@ NULL
 #' \code{as.data.frame} converts a data source object (typically an xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
 #'
 #' @seealso
-#' \code{\link[base]{as.data.frame}}
-#' @aliases as.data.frame
-#' @rdname as.data.frame
-#' @export
-as.data.frame.RxXdfData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
-{
-    rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
-}
-
-
+#' \code{\link[base]{as.data.frame}}, \code{\link[dplyr]{collect}}
+#' @aliases collect compute as.data.frame
 #' @rdname as.data.frame
 #' @export
 as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
@@ -30,6 +22,16 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
     rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
 }
 
+#' @rdname as.data.frame
+#' @export
+collect.RxFileData <- function(x, maxRowsByCols=NULL, ...)
+{
+    rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
+}
+
+#' @rdname as.data.frame
+#' @export
+compute.RxFileData <- collect.RxFileData
 
 #' @param name The name of a column to extract from a data source object
 #' @rdname as.data.frame
