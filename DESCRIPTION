@@ -7,11 +7,12 @@ Authors@R: c(
     )
 Description: Interface to xdf files for the dplyr package
 Depends:
-    R (>= 3.1.1),
-    dplyr,
-    RevoScaleR
+    R (>= 3.3.2),
+    dplyr (>= 0.5.0.9005),
+    RevoScaleR (>= 9.0)
 Imports:
-    dplyr
+    dplyr,
+	rlang (>= 0.1)
 License: MIT + file LICENSE
 LazyData: true
 Collate:
