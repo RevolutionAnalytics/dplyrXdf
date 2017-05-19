@@ -32,8 +32,8 @@ select.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 
     # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep
     .data <- if(inherits(.data, "RxXdfData"))
-        do.call("rxDataStep", arglst)
-    else do.call("rxImport", arglst)
+        invoke("rxDataStep", arglst)
+    else invoke("rxImport", arglst)
 
     simpleRegroup(.data, grps)
 }
