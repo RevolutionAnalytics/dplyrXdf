@@ -80,6 +80,15 @@ deleteTbl <- function(xdf)
 }
 
 
+# on.exit function
+deleteIfTbl <- function(oldData)
+{
+    if(hasTblFile(oldData) || is.list(oldData))
+        deleteTbl(oldData)
+    NULL
+}
+
+
 getTblFile <- function(data)
 {
     if(is.data.frame(data))

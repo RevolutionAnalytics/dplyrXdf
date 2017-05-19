@@ -13,32 +13,29 @@
 #' @rdname filter
 #' @aliases filter filter_
 #' @export
-filter_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
+filter.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
 {
-    dots <- lazyeval::all_dots(.dots, ...)
-
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
     grps <- groups(.data)
+    dots <- rlang::quos(..., .named=TRUE)
+    #if(length(dots) > 1)
+        #env <- rlang::get_env(dots[[1]])
+    #else env <- rlang::get_env(caller_env(2))
 
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
-
-    all_exprs <- exprs[[1]]
-    if(length(exprs) > 1) for(i in 2:length(exprs))  # loop taken from dplyr:::and_expr
+    exprs <- lapply(dots, rlang::get_expr)
+    if(length(exprs) > 0)
     {
-        all_exprs <- substitute(left & right, list(left=all_exprs, right=exprs[[i]]))
+        all_exprs <- exprs[[1]]
+        if(length(exprs) > 1) for(i in 2:length(exprs))  # loop taken from dplyr:::and_expr
+        {
+            all_exprs <- substitute(left & right, list(left=all_exprs, right=exprs[[i]]))
+        }
     }
+    else all_exprs <- NULL
 
-    .outFile <- createOutput(.data, .outFile)
-    cl <- substitute(rxDataStep(.data, .outFile, rowSelection=.expr, overwrite=TRUE),
-        list(.expr=all_exprs))
-    cl[names(.rxArgs)] <- .rxArgs
+    arglst <- list(.data, rowSelection=all_exprs)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-    .data <- eval(cl)
-    simpleRegroup(.data, grps)
+    on.exit(deleteIfTbl(.data))
+    output <- rlang::invoke("rxDataStep", arglst)
+    simpleRegroup(output, grps)
 }

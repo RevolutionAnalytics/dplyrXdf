@@ -23,18 +23,14 @@ select.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     if(length(vars) == 0)
         stop("No variables selected", call.=FALSE)
 
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
-
     arglst <- list(.data, varsToKeep=vars)
-    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
+    on.exit(deleteIfTbl(.data))
     # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep
-    .data <- if(inherits(.data, "RxXdfData"))
-        invoke("rxDataStep", arglst)
-    else invoke("rxImport", arglst)
-
-    simpleRegroup(.data, grps)
+    output <- if(inherits(.data, "RxXdfData"))
+        rlang::invoke("rxDataStep", arglst)
+    else rlang::invoke("rxImport", arglst)
+    simpleRegroup(output, grps)
 }
 
