@@ -16,15 +16,15 @@ varLevels <- function(x, vars=NULL)
 }
 
 
-# do not export this: arbitrarily changing the file pointer of an xdf object can be bad
-`tblFile<-` <- function(x, value)
-{
-    if(!inherits(x, "tbl_xdf"))
-        stop("bad call to 'tblFile<-': cannot change raw xdf file")
-    x@file <- value
-    x@hasTblFile <- TRUE
-    x
-}
+## do not export this: arbitrarily changing the file pointer of an xdf object can be bad
+#`tblFile<-` <- function(x, value)
+#{
+    #if(!inherits(x, "tbl_xdf"))
+        #stop("bad call to 'tblFile<-': cannot change raw xdf file")
+    #x@file <- value
+    #x@hasTblFile <- TRUE
+    #x
+#}
 
 
 # generate a new Xdf data source with file pointing to a random file, other parameters taken from input data source

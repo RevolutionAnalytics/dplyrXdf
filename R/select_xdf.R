@@ -4,7 +4,6 @@
 #' @param ... Unquoted variables to select.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
-#' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
 #' @details
 #' All the special functions mentioned in the documentation for \code{\link[dplyr]{select}} will also work with dplyrXdf. Note that renaming a variable is \emph{not} supported in dplyrXdf \code{select}. If you want to do this, follow the \code{select} with a \code{rename}; the latter is very fast, as it only modifies the metadata portion of an xdf file, not the data itself.
@@ -17,18 +16,10 @@
 #' @rdname select
 #' @aliases select select_
 #' @export
-select_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
+select.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
-    dots <- lazyeval::all_dots(.dots, ...)
-
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-
     grps <- groups(.data)
-    vars <- c(grps, select_vars_(names(.data), lapply(exprs, lazyeval::as.lazy, dots$env)))
+    vars <- c(grps, select_vars(names(.data), ...))
     if(length(vars) == 0)
         stop("No variables selected", call.=FALSE)
 
@@ -36,17 +27,14 @@ select_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
     if(hasTblFile(.data))
         on.exit(deleteTbl(oldData))
 
-    .outFile <- createOutput(.data, .outFile)
+    arglst <- list(.data, varsToKeep=vars)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
 
     # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep
-    cl <- if(inherits(.data, "RxXdfData"))
-        substitute(rxDataStep(.data, .outFile, varsToKeep=.expr, overwrite=TRUE),
-            list(.expr=vars))
-    else substitute(rxImport(.data, .outFile, varsToKeep=.expr, overwrite=TRUE),
-            list(.expr=vars))
-    cl[names(.rxArgs)] <- .rxArgs
+    .data <- if(inherits(.data, "RxXdfData"))
+        do.call("rxDataStep", arglst)
+    else do.call("rxImport", arglst)
 
-    .data <- eval(cl)
     simpleRegroup(.data, grps)
 }
 

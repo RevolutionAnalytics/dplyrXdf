@@ -65,4 +65,27 @@ rxArgs <- function(dots, fromDo=FALSE)
 
 
 
+doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
+{
+    if(is_lang(.rxArgs))
+        arglst <- c(arglst, lang_tail(.rxArgs))
+
+    if(!missing(.outFile))
+    {
+        if(is.null(.outFile) || is.character(.outFile))
+        {
+            arglst["outFile"] <- list(.outFile)
+            arglst["maxRowsByCols"] <- list(NULL)
+        }
+        else warning("unexpected value for .outFile ignored")
+    }
+    else arglst$outFile <- newTbl(.data)
+
+    arglst$overwrite <- TRUE
+
+    arglst
+}
+
+
+
 
