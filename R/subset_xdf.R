@@ -18,61 +18,24 @@
 #' @aliases subset subset_
 #' @rdname subset
 #' @export
-subset.RxFileData <- function(.data, subset=NULL, select=NULL, ...)
+subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile, .rxArgs)
 {
-    subset <- lazyeval::lazy(subset)
-    select <- lazyeval::lazy(select)
-    subset_(.data, subset=subset, select=select, .dots = lazyeval::lazy_dots(...))
-}
-
-
-#' @rdname subset
-#' @export
-subset_ <- function(.data, ...)
-{
-    UseMethod("subset_")
-}
-
-
-#' @rdname subset
-#' @export
-subset_.RxFileData <- function(.data, subset=~NULL, select=~NULL, .outFile, .rxArgs, .dots)
-{
-    dots <- lazyeval::all_dots(.dots)
-
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-    subset <- lazyeval::as.lazy(subset)$expr
-    if(!is.character(select))
-        select <- lazyeval::as.lazy(select)
-
-    if(is.null(select) || (inherits(select, "lazy") && is.null(select$expr)))
-        select <- names(.data)
-
     grps <- groups(.data)
-    select <- c(grps, select_vars_(names(.data), select))
-    if(length(select) == 0)
+    vars <- c(grps, select_vars(names(.data), select))
+    if(length(vars) == 0)
         stop("No variables selected", call.=FALSE)
 
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
+    rows <- rlang::get_expr(rlang::enquo(subset))
 
-    .outFile <- createOutput(.data, .outFile)
+    arglst <- list(.data, rowSelection=rows, varsToKeep=vars)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
+    on.exit(deleteIfTbl(.data))
     # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep
-    cl <- if(inherits(.data, "RxXdfData"))
-        substitute(rxDataStep(.data, .outFile, rowSelection=.rows, varsToKeep=.vars, overwrite=TRUE),
-            list(.rows=subset, .vars=select))
-    else substitute(rxImport(.data, .outFile, rowSelection=.rows, varsToKeep=.vars, overwrite=TRUE),
-            list(.rows=subset, .vars=select))
-    cl[names(.rxArgs)] <- .rxArgs
-
-    .data <- eval(cl)
-    simpleRegroup(.data, grps)
+    output <- if(inherits(.data, "RxXdfData"))
+        rlang::invoke("rxDataStep", arglst)
+    else rlang::invoke("rxImport", arglst)
+    simpleRegroup(output, grps)
 }
 
 

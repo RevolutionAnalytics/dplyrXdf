@@ -12,6 +12,7 @@ Depends:
     RevoScaleR (>= 9.0)
 Imports:
     dplyr,
+	magrittr,
 	rlang (>= 0.1)
 License: MIT + file LICENSE
 LazyData: true

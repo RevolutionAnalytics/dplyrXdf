@@ -1,4 +1,4 @@
-#dplyrXdf
+# dplyrXdf
 
 The [dplyr package](https://cran.r-project.org/package=dplyr) is a toolkit for data transformation and manipulation. Since its introduction, dplyr has become very popular in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks.
 
@@ -6,7 +6,7 @@ The dplyrXdf package implements a dplyr backend for [Microsoft R Server](https:/
 
 MRS includes a suite of data transformation and modelling functions in the RevoScaleR package that can handle xdf files. These functions are highly optimised and efficient, but their user interface can be complex. dplyrXdf allows you to work with xdf files within the framework supplied by dplyr, which reduces the learning curve and allows you to become productive more quickly.
 
-##Obtaining dplyrXdf
+## Obtaining dplyrXdf
 
 You can get dplyrXdf from GitHub. If you have the devtools package, you can download and install it from within R using the command `devtools::install_github("RevolutionAnalytics/dplyrXdf")`.
 
