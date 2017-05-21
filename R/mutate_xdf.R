@@ -27,9 +27,6 @@
 mutate.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
     dots <- quos(..., .named=TRUE)
-    if(length(dots) > 1)
-        env <- get_env(dots[[1]])
-    else env <- get_env(caller_env(2))
 
     transforms <- lapply(dots, get_expr)
     # turn a list of quoted expressions into a quoted list of expressions

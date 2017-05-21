@@ -21,7 +21,13 @@
 subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile, .rxArgs)
 {
     grps <- groups(.data)
-    vars <- c(grps, select_vars(names(.data), select))
+    select <- rlang::get_expr(rlang::enquo(select))
+    if(is.null(select))
+        select <- names(.data)
+    
+    vars <- do.call(dplyr::select_vars, c(list(names(.data), select)),
+                    envir=parent.frame()) # cannot use rlang::invoke
+    vars <- c(grps, vars)
     if(length(vars) == 0)
         stop("No variables selected", call.=FALSE)
 
@@ -31,10 +37,7 @@ subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile, .rxArgs
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep
-    output <- if(inherits(.data, "RxXdfData"))
-        rlang::invoke("rxDataStep", arglst)
-    else rlang::invoke("rxImport", arglst)
+    output <- rlang::invoke("rxDataStep", arglst)
     simpleRegroup(output, grps)
 }
 

@@ -17,9 +17,10 @@ transmute.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     if(any(sapply(transforms, is.null)))
         stop("do not set variables to NULL in transmute; to delete variables, leave them out of the function call")
 
-    arglst <- list(.data, transforms=transforms) %>%
-        doExtraArgs(.data, rlang::enexpr(.rxArgs), .outFile) %>%
-        setTransmuteVars(names(.data), grps)
+    # piping messes up NSE
+    arglst <- list(.data, transforms=transforms)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- setTransmuteVars(arglst, names(.data))
 
     on.exit(deleteIfTbl(.data))
     rlang::invoke("rxDataStep", arglst)
@@ -28,7 +29,7 @@ transmute.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 
 #' @rdname mutate
 #' @export
-transmute_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
+transmute.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
 {
     stopIfHdfs(.data, "mutate on grouped data not supported on HDFS")
 
@@ -43,9 +44,10 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
     if(any(sapply(transforms, is.null)))
         stop("do not set variables to NULL in transmute; to delete variables, leave them out of the function call")
 
-    arglst <- list(get_expr(rlang::enquo(.data)), transforms=transforms) %>%
-        doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile) %>%
-        setTransmuteVars(names(.data), grps)
+    # piping messes up NSE
+    arglst <- list(get_expr(rlang::enquo(.data)), transforms=transforms)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- setTransmuteVars(names(.data), grps)
 
     grps <- groups(.data)
     if(any(names(transforms) %in% grps))
@@ -64,7 +66,7 @@ transmute_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
 
 
 # identify variables to drop
-setTransmuteVars <- function(arglst, vars, grps)
+setTransmuteVars <- function(arglst, vars, grps=NULL)
 {
     if(!is.null(arglst$transformFunc)) # complicated case: transformFunc is present
     {
