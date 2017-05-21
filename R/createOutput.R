@@ -14,12 +14,13 @@ createOutput <- function(data, output)
 }
 
 
-createSplitOutput <- function(datalst, output, tblDir=tempdir())
+createSplitOutput <- function(datalst, output, tblDir=getXdfTblDir())
 {
     n <- length(datalst)
-    if(is.null(output))  # data frame
+    if(!missing(output) && is.null(output))  # data frame
         out <- vector("list", n)  # n NULLs
-    else out <- lapply(datalst, function(data)  # tbl_xdf
-        tbl(newTbl(data, tblDir=tblDir), hasTblFile=TRUE))
+    else out <- lapply(datalst, function(data) {  # tbl_xdf
+        tbl(newTbl(data, tblDir=tblDir), hasTblFile=TRUE)
+    })
     out
 }

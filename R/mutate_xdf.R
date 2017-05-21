@@ -24,88 +24,55 @@
 #' @aliases mutate transmute mutate_ transmute_
 #' @rdname mutate
 #' @export
-mutate_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
+mutate.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
-    dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
+    dots <- quos(..., .named=TRUE)
+    if(length(dots) > 1)
+        env <- get_env(dots[[1]])
+    else env <- get_env(caller_env(2))
 
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-    
-    .outFile <- createOutput(.data, .outFile)
-    mutate_base(.data, .outFile, exprs, .rxArgs)
+    transforms <- lapply(dots, get_expr)
+    # turn a list of quoted expressions into a quoted list of expressions
+    transforms <- if(length(transforms) > 0)
+        as.call(c(as.name("list"), transforms))
+    else NULL
+
+    arglst <- list(.data, transforms=transforms)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+
+    on.exit(deleteIfTbl(.data))
+    rlang::invoke("rxDataStep", arglst)
 }
 
 
 #' @rdname mutate
 #' @export
-mutate_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots)
+mutate.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
 {
     stopIfHdfs(.data, "mutate on grouped data not supported on HDFS")
 
-    dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
+    dots <- quos(..., .named=TRUE)
 
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-
-    grps <- groups(.data)    
-    if(any(names(exprs) %in% grps))
-        stop("cannot mutate grouping variable")
-
-    xdflst <- split_groups(.data)
-    outlst <- createSplitOutput(xdflst, .outFile)
-    outlst <- rxExec(mutate_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), exprs, .rxArgs, grps,
-        execObjects="deleteTbl", packagesToLoad="dplyrXdf")
-    combine_groups(outlst, createOutput(.data, .outFile), grps)
-}
-
-
-mutate_base <- function(data, output, exprs, rxArgs=NULL, gvars=NULL)
-{
-    oldData <- data
-    if(hasTblFile(data))
-        on.exit(deleteTbl(oldData))
-
-    exprlst <- if(length(exprs) > 0)
-        as.call(c(quote(list), exprs))
+    transforms <- lapply(dots, get_expr)
+    # turn a list of quoted expressions into a quoted list of expressions
+    transforms <- if(length(transforms) > 0)
+        as.call(c(as.name("list"), transforms))
     else NULL
 
-    cl <- substitute(rxDataStep(data, output, transforms=.expr, overwrite=TRUE),
-        list(.expr=exprlst))
-    if(!is.null(rxArgs))
-    {
-        # make sure to keep grouping variable, if present
-        # do this by _removing_ it from the transformVars parameter
-        if(!is.null(gvars))
-        {
-            rxArgs$transformVars <- if(!is.null(rxArgs$transformVars))
-                setdiff(rxArgs$transformVars, gvars)
-            else setdiff(union(names(data), names(exprs)), gvars)
-        }
+    arglst <- list(get_expr(rlang::enquo(.data)), transforms=transforms)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-        cl[names(rxArgs)] <- rxArgs
-    }
-    eval(cl)
+    grps <- groups(.data)
+    if(any(names(transforms) %in% grps))
+        stop("cannot mutate grouping variable")
+    xdflst <- split_groups(.data)
+    outlst <- createSplitOutput(xdflst, .outFile)
+
+    outlst <- rxExec(function(data, output, arglst) {
+        arglst[[1]] <- data
+        arglst$outFile <- output
+        rlang::invoke("rxDataStep", arglst)
+    }, data=rxElemArg(xdflst), output=rxElemArg(outlst), arglst, packagesToLoad="dplyrXdf", execObjects="deleteIfTbl")
+
+    combineGroups(outlst, .outFile, grps)
 }
-
-
-identify_rxTransform_args <- function(dots)
-{
-    rxNames <- c("transformObjects", "transformFunc", "transformVars", "transformPackages", "transformEnvir")
-    exprs <- lapply(dots, "[[", "expr")
-    if(!is.null(exprs$.rxArgs))
-    {
-        rxArgs <- eval(exprs$.rxArgs)  # dicey...
-        if(!all(names(rxArgs) %in% rxNames))
-            stop("unknown rxTransform argument")
-        exprs[[".rxArgs"]] <- NULL
-    }
-    else rxArgs <- NULL
-    list(rxArgs=rxArgs, exprs=exprs)
-}
-

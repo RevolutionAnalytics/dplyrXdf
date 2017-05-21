@@ -4,16 +4,14 @@ split_groups <- function(data, outXdf=data)
         stop("must supply output data source to split_groups")
     grps <- groups(data)
 
-    oldData <- data
-    if(hasTblFile(data))
-        on.exit(deleteTbl(oldData))
+    on.exit(deleteIfTbl(data))
 
     # rxSplit not supported on HDFS -- fake it with multiple rxDataSteps
     # this will be very slow with large no. of factor levels
     if(inherits(rxGetFileSystem(data), "RxHdfsFileSystem"))
     {
         levs <- get_grouplevels(data)
-        data <- rxDataStep(data, outXdf, transformFunc=function(varlst) {
+        rxDataStep(data, outXdf, transformFunc=function(varlst) {
             varlst[[".group."]] <- .factor(varlst, .levs)
             varlst
         }, transformObjects=list(.levs=levs, .factor=make_groupvar), transformVars=grps, overwrite=TRUE)
@@ -22,7 +20,7 @@ split_groups <- function(data, outXdf=data)
         lst <- sapply(levs, function(l) {
             thisXdf <- outXdf
             thisXdf@file <- paste(sub(".xdf$", "", outFile), "_lev_", l, ".xdf", sep="")
-            cl <- substitute(rxDataStep(data, thisXdf, rowsToKeep=.group. == .l, overwrite=TRUE),
+            cl <- substitute(rxDataStep(outXdf, thisXdf, rowsToKeep=.group. == .l, overwrite=TRUE),
                 list(.l=l))
             tbl(eval(cl), hasTblFile=TRUE)
         }, simplify=FALSE)
