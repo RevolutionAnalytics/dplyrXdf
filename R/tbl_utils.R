@@ -55,27 +55,27 @@ varLevels <- function(x, vars=NULL)
 #}
 
 
-# generate a new Xdf data source with file pointing to a random file, other parameters taken from input data source
-newTbl <- function(xdf=NULL, fileSystem=rxGetFileSystem(xdf), tblDir=getXdfTblDir())
-{
-    fname <- if(inherits(fileSystem, "RxNativeFileSystem"))
-        tempfile(tmpdir=tblDir, fileext=".xdf")
-    else if(inherits(fileSystem, "RxHdfsFileSystem"))
-    {
-        # ensure HDFS temporary directory exists
-        makeHdfsWorkDir()
-        file.path(.dxOptions$hdfsWorkDir, basename(tempfile(pattern="xdfTbl")), fsep="/")
-    }
-    else stop("unknown file system")
+## generate a new Xdf data source with file pointing to a random file, other parameters taken from input data source
+#newTbl <- function(xdf=NULL, fileSystem=rxGetFileSystem(xdf), tblDir=getXdfTblDir())
+#{
+    #fname <- if(inherits(fileSystem, "RxNativeFileSystem"))
+        #tempfile(tmpdir=tblDir, fileext=".xdf")
+    #else if(inherits(fileSystem, "RxHdfsFileSystem"))
+    #{
+        ## ensure HDFS temporary directory exists
+        #makeHdfsWorkDir()
+        #file.path(.dxOptions$hdfsWorkDir, basename(tempfile(pattern="xdfTbl")), fsep="/")
+    #}
+    #else stop("unknown file system")
 
-    if(!inherits(xdf, "RxXdfData"))
-        return(RxXdfData(file=fname, fileSystem=fileSystem))
-    else xdf <- as(xdf, "RxXdfData")  # do coerce to remove any grouping info
+    #if(!inherits(xdf, "RxXdfData"))
+        #return(RxXdfData(file=fname, fileSystem=fileSystem))
+    #else xdf <- as(xdf, "RxXdfData")  # do coerce to remove any grouping info
 
-    xdf@file <- fname
-    xdf@fileSystem <- fileSystem
-    xdf
-}
+    #xdf@file <- fname
+    #xdf@fileSystem <- fileSystem
+    #xdf
+#}
 
 
 # delete one or more xdf tbls (vectorised)
