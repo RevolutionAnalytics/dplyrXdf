@@ -1,6 +1,34 @@
 #' @include tbl_xdf.R
 NULL
 
+#' Get the variable names or types for a RevScaleR data source
+#'
+#' @param x A data source object, or tbl wrapping the same.
+#' @details
+#' These are simple wrappers around the \code{names} and \code{rxGetVarInfo} functions.
+#'
+#' @return
+#' For \code{tbl_vars}, a character vector of variable names; for \code{tbl_types}, a named vector giving the types of each variable.
+#'
+#' @seealso
+#' \code{\link{RxXdfData}}, \code{\link{RxTextData}}, \code{\link{RxSasData}}, \code{\link{RxSpssData}},
+#' \code{\link{rxGetInfo}}, \code{\link{rxGetVarInfo}}
+#' @aliases tbl_vars
+#' @rdname tbl_vars
+#' @export
+tbl_vars.RxFileData <- function(x)
+{
+    names(x)
+}
+
+
+#' @rdname tbl_vars
+#' @export
+tbl_types <- function(x)
+{
+    varTypes(x, NULL)
+}
+
 
 # assorted unexported functions
 varTypes <- function(x, vars=NULL)
@@ -97,4 +125,5 @@ getTblFile <- function(data)
         data@file
     else stop("not a local data source format", call.=FALSE)
 }
+
 

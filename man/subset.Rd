@@ -4,15 +4,10 @@
 \alias{subset}
 \alias{subset.RxFileData}
 \alias{subset_}
-\alias{subset_.RxFileData}
 \title{Subset a data source by rows and/or columns}
 \usage{
-\method{subset}{RxFileData}(.data, subset = NULL, select = NULL, ...)
-
-subset_(.data, ...)
-
-\method{subset_}{RxFileData}(.data, subset = ~NULL, select = ~NULL,
-  .outFile, .rxArgs, .dots)
+\method{subset}{RxFileData}(.data, subset = NULL, select = NULL, .outFile,
+  .rxArgs)
 }
 \arguments{
 \item{.data}{A data source object, or tbl wrapping the same.}
@@ -21,11 +16,11 @@ subset_(.data, ...)
 
 \item{select}{Columns to select. See \code{link[dplyr]{select}} for the ways in which you can keep or drop columns.}
 
-\item{...}{Other arguments passed to lower-level functions.}
-
 \item{.outFile}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
 
 \item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
+
+\item{...}{Other arguments passed to lower-level functions.}
 
 \item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details.}
 }

@@ -8,12 +8,12 @@ Authors@R: c(
 Description: Interface to xdf files for the dplyr package
 Depends:
     R (>= 3.3.2),
-    dplyr (>= 0.5.0.9005),
+    dplyr (>= 0.6),
     RevoScaleR (>= 9.0)
 Imports:
     dplyr,
-	magrittr,
-	rlang (>= 0.1)
+    magrittr,
+    rlang (>= 0.1)
 License: MIT + file LICENSE
 LazyData: true
 Collate:
@@ -29,6 +29,7 @@ Collate:
     'tbl_xdf.R'
     'group_by_xdf.R'
     'hdfs_utils.R'
+    'imports.R'
     'join_utils.R'
     'joins_unsupported.R'
     'joins_xdf.R'

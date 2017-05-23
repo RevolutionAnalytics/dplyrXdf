@@ -1,7 +1,18 @@
 #' @exportClass tbl_xdf
-tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical"), prototype=list(hasTblFile=FALSE))
+tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical"))
 
 
+setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, ...) {
+    file <- tempfile(fileext=".xdf")
+    fileSystem <- rxGetFileSystem(xdf)
+
+    .Object <- callNextMethod(.Object, file=file, fileSystem=fileSystem)
+    .Object@hasTblFile <- FALSE  # for backward compat
+    .Object
+})
+
+
+if(0) {
 #' Create a tbl from an Xdf file
 #'
 #' @param data A data source object, representing an Xdf file or another type of data file on disk. Only file data sources are supported (Xdf, SAS, SPSS, delimited text).
@@ -34,72 +45,43 @@ tbl.RxXdfData <- function(data, file=NULL, hasTblFile=FALSE, ...)
     else data@hasTblFile <- hasTblFile
     data
 }
-
-
-#' @rdname tbl
-#' @method tbl RxFileData
-#' @export
-tbl.RxFileData <- function(data, file=newTbl(data), hasTblFile=TRUE, ...)
-{
-    stopifnot(!is.null(file) && (is.character(file) || inherits(file, "RxXdfData")))
-    data <- rxImport(data, file, ...)
-    tbl(data, file=NULL, hasTblFile=hasTblFile) 
 }
 
-
-#' @export
-tbl.grouped_tbl_xdf <- function(data, file=NULL, hasTblFile=FALSE, ...)
-{
-    if(!is.null(file))
-    {
-        data@hasTblFile <- TRUE
-        rxDataStep(data, file, ...)
-        data@file <- rxXdfFileName(file)
-    }
-    else data@hasTblFile <- hasTblFile
-    data
-}
+##' @rdname tbl
+##' @method tbl RxFileData
+##' @export
+#tbl.RxFileData <- function(data, file=newTbl(data), hasTblFile=TRUE, ...)
+#{
+    #stopifnot(!is.null(file) && (is.character(file) || inherits(file, "RxXdfData")))
+    #data <- rxImport(data, file, ...)
+    #tbl(data, file=NULL, hasTblFile=hasTblFile) 
+#}
 
 
-#' @return
-#' The \code{hasTblFile} function returns TRUE if a tbl has a temporary file assigned to it (which also implies that it contains results from previous dplyr pipeline steps). It returns FALSE if no temporary file has yet been assigned, or if it is called on a non-tbl data source.
-#' @rdname tbl
-#' @export
-hasTblFile <- function(x)
-{
-    if(!inherits(x, "tbl_xdf"))
-        FALSE
-    else x@hasTblFile
-}
+##' @export
+#tbl.grouped_tbl_xdf <- function(data, file=NULL, hasTblFile=FALSE, ...)
+#{
+    #if(!is.null(file))
+    #{
+        #data@hasTblFile <- TRUE
+        #rxDataStep(data, file, ...)
+        #data@file <- rxXdfFileName(file)
+    #}
+    #else data@hasTblFile <- hasTblFile
+    #data
+#}
 
 
-#' Get the variable names or types for a RevScaleR data source
-#'
-#' @param x A data source object, or tbl wrapping the same.
-#' @details
-#' These are simple wrappers around the \code{names} and \code{rxGetVarInfo} functions.
-#'
-#' @return
-#' For \code{tbl_vars}, a character vector of variable names; for \code{tbl_types}, a named vector giving the types of each variable.
-#'
-#' @seealso
-#' \code{\link{RxXdfData}}, \code{\link{RxTextData}}, \code{\link{RxSasData}}, \code{\link{RxSpssData}},
-#' \code{\link{rxGetInfo}}, \code{\link{rxGetVarInfo}}
-#' @aliases tbl_vars
-#' @rdname tbl_vars
-#' @export
-tbl_vars.RxFileData <- function(x)
-{
-    names(x)
-}
-
-
-#' @rdname tbl_vars
-#' @export
-tbl_types <- function(x)
-{
-    varTypes(x, NULL)
-}
+##' @return
+##' The \code{hasTblFile} function returns TRUE if a tbl has a temporary file assigned to it (which also implies that it contains results from previous dplyr pipeline steps). It returns FALSE if no temporary file has yet been assigned, or if it is called on a non-tbl data source.
+##' @rdname tbl
+##' @export
+#hasTblFile <- function(x)
+#{
+    #if(!inherits(x, "tbl_xdf"))
+        #FALSE
+    #else x@hasTblFile
+#}
 
 
 #' Delete data files for xdf tbls

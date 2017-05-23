@@ -67,8 +67,10 @@ rxArgs <- function(dots, fromDo=FALSE)
 
 doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
 {
+    arglst <- modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)
+
     if(is_lang(.rxArgs))
-        arglst <- c(arglst, lang_tail(.rxArgs))
+        arglst <- modify(arglst, splice(lang_tail(.rxArgs)))
 
     if(!missing(.outFile))
     {
@@ -81,7 +83,8 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
     }
     else arglst$outFile <- newTbl(.data)
 
-    arglst$overwrite <- TRUE
+    #arglst$overwrite <- TRUE
+    #arglst$rowsPerRead <- .dxOptions$rowsPerRead
 
     arglst
 }
