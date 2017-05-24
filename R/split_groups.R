@@ -1,7 +1,7 @@
-split_groups <- function(data, outXdf=data)
+splitGroups <- function(data, outXdf=data)
 {
     if(is.character(outXdf))
-        stop("must supply output data source to split_groups")
+        stop("must supply output data source to splitGroups")
     grps <- group_vars(data)
 
     on.exit(deleteIfTbl(data))
@@ -22,7 +22,7 @@ split_groups <- function(data, outXdf=data)
             thisXdf@file <- paste(sub(".xdf$", "", outFile), "_lev_", l, ".xdf", sep="")
             cl <- substitute(rxDataStep(outXdf, thisXdf, rowsToKeep=.group. == .l, overwrite=TRUE),
                 list(.l=l))
-            tbl(eval(cl), hasTblFile=TRUE)
+            as(eval(cl), "tbl_xdf")
         }, simplify=FALSE)
         return(lst)
     }
@@ -34,7 +34,7 @@ split_groups <- function(data, outXdf=data)
         # if files exist that could interfere with splitting output, delete them
         # should never be necessary because base filename is a randomly generated tempfile
         # and each split should be followed by a combine
-        delete_split_outputs(fname, grps)
+        deleteSplitOutputs(fname, grps)
 
         # mimic behaviour of rxSplit: rxDataStep that splits each chunk, calls rxDataStep on each split
         lst <- rxDataStep(data, transformFunc=function(varlst) {
@@ -54,16 +54,17 @@ split_groups <- function(data, outXdf=data)
             transformObjects=list(.grps=grps, .fname=fname, .outFiles=character(0)),
             returnTransformObjects=TRUE)$.outFiles
 
-        sapply(sort(lst), function(obj) tbl(RxXdfData(obj), hasTblFile=TRUE), simplify=FALSE)
+        sapply(sort(lst), function(obj) as(RxXdfData(obj), "tbl_xdf"), simplify=FALSE)
     }
 }
 
 
-delete_split_outputs <- function(fname, grps)
+deleteSplitOutputs <- function(fname, grps)
 {
     dname <- dirname(fname)
     fname <- basename(fname)
     pattern <- paste(fname, paste(grps, collapse="_"), sep=".")
+    print(pattern)
     existingFiles <- grep(pattern, dir(dname), value=TRUE, fixed=TRUE)
 
     if(length(existingFiles) > 0)

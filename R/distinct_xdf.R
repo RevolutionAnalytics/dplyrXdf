@@ -73,7 +73,7 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots, .kee
     if(any(needs_mutate))
         .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
-    xdflst <- split_groups(.data)
+    xdflst <- splitGroups(.data)
     outlst <- createSplitOutput(xdflst, .outFile)
     outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), names(exprs), .rxArgs, .keep_all,
         execObjects=c("deleteTbl", ".dxOptions"), packagesToLoad="dplyrXdf")

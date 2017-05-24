@@ -20,7 +20,7 @@ createSplitOutput <- function(datalst, output, tblDir=getXdfTblDir())
     if(!missing(output) && is.null(output))  # data frame
         out <- vector("list", n)  # n NULLs
     else out <- lapply(datalst, function(data) {  # tbl_xdf
-        tbl(newTbl(data, tblDir=tblDir), hasTblFile=TRUE)
+        tbl_xdf(data)
     })
     out
 }

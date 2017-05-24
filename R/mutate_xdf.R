@@ -27,7 +27,6 @@
 mutate.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
     dots <- quos(..., .named=TRUE)
-
     transforms <- lapply(dots, get_expr)
     # turn a list of quoted expressions into a quoted list of expressions
     transforms <- if(length(transforms) > 0)
@@ -49,20 +48,20 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
     stopIfHdfs(.data, "mutate on grouped data not supported on HDFS")
 
     dots <- quos(..., .named=TRUE)
-
     transforms <- lapply(dots, get_expr)
     # turn a list of quoted expressions into a quoted list of expressions
     transforms <- if(length(transforms) > 0)
         as.call(c(as.name("list"), transforms))
     else NULL
 
-    arglst <- list(.data, transforms=transforms)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
-
     grps <- group_vars(.data)
     if(any(names(transforms) %in% grps))
         stop("cannot mutate grouping variable")
-    xdflst <- split_groups(.data)
+
+    arglst <- list(.data, transforms=transforms)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+
+    xdflst <- splitGroups(.data)
     outlst <- createSplitOutput(xdflst, .outFile)
 
     outlst <- rxExec(function(data, output, arglst) {

@@ -9,7 +9,7 @@ smry_rxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
         return(smry_rxSummary(data, grps, stats, exprs, rxArgs))
 
     outSource <- tbl(newTbl(data), hasTblFile=TRUE)
-    xdflst <- split_groups(data)
+    xdflst <- splitGroups(data)
     outlst <- rxExec(smry_rxSummary_with_groupvars, data=rxElemArg(xdflst), grps, stats, exprs, rxArgs,
         execObjects="deleteTbl", packagesToLoad="dplyrXdf")
     combine_group_vars(outlst, outSource, NULL)
@@ -39,7 +39,7 @@ smry_rxSplit_dplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
     }
 
     outSource <- tbl(newTbl(data), hasTblFile=TRUE)
-    xdflst <- split_groups(data)
+    xdflst <- splitGroups(data)
     outlst <- rxExec(smry_dplyr_with_groupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs,
         execObjects="deleteTbl", packagesToLoad="dplyr")
     combine_group_vars(outlst, outSource, NULL)

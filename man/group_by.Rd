@@ -3,9 +3,18 @@
 \name{group_by.RxFileData}
 \alias{group_by}
 \alias{group_by.RxFileData}
+\alias{group_by.RxXdfData}
+\alias{group_by.grouped_tbl_xdf}
+\alias{group_by.tbl_xdf}
 \title{Group an Xdf file by one or more variables}
 \usage{
 \method{group_by}{RxFileData}(.data, ..., add = FALSE)
+
+\method{group_by}{RxXdfData}(.data, ..., add = FALSE)
+
+\method{group_by}{tbl_xdf}(.data, ..., add = FALSE)
+
+\method{group_by}{grouped_tbl_xdf}(.data, ..., add = FALSE)
 }
 \arguments{
 \item{.data}{An Xdf file or a tbl wrapping the same.}

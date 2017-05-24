@@ -156,46 +156,43 @@ make_groupvar <- function(gvars, levs)
 
 
 # paste individual groups back together
-combine_groups <- function(datlst, output, grps)
+combineGroups <- function(datlst, output, grps)
 {
     out <- if(inherits(datlst[[1]], "data.frame"))
-        combine_group_dfs(datlst, output)
-    else combine_group_xdfs(datlst, output)
+        combineGroupDfs(datlst, output)
+    else combineGroupXdfs(datlst, output)
     simpleRegroup(out, grps)
 }
 
 
 # paste individual group xdfs back together
-combine_group_xdfs <- function(xdflst, output, grps)
+combineGroupXdfs <- function(xdflst, output, grps)
 {
     on.exit(deleteIfTbl(xdflst))
     xdf1 <- xdflst[[1]]
 
-    dropvars <- if(".group." %in% names(xdf1)) ".group." else NULL
-
-    # use rxDataStep loop for appending instead of rxMerge; latter is surprisingly slow
-    stopIfHdfs("combine_group not supported on HDFS")  # should never trip this
-    for(xdf in xdflst[-1])
-        rxDataStep(xdf, xdf1, append="rows", computeLowHigh=FALSE)
-
+    dropVars <- if(".group." %in% names(xdf1)) ".group." else NULL
 
     if(missing(output)) # xdf tbl
-    {
-        output <- newTbl(data)
-    }
-    else if(!is.null(output))
-    {
-        tmp <- xdf1
-        tmp@file <- output
-        output <- tmp
-    }
-    
-    rxDataStep(xdf1, output, varsToDrop=dropvars, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+        output <- tbl_xdf()
+    #else if(!is.null(output))
+    #{
+        #tmp <- xdf1
+        #tmp@file <- output
+        #output <- tmp
+    #}
+    print(xdflst)
+    out <- rxDataStep(xdf1, output, varsToDrop=dropVars, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+    # use rxDataStep loop for appending instead of rxMerge; latter is surprisingly slow
+    stopIfHdfs("combineGroup not supported on HDFS")  # should never trip this
+    for(xdf in xdflst[-1])
+        out <- rxDataStep(xdf, output, varsToDrop=dropVars, append="rows", computeLowHigh=FALSE)
+    out
 }
 
 
 # paste individual group data frames back together
-combine_group_dfs <- function(dflst, output)
+combineGroupDfs <- function(dflst, output)
 {
     if(is.null(output))
         bind_rows(dflst)
