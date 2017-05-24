@@ -53,7 +53,7 @@ splitGroups <- function(data, outXdf=data)
             },
             transformObjects=list(.grps=grps, .fname=fname, .outFiles=character(0)),
             returnTransformObjects=TRUE)$.outFiles
-
+        #print(lst)
         sapply(sort(lst), function(obj) as(RxXdfData(obj), "tbl_xdf"), simplify=FALSE)
     }
 }
@@ -64,7 +64,7 @@ deleteSplitOutputs <- function(fname, grps)
     dname <- dirname(fname)
     fname <- basename(fname)
     pattern <- paste(fname, paste(grps, collapse="_"), sep=".")
-    print(pattern)
+    #print(pattern)
     existingFiles <- grep(pattern, dir(dname), value=TRUE, fixed=TRUE)
 
     if(length(existingFiles) > 0)

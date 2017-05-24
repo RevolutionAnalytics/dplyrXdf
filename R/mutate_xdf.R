@@ -62,8 +62,8 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     xdflst <- splitGroups(.data)
+    on.exit(deleteIfTbl(xdflst))
     outlst <- createSplitOutput(xdflst, .outFile)
-
     outlst <- rxExec(function(data, output, arglst) {
         arglst[[1]] <- data
         arglst$outFile <- output

@@ -52,8 +52,8 @@ transmute.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
     arglst <- setTransmuteVars(arglst, names(.data), grps)
 
     xdflst <- splitGroups(.data)
+    on.exit(deleteIfTbl(xdflst))
     outlst <- createSplitOutput(xdflst, .outFile)
-
     outlst <- rxExec(function(data, output, arglst) {
         arglst[[1]] <- data
         arglst$outFile <- output

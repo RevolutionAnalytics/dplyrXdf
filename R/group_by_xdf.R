@@ -175,13 +175,7 @@ combineGroupXdfs <- function(xdflst, output, grps)
 
     if(missing(output)) # xdf tbl
         output <- tbl_xdf()
-    #else if(!is.null(output))
-    #{
-        #tmp <- xdf1
-        #tmp@file <- output
-        #output <- tmp
-    #}
-    print(xdflst)
+
     out <- rxDataStep(xdf1, output, varsToDrop=dropVars, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
     # use rxDataStep loop for appending instead of rxMerge; latter is surprisingly slow
     stopIfHdfs("combineGroup not supported on HDFS")  # should never trip this
