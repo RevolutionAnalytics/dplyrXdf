@@ -6,11 +6,11 @@ NULL
 grouped_tbl_xdf <- setClass("grouped_tbl_xdf", contains="tbl_xdf", slots=c(groups="characterORNULL"))
 
 
-setMethod("initialize", "grouped_tbl_xdf", function(.Object, groups=NULL, ...) {
-    .Object <- callNextMethod(.Object, ...)
-    .Object@groups <- groups
-    .Object
-})
+#setMethod("initialize", "grouped_tbl_xdf", function(.Object, groups=NULL, ...) {
+    #.Object <- callNextMethod(.Object, ...)
+    #.Object@groups <- groups
+    #.Object
+#})
 
 
 
@@ -29,49 +29,50 @@ setMethod("initialize", "grouped_tbl_xdf", function(.Object, groups=NULL, ...) {
 #'
 #' @seealso
 #' \code{\link[dplyr]{group_by}}
-#' @aliases group_by group_by_
+#' @aliases group_by
 #' @rdname group_by
 #' @export
-group_by_.RxFileData <- function(.data, ..., .dots, add=FALSE)
+group_by.RxFileData <- function(.data, ..., add=FALSE)
 {
-    group_by_(tbl(.data), ..., .dots=.dots, add=add)
+    .data <- rxImport(.data, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead)
+    grps <- names(rlang::quos(..., .named=TRUE))
+    .data <- as(.data, "grouped_tbl_xdf")
+    .data@groups <- grps
+    .data
 }
 
 
+#' @rdname group_by
 #' @export
-group_by_.RxXdfData <- function(.data, ..., .dots, add=FALSE)
+group_by.RxXdfData <- function(.data, ..., add=FALSE)
 {
-    new_groups <- lazyeval::all_dots(.dots, ...)
-
-    # identify Revo-specific arguments
-    if(any(names(new_groups) == ".rxArgs"))
-    {
-        warning("group_by doesn't support .rxArgs argument", call.=FALSE)
-        new_groups[[".rxArgs"]] <- NULL
-    }
-
-    # logic copied from dplyr:::group_by_prepare, dplyr:::names2, dplyr:::`%||%`
-    is_name <- vapply(new_groups, function(x) is.name(x$expr), logical(1))
-    has_name <- if(is.null(names(new_groups)))
-        rep(FALSE, length(new_groups))
-    else names(new_groups) != ""
-    needs_mutate <- has_name | !is_name
-    if(any(needs_mutate))
-    {
-        if(!inherits(.data, "RxXdfData"))
-            stop("can only group by named variables for non-Xdf data sources")
-        .data <- mutate_(.data, .dots=new_groups[needs_mutate])
-    }
-
-    new_groups <- lazyeval::auto_name(new_groups)
-    groups <- names(new_groups)
-    if(add)
-        groups <- c(groups(.data), groups)
-    groups <- groups[!duplicated(groups)]
-
+    grps <- names(rlang::quos(..., .named=TRUE))
     .data <- as(.data, "grouped_tbl_xdf")
-    .data@hasTblFile <- hasTblFile(.data)
-    .data@groups <- groups
+    .data@groups <- grps
+    .data@hasTblFile <- FALSE  # for raw xdfs, mark file as non-deletable
+    .data
+}
+
+
+#' @rdname group_by
+#' @export
+group_by.tbl_xdf <- function(.data, ..., add=FALSE)
+{
+    grps <- names(rlang::quos(..., .named=TRUE))
+    .data <- as(.data, "grouped_tbl_xdf")
+    .data@groups <- grps
+    .data
+}
+
+
+#' @rdname group_by
+#' @export
+group_by.grouped_tbl_xdf <- function(.data, ..., add=FALSE)
+{
+    oldGrps <- group_vars(.data)
+    grps <- names(rlang::quos(..., .named=TRUE))
+    .data <- as(.data, "grouped_tbl_xdf")
+    .data@groups <- if(add) c(oldGrps, grps) else grps
     .data
 }
 
@@ -84,6 +85,22 @@ group_by_.RxXdfData <- function(.data, ..., .dots, add=FALSE)
 #' If \code{x} is a grouped tbl, a character vector giving the grouping variable names; otherwise, \code{NULL}.
 #' @rdname groups
 #' @export
+group_vars.RxFileData <- function(x)
+{
+    character(0)
+}
+
+
+#' @rdname groups
+#' @export
+group_vars.grouped_tbl_xdf <- function(x)
+{
+    x@groups
+}
+
+
+#' @rdname groups
+#' @export
 groups.RxFileData <- function(x)
 {
     NULL
@@ -94,7 +111,7 @@ groups.RxFileData <- function(x)
 #' @export
 groups.grouped_tbl_xdf <- function(x)
 {
-    x@groups
+    syms(group_vars(x))
 }
 
 
@@ -112,7 +129,7 @@ ungroup.RxFileData <- function(x)
 }
 
 
-get_grouplevels <- function(data, gvars=groups(data))
+get_grouplevels <- function(data, gvars=group_vars(data))
 {
     stopIfHdfs("get_grouplevels not supported on HDFS")  # should never trip this
 

@@ -15,12 +15,12 @@
 #'
 #' @seealso
 #' \code{\link[base]{subset}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{select}}, \code{\link[RevoScaleR]{rxDataStep}}
-#' @aliases subset subset_
+#' @aliases subset
 #' @rdname subset
 #' @export
 subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile, .rxArgs)
 {
-    grps <- groups(.data)
+    grps <- group_vars(.data)
     select <- rlang::get_expr(rlang::enquo(select))
     if(is.null(select))
         select <- names(.data)
@@ -37,7 +37,7 @@ subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile, .rxArgs
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    output <- rlang::invoke("rxDataStep", arglst)
+    output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame())
     simpleRegroup(output, grps)
 }
 

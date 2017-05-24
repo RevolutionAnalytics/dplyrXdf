@@ -60,7 +60,7 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots, .kee
     exprs <- dots$exprs
     if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-    grps <- groups(.data)
+    grps <- group_vars(.data)
 
     # hack to accommodate dplyr 0.5 keep_all argument when dplyr 0.4.x is installed
     if(!is.null(exprs$.keep_all))
@@ -77,7 +77,7 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots, .kee
     outlst <- createSplitOutput(xdflst, .outFile)
     outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), names(exprs), .rxArgs, .keep_all,
         execObjects=c("deleteTbl", ".dxOptions"), packagesToLoad="dplyrXdf")
-    combine_groups(outlst, createOutput(.data, .outFile), grps)
+    combine_group_vars(outlst, createOutput(.data, .outFile), grps)
 }
 
 

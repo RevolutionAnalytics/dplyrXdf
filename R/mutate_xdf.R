@@ -21,7 +21,7 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{mutate}} and \code{\link{transmute}} in package dplyr, \code{\link[RevoScaleR]{rxDataStep}}, \code{\link[RevoScaleR]{rxTransform}} for variable transformations in RevoScaleR
-#' @aliases mutate transmute mutate_ transmute_
+#' @aliases mutate transmute
 #' @rdname mutate
 #' @export
 mutate.RxFileData <- function(.data, ..., .outFile, .rxArgs)
@@ -38,7 +38,7 @@ mutate.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    rlang::invoke("rxDataStep", arglst)
+    rlang::invoke("rxDataStep", arglst, .env=parent.frame())
 }
 
 
@@ -56,10 +56,10 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
         as.call(c(as.name("list"), transforms))
     else NULL
 
-    arglst <- list(get_expr(rlang::enquo(.data)), transforms=transforms)
+    arglst <- list(.data, transforms=transforms)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-    grps <- groups(.data)
+    grps <- group_vars(.data)
     if(any(names(transforms) %in% grps))
         stop("cannot mutate grouping variable")
     xdflst <- split_groups(.data)
@@ -68,7 +68,7 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
     outlst <- rxExec(function(data, output, arglst) {
         arglst[[1]] <- data
         arglst$outFile <- output
-        rlang::invoke("rxDataStep", arglst)
+        rlang::invoke("rxDataStep", arglst, .env=parent.frame())
     }, data=rxElemArg(xdflst), output=rxElemArg(outlst), arglst, packagesToLoad="dplyrXdf", execObjects="deleteIfTbl")
 
     combineGroups(outlst, .outFile, grps)

@@ -15,7 +15,7 @@ factorise_.data.frame <- function(.data, ..., .dots)
     .outFile <- dots$output
     .rxArgs <- dots$rxArgs
 
-    grps <- groups(.data)
+    grps <- group_vars(.data)
     types <- sapply(.data, function(x) class(x)[1])
     vars <- factorise_vars(types, exprs)
 

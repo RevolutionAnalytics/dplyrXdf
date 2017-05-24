@@ -66,7 +66,7 @@ factorise_.RxXdfData <- function(.data, ..., .outFile, .rxArgs, .dots)
     if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
-    grps <- groups(.data)
+    grps <- group_vars(.data)
     types <- varTypes(.data)
     vars <- factoriseVars(types, lapply(exprs, lazyeval::as.lazy, dots$env))
 
@@ -113,7 +113,7 @@ factorise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
     if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
-    grps <- groups(.data)
+    grps <- group_vars(.data)
     types <- varTypes(.data)
     vars <- factoriseVars(types, lapply(exprs, lazyeval::as.lazy, dots$env))
 

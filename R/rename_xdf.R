@@ -27,7 +27,7 @@ rename_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
     if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
 
-    grps <- groups(.data)
+    grps <- group_vars(.data)
     vars <- rename_vars_(names(.data), exprs)
 
     .outFile <- createOutput(.data, .outFile)

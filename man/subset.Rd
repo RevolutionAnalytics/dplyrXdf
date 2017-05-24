@@ -3,7 +3,6 @@
 \name{subset.RxFileData}
 \alias{subset}
 \alias{subset.RxFileData}
-\alias{subset_}
 \title{Subset a data source by rows and/or columns}
 \usage{
 \method{subset}{RxFileData}(.data, subset = NULL, select = NULL, .outFile,

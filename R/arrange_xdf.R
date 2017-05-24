@@ -28,7 +28,7 @@ arrange_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
     exprs <- dots$exprs
     if(missing(.outFile)) .outFile <- dots$output
     if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-    grps <- groups(.data)
+    grps <- group_vars(.data)
 
     # rxSort only works with xdf files, not other data sources
     if(!inherits(.data, "RxXdfData"))

@@ -28,49 +28,48 @@
 #' @name rxArgs
 NULL
 
-rxArgs <- function(dots, fromDo=FALSE)
-{
-    env <- if(length(dots) > 0) dots[[1]]$env else globalenv()
-    exprs <- lapply(dots, "[[", "expr")
+#rxArgs <- function(dots, fromDo=FALSE)
+#{
+    #env <- if(length(dots) > 0) dots[[1]]$env else globalenv()
+    #exprs <- lapply(dots, "[[", "expr")
 
-    if(!is.null(exprs$.rxArgs))
-    {
-        # some arguments have to be passed as unevaluated expressions: transforms and rowSelection
-        rxArgs <- mapply(function(value, name) {
-            if(name %in% c("transforms", "rowSelection"))
-                value
-            else eval(value, env)
-        }, exprs$.rxArgs[-1], names(exprs$.rxArgs[-1]), SIMPLIFY=FALSE)
-        exprs[[".rxArgs"]] <- NULL
-    }
-    else rxArgs <- NULL
+    #if(!is.null(exprs$.rxArgs))
+    #{
+        ## some arguments have to be passed as unevaluated expressions: transforms and rowSelection
+        #rxArgs <- mapply(function(value, name) {
+            #if(name %in% c("transforms", "rowSelection"))
+                #value
+            #else eval(value, env)
+        #}, exprs$.rxArgs[-1], names(exprs$.rxArgs[-1]), SIMPLIFY=FALSE)
+        #exprs[[".rxArgs"]] <- NULL
+    #}
+    #else rxArgs <- NULL
 
-    # capture output format
-    # NULL -> data frame output
-    # char -> target filename, xdf output
-    # missing -> xdf tbl output, coded as NA in returned value
-    if(".outFile" %in% names(exprs))
-    {
-        output <- exprs$.outFile
-        exprs$.outFile <- NULL
-        # turn off row x col size check if outputting to dataframe AND not otherwise specified AND not called from do()
-        if(is.null(output) && !("maxRowsByCols" %in% names(rxArgs)) & !fromDo)
-            rxArgs["maxRowsByCols"] <- list(NULL)
-    }
-    else output <- NA
+    ## capture output format
+    ## NULL -> data frame output
+    ## char -> target filename, xdf output
+    ## missing -> xdf tbl output, coded as NA in returned value
+    #if(".outFile" %in% names(exprs))
+    #{
+        #output <- exprs$.outFile
+        #exprs$.outFile <- NULL
+        ## turn off row x col size check if outputting to dataframe AND not otherwise specified AND not called from do()
+        #if(is.null(output) && !("maxRowsByCols" %in% names(rxArgs)) & !fromDo)
+            #rxArgs["maxRowsByCols"] <- list(NULL)
+    #}
+    #else output <- NA
 
-    list(rxArgs=rxArgs, exprs=exprs, output=output, env=env)
-}
+    #list(rxArgs=rxArgs, exprs=exprs, output=output, env=env)
+#}
 
 
 
 
 doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
 {
-    arglst <- modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)
-
+    arglst <- rlang::modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)
     if(is_lang(.rxArgs))
-        arglst <- modify(arglst, splice(lang_tail(.rxArgs)))
+        arglst <- rlang::modify(arglst, rlang::splice(rlang::lang_args(.rxArgs)))
 
     if(!missing(.outFile))
     {
@@ -79,12 +78,13 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
             arglst["outFile"] <- list(.outFile)
             arglst["maxRowsByCols"] <- list(NULL)
         }
-        else warning("unexpected value for .outFile ignored")
+        else
+        {
+            warning("unexpected value for .outFile ignored")
+            arglst$outFile <- tbl_xdf(.data)
+        }
     }
-    else arglst$outFile <- newTbl(.data)
-
-    #arglst$overwrite <- TRUE
-    #arglst$rowsPerRead <- .dxOptions$rowsPerRead
+    else arglst$outFile <- tbl_xdf(.data)
 
     arglst
 }

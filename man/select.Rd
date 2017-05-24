@@ -3,7 +3,6 @@
 \name{select.RxFileData}
 \alias{select}
 \alias{select.RxFileData}
-\alias{select_}
 \title{Select columns in a data source}
 \usage{
 \method{select}{RxFileData}(.data, ..., .outFile, .rxArgs)

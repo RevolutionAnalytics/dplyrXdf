@@ -48,7 +48,7 @@ summarise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method, .dots)
     if(any(needs_mutate))
         stop("summarise with xdf tbls only works with named variables, not expressions")  # TODO: do actual mutate
 
-    grps <- groups(.data)
+    grps <- group_vars(.data)
 
     # options:
     # 1- one or multiple calls to rxCube, cbind data frames together: only n, mean, sum supported, grouped data only (fast)

@@ -7,81 +7,10 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, ...) {
     fileSystem <- rxGetFileSystem(xdf)
 
     .Object <- callNextMethod(.Object, file=file, fileSystem=fileSystem)
-    .Object@hasTblFile <- FALSE  # for backward compat
+    .Object@hasTblFile <- TRUE
     .Object
 })
 
-
-if(0) {
-#' Create a tbl from an Xdf file
-#'
-#' @param data A data source object, representing an Xdf file or another type of data file on disk. Only file data sources are supported (Xdf, SAS, SPSS, delimited text).
-#' @param file The file to use as working storage. If \code{NULL}, a new file will be created in the R working directory when results need to be saved. Cannot be \code{NULL} for non-Xdf data sources.
-#' @param ... Other arguments that will be passed to \code{rxDataStep}.
-#' @param hasTblFile Logical, has the tbl's working file been created yet?
-#'
-#' @details
-#' A tbl wraps a RevoScaleR data source, allowing you to carry out data manipulation operations without modifying the source itself. It does this by copying the data to a temporary file, normally at the first point where the data is accessed. Usually you can let dplyrXdf create the temporary file for you; this saves time by avoiding unnecessary copying. However, if you specify a filename as an explicit argument to \code{tbl}, it will create that file using \code{rxDataStep} to copy the data from the source Xdf.
-#'
-#' As a side-effect, any datasets created in a dplyrXdf pipeline will be lost when you close your R session. If you want to keep the pipeline results, make sure you copy them to a permanent location on disk.
-#'
-#' @return
-#' The \code{tbl} function returns an object of S4 class \code{tbl_xdf}, which extends \code{RxXdfdata}.
-#' @section Note:
-#' Many RevoScaleR functions that work with Xdf files will accept either an \code{RxXdfData} object, a character string giving the location of the file, or a data frame. The functions listed here only accept an \code{RxXdfData} object, or a tbl object wrapping the same.
-#' @seealso
-#' \code{\link[dplyr]{tbl}}, \code{\link[RevoScaleR]{RxXdfData}}
-#' @rdname tbl
-#' @export
-tbl.RxXdfData <- function(data, file=NULL, hasTblFile=FALSE, ...)
-{
-    data <- as(data, "tbl_xdf")
-    if(!is.null(file))
-    {
-        data@hasTblFile <- TRUE
-        rxDataStep(data, file, ...)
-        data@file <- rxXdfFileName(file)
-    }
-    else data@hasTblFile <- hasTblFile
-    data
-}
-}
-
-##' @rdname tbl
-##' @method tbl RxFileData
-##' @export
-#tbl.RxFileData <- function(data, file=newTbl(data), hasTblFile=TRUE, ...)
-#{
-    #stopifnot(!is.null(file) && (is.character(file) || inherits(file, "RxXdfData")))
-    #data <- rxImport(data, file, ...)
-    #tbl(data, file=NULL, hasTblFile=hasTblFile) 
-#}
-
-
-##' @export
-#tbl.grouped_tbl_xdf <- function(data, file=NULL, hasTblFile=FALSE, ...)
-#{
-    #if(!is.null(file))
-    #{
-        #data@hasTblFile <- TRUE
-        #rxDataStep(data, file, ...)
-        #data@file <- rxXdfFileName(file)
-    #}
-    #else data@hasTblFile <- hasTblFile
-    #data
-#}
-
-
-##' @return
-##' The \code{hasTblFile} function returns TRUE if a tbl has a temporary file assigned to it (which also implies that it contains results from previous dplyr pipeline steps). It returns FALSE if no temporary file has yet been assigned, or if it is called on a non-tbl data source.
-##' @rdname tbl
-##' @export
-#hasTblFile <- function(x)
-#{
-    #if(!inherits(x, "tbl_xdf"))
-        #FALSE
-    #else x@hasTblFile
-#}
 
 
 #' Delete data files for xdf tbls

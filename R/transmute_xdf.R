@@ -23,7 +23,7 @@ transmute.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     arglst <- setTransmuteVars(arglst, names(.data))
 
     on.exit(deleteIfTbl(.data))
-    rlang::invoke("rxDataStep", arglst)
+    rlang::invoke("rxDataStep", arglst, .env=parent.frame())
 }
 
 
@@ -45,11 +45,11 @@ transmute.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
         stop("do not set variables to NULL in transmute; to delete variables, leave them out of the function call")
 
     # piping messes up NSE
-    arglst <- list(get_expr(rlang::enquo(.data)), transforms=transforms)
+    arglst <- list(.data, transforms=transforms)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
     arglst <- setTransmuteVars(names(.data), grps)
 
-    grps <- groups(.data)
+    grps <- group_vars(.data)
     if(any(names(transforms) %in% grps))
         stop("cannot mutate grouping variable")
     xdflst <- split_groups(.data)
@@ -58,7 +58,7 @@ transmute.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
     outlst <- rxExec(function(data, output, arglst) {
         arglst[[1]] <- data
         arglst$outFile <- output
-        rlang::invoke("rxDataStep", arglst)
+        rlang::invoke("rxDataStep", arglst, .env=parent.frame())
     }, data=rxElemArg(xdflst), output=rxElemArg(outlst), arglst, packagesToLoad="dplyrXdf", execObjects="deleteIfTbl")
 
     combineGroups(outlst, .outFile, grps)
@@ -77,8 +77,9 @@ setTransmuteVars <- function(arglst, vars, grps=NULL)
     }
     else
     {
+        # set variables to NULL to drop them
         dropvars <- setdiff(vars, c(names(arglst$transforms), grps))
-        arglst$varsToDrop <- dropvars
+        arglst$transforms[dropvars] <- list(NULL)
     }
     arglst
 }

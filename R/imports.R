@@ -5,5 +5,6 @@
 #' @importFrom rlang enexpr expr exprs
 #' @importFrom rlang invoke
 #' @importFrom rlang modify splice
+#' @importFrom rlang lang_tail
 #' @importFrom magrittr %>%
 NULL

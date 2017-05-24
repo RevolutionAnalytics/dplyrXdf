@@ -11,11 +11,11 @@
 #' @seealso
 #' \code{\link[dplyr]{filter}} in package dplyr
 #' @rdname filter
-#' @aliases filter filter_
+#' @aliases filter
 #' @export
 filter.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
-    grps <- groups(.data)
+    grps <- group_vars(.data)
     dots <- rlang::quos(..., .named=TRUE)
     #if(length(dots) > 1)
         #env <- rlang::get_env(dots[[1]])
@@ -36,6 +36,6 @@ filter.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    output <- rlang::invoke("rxDataStep", arglst)
+    output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame())
     simpleRegroup(output, grps)
 }

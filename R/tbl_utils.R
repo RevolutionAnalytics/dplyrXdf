@@ -111,7 +111,7 @@ deleteTbl <- function(xdf)
 # on.exit function
 deleteIfTbl <- function(oldData)
 {
-    if(hasTblFile(oldData) || is.list(oldData))
+    if(isTempTbl(oldData) || is.list(oldData))
         deleteTbl(oldData)
     NULL
 }
@@ -127,3 +127,7 @@ getTblFile <- function(data)
 }
 
 
+isTempTbl <- function(data)
+{
+    inherits(data, "tbl_xdf") && isTRUE(data@hasTblFile)
+}

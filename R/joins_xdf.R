@@ -144,7 +144,7 @@ merge_base <- function(x, y, by=NULL, copy=FALSE, type, .outFile, .rxArgs)
     if(missing(.rxArgs))
         .rxArgs <- NULL
 
-    grps <- groups(x)
+    grps <- group_vars(x)
     .outFile <- createOutput(x, .outFile)
     cl <- quote(rxMerge(x, y, matchVars=by$y, outFile=.outFile, type=type, duplicateVarExt=c("x", "y"), overwrite=TRUE))
     cl[names(.rxArgs)] <- .rxArgs

@@ -4,11 +4,9 @@
 \alias{mutate}
 \alias{mutate.RxFileData}
 \alias{mutate.grouped_tbl_xdf}
-\alias{mutate_}
 \alias{transmute}
 \alias{transmute.RxFileData}
 \alias{transmute.grouped_tbl_xdf}
-\alias{transmute_}
 \title{Add or modify variables}
 \usage{
 \method{mutate}{RxFileData}(.data, ..., .outFile, .rxArgs)

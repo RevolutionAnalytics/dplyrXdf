@@ -3,7 +3,6 @@
 \name{filter.RxFileData}
 \alias{filter}
 \alias{filter.RxFileData}
-\alias{filter_}
 \title{Subset a data source by rows}
 \usage{
 \method{filter}{RxFileData}(.data, ..., .outFile, .rxArgs)

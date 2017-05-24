@@ -110,7 +110,7 @@ do_.grouped_tbl_xdf <- function(.data, ..., .outFile, .dots)
         warning("do() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(exprs)
-    grps <- groups(.data)
+    grps <- group_vars(.data)
 
     on.exit(deleteTbl(xdflst), add=TRUE)
     xdflst <- split_groups(.data, .data)
@@ -144,7 +144,7 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots)
         warning("doXdf() only outputs data frames", call.=FALSE)
 
     named <- check_named_args(exprs)
-    grps <- groups(.data)
+    grps <- group_vars(.data)
 
     on.exit(deleteTbl(xdflst), add=TRUE)
     xdflst <- split_groups(.data)

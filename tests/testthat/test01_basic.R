@@ -1,92 +1,118 @@
 context("Basic functionality")
 mtx <- rxDataStep(mtcars, "mtx.xdf", overwrite=TRUE)
 
-setXdfTblDir(".")
-
 verifyData <- function(xdf, expectedClass)
 {
     is.data.frame(head(xdf)) && class(xdf) == expectedClass  # test for exact class
 }
 
+library(rlang)
+x <- "mpg"
+xs <- sym(x)
 
-test_that("arrange works", {
-    tbl <- mtx %>% arrange(mpg, disp)
-    expect_true(verifyData(tbl, "tbl_xdf"))
-})
-
-test_that("distinct works", {
-    tbl <- mtx %>% distinct(cyl, gear)
-    expect_true(verifyData(tbl, "tbl_xdf"))
-
-    # .keep_all will have no effect when dplyr < 0.5 installed
-    skip_if_not(packageVersion("dplyr") >= package_version("0.5"))
-    tbl <- mtx %>% distinct(cyl, gear, .keep_all=TRUE)
-    expect_true(verifyData(tbl, "tbl_xdf"))
-    tbl <- mtx %>% distinct(cyl, gear, .keep_all=FALSE)
-    expect_true(verifyData(tbl, "tbl_xdf"))
-})
-
-test_that("do works", {
-    expect_true(verifyData(mtx %>% do(m=lm(mpg ~ disp, .)), "tbl_df"))
-    expect_true(verifyData(mtx %>% doXdf(m=rxLinMod(mpg ~ disp, .)), "tbl_df"))
-})
-
-test_that("factorise works", {
-    tbl <- mtx %>% factorise(mpg, cyl)
-    expect_true(verifyData(tbl, "tbl_xdf"))
-    expect(all(sapply(rxGetVarInfo(tbl)[c("mpg", "cyl")], "[[", "varType") == "factor"),
-           "factor conversion failed")
-})
+xnew <- "mpg2"
 
 test_that("filter works", {
-    tbl <- mtx %>% filter(mpg > 16, cyl == 8)
+    tbl <- mtx %>% filter(mpg > 15, cyl <= 6)
     expect_true(verifyData(tbl, "tbl_xdf"))
-})
-
-test_that("mutate works", {
-    tbl <- mtx %>% mutate(m2=2*mpg, sw=sqrt(wt))
+    tbl <- mtx %>% filter((!!xs) > 15, cyl <= 6)
     expect_true(verifyData(tbl, "tbl_xdf"))
-})
-
-test_that("rename works", {
-    tbl <- mtx %>% rename(cc=cyl, mm=mpg)
+    tbl <- mtx %>% filter((!!sym(x)) > 15, cyl <= 6)
     expect_true(verifyData(tbl, "tbl_xdf"))
-    expect_true(all(c("cc", "mm") %in% names(tbl)))
 })
 
 test_that("select works", {
     tbl <- mtx %>% select(mpg, cyl, drat)
     expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% select(!!xs, cyl, drat)
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% select(!!sym(x), cyl, drat)
+    expect_true(verifyData(tbl, "tbl_xdf"))
 })
 
 test_that("subset works", {
-    tbl <- mtx %>% subset(cyl==6, c(2,3,4))
+    tbl <- mtx %>% subset(mpg > 15, c(mpg, cyl, drat))
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% subset((!!xs) > 15, c(!!xs, cyl, drat))
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% subset((!!sym(x)) > 15, c(!!sym(x), cyl, drat))
     expect_true(verifyData(tbl, "tbl_xdf"))
 })
 
-test_that("summarise works", {
-    expect_warning(tbl <- mtx %>% summarise(m=mean(mpg), .method=1))
+test_that("mutate works", {
+    tbl <- mtx %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt))
     expect_true(verifyData(tbl, "tbl_xdf"))
-    tbl <- mtx %>% summarise(m=mean(mpg), .method=2)
+    tbl <- mtx %>% mutate(mpg2=sin(!!xs), wt2=sqrt(wt))
     expect_true(verifyData(tbl, "tbl_xdf"))
-    expect_warning(tbl <- mtx %>% summarise(m=mean(mpg), .method=3))
-    expect_true(verifyData(tbl, "tbl_xdf"))
-    tbl <- mtx %>% summarise(m=mean(mpg), .method=4)
-    expect_true(verifyData(tbl, "tbl_xdf"))
-    tbl <- mtx %>% summarise(m=mean(mpg), .method=5)
+    tbl <- mtx %>% mutate(!!xnew := sin(!!xs), wt2=sqrt(wt))
     expect_true(verifyData(tbl, "tbl_xdf"))
 })
 
 test_that("transmute works", {
-    tbl <- mtx %>% transmute(m2=2*mpg, sw=sqrt(wt))
+    tbl <- mtx %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt))
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% transmute(mpg2=sin(!!xs), wt2=sqrt(wt))
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% transmute(!!xnew := sin(!!xs), wt2=sqrt(wt))
     expect_true(verifyData(tbl, "tbl_xdf"))
 })
 
-test_that("setting tbl dir works", {
-    expect(getXdfTblDir() != tempdir(), "changing tbl dir failed")
-    expect_gt(length(dir(getXdfTblDir())), 0, "no files in tbl dir")
+test_that("output to data.frame works", {
+    tbl <- mtx %>% filter(mpg > 15, cyl <= 6, .outFile=NULL)
+    expect_true(is.data.frame(tbl))
+    tbl <- mtx %>% select(mpg, cyl, drat, .outFile=NULL)
+    expect_true(is.data.frame(tbl))
+    tbl <- mtx %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile=NULL)
+    expect_true(is.data.frame(tbl))
+    tbl <- mtx %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile=NULL)
+    expect_true(is.data.frame(tbl))
+    tbl <- mtx %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile=NULL)
+    expect_true(is.data.frame(tbl))
+})
+
+test_that("output to xdf works", {
+    tbl <- mtx %>% filter(mpg > 15, cyl <= 6, .outFile="test01.xdf")
+    expect_true(verifyData(tbl, "RxXdfData"))
+    tbl <- mtx %>% select(mpg, cyl, drat, .outFile="test01.xdf")
+    expect_true(verifyData(tbl, "RxXdfData"))
+    tbl <- mtx %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile="test01.xdf")
+    expect_true(verifyData(tbl, "RxXdfData"))
+    tbl <- mtx %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test01.xdf")
+    expect_true(verifyData(tbl, "RxXdfData"))
+    tbl <- mtx %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test01.xdf")
+    expect_true(verifyData(tbl, "RxXdfData"))
+})
+
+test_that(".rxArgs works", {
+    tbl <- mtx %>% filter(mpg > 15, cyl <= 6, .rxArgs=list(transformFunc=function(varlst) {
+        varlst$mpg2 <- sin(varlst$mpg)
+        varlst
+    }))
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% select(mpg, cyl, drat, .rxArgs=list(transformFunc=function(varlst) {
+        varlst$mpg2 <- sin(varlst$mpg)
+        varlst
+    }))
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% subset(mpg > 15, c(mpg, cyl, drat), .rxArgs=list(transformFunc=function(varlst) {
+        varlst$mpg2 <- sin(varlst$mpg)
+        varlst
+    }))
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% mutate(wt2=sqrt(wt), .rxArgs=list(transformFunc=function(varlst) {
+        varlst$mpg2 <- sin(varlst$mpg)
+        varlst
+    }))
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% transmute(.rxArgs=list(transformFunc=function(varlst) {
+        varlst$mpg2 <- sin(varlst$mpg)
+        varlst$wt2 <- sqrt(varlst$wt)
+        varlst
+    }))
+    expect_true(verifyData(tbl, "tbl_xdf"))
 })
 
 
 # cleanup
-file.remove("mtx.xdf")
+file.remove("mtx.xdf", "test01.xdf")
+

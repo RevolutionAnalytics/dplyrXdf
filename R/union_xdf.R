@@ -78,7 +78,7 @@ union_all.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
     exprs <- dots$exprs
     if(missing(.outFile)) .outFile <- NA
     if(missing(.rxArgs)) .rxArgs <- NULL
-    grps <- groups(x)
+    grps <- group_vars(x)
 
     # if output is a data frame: convert x and y to df, run dplyr::union_all
     if(is.null(.outFile))

@@ -14,11 +14,11 @@
 #' @seealso
 #' \code{\link[dplyr]{select}} in package dplyr
 #' @rdname select
-#' @aliases select select_
+#' @aliases select
 #' @export
 select.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
-    grps <- groups(.data)
+    grps <- group_vars(.data)
     vars <- c(grps, select_vars(names(.data), ...))
     if(length(vars) == 0)
         stop("No variables selected", call.=FALSE)
@@ -28,7 +28,7 @@ select.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 
     on.exit(deleteIfTbl(.data))
     # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep
-    output <- rlang::invoke("rxDataStep", arglst)
+    output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame())
     simpleRegroup(output, grps)
 }
 
