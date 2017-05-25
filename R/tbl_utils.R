@@ -81,9 +81,6 @@ varLevels <- function(x, vars=NULL)
 # delete one or more xdf tbls (vectorised)
 deleteTbl <- function(xdf)
 {
-    # sanity check if passed a data frame
-    if(is.data.frame(xdf))
-        return(NULL)
     if(!is.list(xdf))
         xdf <- list(xdf)
     lapply(xdf, function(xdf) {
@@ -111,6 +108,9 @@ deleteTbl <- function(xdf)
 # on.exit function
 deleteIfTbl <- function(oldData)
 {
+    # sanity check if passed a data frame
+    if(is.data.frame(oldData))
+        return(NULL)
     if(isTempTbl(oldData) || is.list(oldData))
         deleteTbl(oldData)
     NULL

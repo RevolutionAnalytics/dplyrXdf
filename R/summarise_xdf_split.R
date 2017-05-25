@@ -3,28 +3,28 @@
 NULL
 
 
-smry_rxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
+smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     if(is.null(grps))
         return(smry_rxSummary(data, grps, stats, exprs, rxArgs))
 
     outSource <- tbl(newTbl(data), hasTblFile=TRUE)
     xdflst <- splitGroups(data)
-    outlst <- rxExec(smry_rxSummary_with_groupvars, data=rxElemArg(xdflst), grps, stats, exprs, rxArgs,
+    outlst <- rxExec(smryRxSummaryWithGroupvars, data=rxElemArg(xdflst), grps, stats, exprs, rxArgs,
         execObjects="deleteTbl", packagesToLoad="dplyrXdf")
-    combine_group_vars(outlst, outSource, NULL)
+    combineGroups(outlst, outSource, NULL)
 }
 
 
-smry_rxSummary_with_groupvars <- function(data, grps, stats, exprs, rxArgs)
+smryRxSummaryWithGroupvars <- function(data, grps, stats, exprs, rxArgs)
 {
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
-    smry <- smry_rxSummary(data, NULL, stats, exprs, rxArgs, dfOut=TRUE)
+    smry <- smryRxSummary(data, NULL, stats, exprs, rxArgs, dfOut=TRUE)
     cbind(gvars, smry, stringsAsFactors=FALSE)
 }
 
 
-smry_rxSplit_dplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
+smryRxSplitDplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     if(is.null(grps))
     {
@@ -40,13 +40,13 @@ smry_rxSplit_dplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
 
     outSource <- tbl(newTbl(data), hasTblFile=TRUE)
     xdflst <- splitGroups(data)
-    outlst <- rxExec(smry_dplyr_with_groupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs,
+    outlst <- rxExec(smryDplyrWithGroupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs,
         execObjects="deleteTbl", packagesToLoad="dplyr")
-    combine_group_vars(outlst, outSource, NULL)
+    combineGroups(outlst, outSource, NULL)
 }
 
 
-smry_dplyr_with_groupvars <- function(data, grps, exprs, rxArgs)
+smryDplyrWithGroupvars <- function(data, grps, exprs, rxArgs)
 {
     oldData <- data
     if(hasTblFile(data))

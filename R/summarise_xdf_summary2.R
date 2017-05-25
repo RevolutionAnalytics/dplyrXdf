@@ -3,7 +3,7 @@
 NULL
 
 
-smry_rxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
+smryRxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     # should always have groups
     if(is.null(grps))
@@ -27,10 +27,10 @@ smry_rxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
     output@groups <- grps
     output@hasTblFile <- TRUE
 
-    smry <- smry_rxSummary(output, ".group.", stats, exprs, rxArgs)
+    smry <- smryRxSummary(output, ".group.", stats, exprs, rxArgs)
     
     # unsplit the grouping variable
-    vars <- rebuild_groupvars(smry[1], grps, data)
+    vars <- rebuildGroupVars(smry[1], grps, data)
 
     data.frame(vars, smry[-1], stringsAsFactors=FALSE)
 }

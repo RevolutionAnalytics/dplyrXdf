@@ -2,7 +2,7 @@
 NULL
 
 
-smry_rxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
+smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     if(is.null(grps))
         stop("rxCube method only for grouped xdf tbls")
@@ -54,10 +54,10 @@ smry_rxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     names(df)[-(1:cl$n_rhs)] <- outvars
 
     # reconstruct grouping variables -- note this will keep char variables as factors
-    gvars <- rebuild_groupvars(df[1:cl$n_rhs], grps, data)
+    gvars <- rebuildGroupVars(df[1:cl$n_rhs], grps, data)
     
     # reassign classes to outputs (for Date and POSIXct objects; work around glitch in rxCube, rxSummary)
-    df <- set_smry_classes(df[outvars], data, invars, outvars)
+    df <- setSmryClasses(df[outvars], data, invars, outvars)
 
     data.frame(gvars, df, stringsAsFactors=FALSE)
 }
@@ -106,7 +106,7 @@ build_smry_formula_rhs <- function(data, grps, call)
 }
 
 
-set_smry_classes <- function(df, origdata, invars, outvars)
+setSmryClasses <- function(df, origdata, invars, outvars)
 {
     types <- varTypes(origdata)
     smrytypes <- sapply(invars, function(x) if(x %in% names(origdata)) types[x] else "numeric")

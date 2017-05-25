@@ -34,10 +34,13 @@ grouped_tbl_xdf <- setClass("grouped_tbl_xdf", contains="tbl_xdf", slots=c(group
 #' @export
 group_by.RxFileData <- function(.data, ..., add=FALSE)
 {
-    .data <- rxImport(.data, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead)
     grps <- names(rlang::quos(..., .named=TRUE))
-    .data <- as(.data, "grouped_tbl_xdf")
-    .data@groups <- grps
+    if(length(grps) > 0)
+    {
+        .data <- rxImport(.data, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead)
+        .data <- as(.data, "grouped_tbl_xdf")
+        .data@groups <- grps
+    }
     .data
 }
 
@@ -47,9 +50,12 @@ group_by.RxFileData <- function(.data, ..., add=FALSE)
 group_by.RxXdfData <- function(.data, ..., add=FALSE)
 {
     grps <- names(rlang::quos(..., .named=TRUE))
-    .data <- as(.data, "grouped_tbl_xdf")
-    .data@groups <- grps
-    .data@hasTblFile <- FALSE  # for raw xdfs, mark file as non-deletable
+    if(length(grps) > 0)
+    {
+        .data <- as(.data, "grouped_tbl_xdf")
+        .data@groups <- grps
+        .data@hasTblFile <- FALSE  # for raw xdfs, mark file as non-deletable
+    }
     .data
 }
 
@@ -59,8 +65,11 @@ group_by.RxXdfData <- function(.data, ..., add=FALSE)
 group_by.tbl_xdf <- function(.data, ..., add=FALSE)
 {
     grps <- names(rlang::quos(..., .named=TRUE))
-    .data <- as(.data, "grouped_tbl_xdf")
-    .data@groups <- grps
+    if(length(grps) > 0)
+    {
+        .data <- as(.data, "grouped_tbl_xdf")
+        .data@groups <- grps
+    }
     .data
 }
 
@@ -69,10 +78,11 @@ group_by.tbl_xdf <- function(.data, ..., add=FALSE)
 #' @export
 group_by.grouped_tbl_xdf <- function(.data, ..., add=FALSE)
 {
-    oldGrps <- group_vars(.data)
     grps <- names(rlang::quos(..., .named=TRUE))
-    .data <- as(.data, "grouped_tbl_xdf")
-    .data@groups <- if(add) c(oldGrps, grps) else grps
+    newGrps <- if(add) c(group_vars(.data), grps) else grps
+    if(length(newGrps) > 0)
+        .data@groups <- newGrps
+    else .data <- as(.data, "tbl_xdf")
     .data
 }
 
@@ -111,7 +121,7 @@ groups.RxFileData <- function(x)
 #' @export
 groups.grouped_tbl_xdf <- function(x)
 {
-    syms(group_vars(x))
+    rlang::syms(group_vars(x))
 }
 
 

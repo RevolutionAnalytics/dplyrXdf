@@ -3,11 +3,11 @@
 NULL
 
 
-smry_rxSummary <- function(data, ...)
-UseMethod("smry_rxSummary")
+smryRxSummary <- function(data, ...)
+UseMethod("smryRxSummary")
 
 
-smry_rxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs)
+smryRxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     outvars <- names(exprs)
     invars <- invars(exprs)
@@ -22,19 +22,19 @@ smry_rxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs
     stopifnot(all(nchar(invars) > 0))
 
     # convert non-factor character cols into factors
-    is_char <- varTypes(data, grps) == "character"
-    if(any(is_char))
-        data <- factorise_(data, .dots=grps[is_char])
+    isChar <- varTypes(data, grps) == "character"
+    if(any(isChar))
+        data <- factorise_(data, .dots=grps[isChar])
 
     oldData <- data
     if(hasTblFile(data))
         on.exit(deleteTbl(oldData))
 
     cl <- build_smry_formula_rhs(data, grps,
-        quote(rxSummary(fm, data, summaryStats=unique_stat, useSparseCube=TRUE, removeZeroCounts=TRUE)))
+        quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE)))
     cl$call[names(rxArgs)] <- rxArgs
 
-    find_table <- function(s)
+    findTable <- function(s)
     {
         found <- FALSE
         for(table in tables)
@@ -50,11 +50,11 @@ smry_rxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs
 
     levs <- cl$levs
     fm <- reformulate(paste(invars, cl$fm_rhs, sep=":"))
-    unique_stat <- unique(rx_summaryStat(stats))
+    uniqueStat <- unique(rxSummaryStat(stats))
     tables <- eval(cl$call)$categorical
     df <- lapply(seq_along(stats), function(i) {
-        tab <- find_table(invars[[i]])  # have to search for correct table (!)
-        x <- select_col(tab, stats[i])
+        tab <- findTable(invars[[i]])  # have to search for correct table (!)
+        x <- selectCol(tab, stats[i])
         cbind(tab[2:(cl$n_rhs + 1)], x)
     })
     byvars <- names(df[[1]])[1:cl$n_rhs]
@@ -62,17 +62,17 @@ smry_rxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs
     names(df)[-(1:cl$n_rhs)] <- outvars
 
     # reconstruct grouping variables -- note this will keep char variables as factors
-    gvars <- rebuild_groupvars(df[1:cl$n_rhs], grps, data)
+    gvars <- rebuildGroupVars(df[1:cl$n_rhs], grps, data)
 
     # reassign classes to outputs (for Date and POSIXct objects; work around glitch in rxCube, rxSummary)
-    df <- set_smry_classes(df[outvars], data, invars, outvars)
+    df <- setSmryClasses(df[outvars], data, invars, outvars)
 
     data.frame(gvars, df, stringsAsFactors=FALSE)
 }
 
 
 # define method for RxFileData because this is used by rxSplit method with raw xdf as input, and with non-xdf data sources
-smry_rxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfOut=FALSE)
+smryRxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfOut=FALSE)
 {
     outvars <- names(exprs)
     invars <- invars(exprs)
@@ -81,7 +81,7 @@ smry_rxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfO
     if(hasTblFile(data))
         on.exit(deleteTbl(oldData))
 
-    cl <- quote(rxSummary(fm, data, summaryStats=unique_stat, useSparseCube=TRUE, removeZeroCounts=TRUE, transformFunc=function(varlst) {
+    cl <- quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE, transformFunc=function(varlst) {
         varlst[[".n."]] <- rep(1, length(varlst[[1]]))
         varlst
     }, transformVars=names(data)[1]))
@@ -105,17 +105,17 @@ smry_rxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfO
     stopifnot(all(nchar(invars) > 0))
 
     fm <- reformulate(invars)
-    unique_stat <- unique(rx_summaryStat(stats))
+    uniqueStat <- unique(rxSummaryStat(stats))
     smry <- eval(cl)$sDataFrame
     df <- lapply(seq_along(stats), function(i) {
         x <- smry[i, , drop=FALSE]
-        select_col(x, stats[i])
+        selectCol(x, stats[i])
     })
     df <- data.frame(df)
     names(df) <- outvars
 
     # reassign classes to outputs (for Date and POSIXct objects; work around glitch in rxCube, rxSummary)
-    df <- set_smry_classes(df[outvars], data, invars, outvars)
+    df <- setSmryClasses(df[outvars], data, invars, outvars)
 
     if(dfOut)  # output as data frame
         df
@@ -123,7 +123,7 @@ smry_rxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfO
 }
 
 
-rx_summaryStat <- function(x)
+rxSummaryStat <- function(x)
 {
     outStat <- c(mean = "mean",
                  sum = "sum",
@@ -136,7 +136,7 @@ rx_summaryStat <- function(x)
 }
 
 
-select_col <- function(df, stat)
+selectCol <- function(df, stat)
 {
     x <- switch(stat,
         mean = df$Mean,  # note that cubes from rxSummary have a "Means" column; relying on partial evaluation here

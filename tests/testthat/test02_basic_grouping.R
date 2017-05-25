@@ -59,15 +59,15 @@ test_that("transmute works", {
 
 test_that("output to data.frame works", {
     tbl <- mtx %>% group_by(gear) %>% filter(mpg > 15, cyl <= 6, .outFile=NULL)
-    expect_true(is.data.frame(tbl))
+    expect_true(verifyData(tbl, "grouped_df"))
     tbl <- mtx %>% group_by(gear) %>% select(mpg, cyl, drat, .outFile=NULL)
-    expect_true(is.data.frame(tbl))
+    expect_true(verifyData(tbl, "grouped_df"))
     tbl <- mtx %>% group_by(gear) %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile=NULL)
-    expect_true(is.data.frame(tbl))
+    expect_true(verifyData(tbl, "grouped_df"))
     tbl <- mtx %>% group_by(gear) %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile=NULL)
-    expect_true(is.data.frame(tbl))
+    expect_true(verifyData(tbl, "grouped_df"))
     tbl <- mtx %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile=NULL)
-    expect_true(is.data.frame(tbl))
+    expect_true(verifyData(tbl, "grouped_df"))
 })
 
 test_that("output to xdf works", {

@@ -73,11 +73,10 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
 
     if(!missing(.outFile))
     {
-        if(is.null(.outFile) || is.character(.outFile))
-        {
-            arglst["outFile"] <- list(.outFile)
+        if(is.null(.outFile))
             arglst["maxRowsByCols"] <- list(NULL)
-        }
+        else if(is.character(.outFile))
+            arglst$outFile <- .outFile
         else
         {
             warning("unexpected value for .outFile ignored")
@@ -88,7 +87,5 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
 
     arglst
 }
-
-
 
 

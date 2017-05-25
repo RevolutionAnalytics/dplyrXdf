@@ -77,7 +77,7 @@ distinct_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots, .kee
     outlst <- createSplitOutput(xdflst, .outFile)
     outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), names(exprs), .rxArgs, .keep_all,
         execObjects=c("deleteTbl", ".dxOptions"), packagesToLoad="dplyrXdf")
-    combine_group_vars(outlst, createOutput(.data, .outFile), grps)
+    combine_groups(outlst, createOutput(.data, .outFile), grps)
 }
 
 

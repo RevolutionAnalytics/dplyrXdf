@@ -24,29 +24,36 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{summarise}} in package dplyr, \code{\link[RevoScaleR]{rxCube}}, \code{\link[RevoScaleR]{rxSummary}}
-#' @aliases summarise summarize summarise_ summarize_
+#' @aliases summarise summarize
 #' @rdname summarise
 #' @export
-summarise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method, .dots)
+summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method)
 {
-    dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
+    dots <- quos(..., .named=TRUE)
+    if(length(dots) > 1)
+        env <- get_env(dots[[1]])
+    else env <- get_env(caller_env())
 
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-    if(missing(.method)) .method <- exprs$.method
-    exprs$.method <- NULL
+    #    arglst <- list(.data)
+    #    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-    attr(exprs, "env") <- dots$env  # needed if calling dplyr::summarise
-
+    exprs <- lapply(dots, get_expr)
     stats <- sapply(exprs, function(term) as.character(term[[1]]))
-    needs_mutate <- vapply(exprs, function(e) {
+    needs_mutate <- vapply(exprs, function(e)
+    {
         (length(e) < 2 || !is.name(e[[2]])) && !identical(e, quote(n()))
     }, logical(1))
     if(any(needs_mutate))
-        stop("summarise with xdf tbls only works with named variables, not expressions")  # TODO: do actual mutate
+        stop("summarise with xdf tbls only works with named variables, not expressions") # TODO: do actual mutate
+
+    .rxArgs <- if(!missing(.rxArgs))
+    {
+        .rxArgs <- rlang::enquo(.rxArgs)
+        if(rlang::is_lang(.rxArgs))
+            rlang::splice(rlang::lang_args(.rxArgs))
+        else NULL
+    }
+    else NULL
 
     grps <- group_vars(.data)
 
@@ -56,36 +63,34 @@ summarise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method, .dots)
     # 3- as 2, but build classification levels by pasting grouping vars together (work around cube size limitation in rxCube/rxSummary)
     # 4- split into multiple xdfs, dplyr::summarise on each, rbind xdfs together: arbitrary stats supported (slow)
     # 5- split into multiple xdfs, rxSummary on each, rbind xdfs together: stats in rxSummary supported (slowest, most scalable)
-    .method <- select_smry_method(stats, .method, grps)
+    .method <- selectSmryMethod(stats, .method, grps)
 
     # only summarise methods 1-2 work with HDFS
     if(.method > 2)
         stopIfHdfs(sprintf("chosen summarise method not (%d) supported on HDFS",
                            .method))
 
-    smry_func <- switch(.method,
-        smry_rxCube, smry_rxSummary, smry_rxSummary2, smry_rxSplit_dplyr, smry_rxSplit)
-    smry <- smry_func(.data, grps, stats, exprs, .rxArgs)
+    smryFunc <- switch(.method,
+        smryRxCube, smryRxSummary, smryRxSummary2, smryRxSplitDplyr, smryRxSplit)
+    smry <- smryFunc(.data, grps, stats, exprs, .rxArgs)
 
-    .outFile <- createOutput(.data, .outFile)
-    if(inherits(.outFile, "RxXdfData"))
-    {
-        if(hasTblFile(smry))
-            on.exit(deleteTbl(smry))
-        .outFile <- rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
-    }
-    else .outFile <- as.data.frame(smry)
+    on.exit(deleteIfTbl(smry))
+    output <- if(is.null(smry))
+        as.data.frame(smry)
+    else if(is.character(.outFile))
+        rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+    else rxDataStep(smry, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
 
     # strip off one level of grouping
-    simpleRegroup(.outFile, grps[-length(grps)])
+    simpleRegroup(output, grps[-length(grps)])
 }
 
 
-select_smry_method <- function(stats, method, groups=NULL)
+selectSmryMethod <- function(stats, method=NULL, groups=NULL)
 {
     cubeStats <- all(stats %in% c("mean", "sum", "n"))
     simpleStats <- all(stats %in% c("mean", "sum", "sd", "var", "n", "min", "max"))
-    grouped <- !is.null(groups)
+    grouped <- length(groups) > 0
     defaultMethod <- is.null(method)
     if(!defaultMethod && !(method %in% 1:5))
         stop("unknown method selection for summarise (must be a number from 1 to 5)")
@@ -125,7 +130,7 @@ select_smry_method <- function(stats, method, groups=NULL)
 
 
 # reconstruct grouping variables
-rebuild_groupvars <- function(x, grps, data)
+rebuildGroupVars <- function(x, grps, data)
 {
     if(length(x) == 1 && names(x) == ".group." && !identical(grps, ".group."))
     {
