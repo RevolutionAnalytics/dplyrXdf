@@ -23,11 +23,9 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(any(is_char))
         data <- factorise_(data, .dots=grps[is_char])
 
-    oldData <- data
-    if(hasTblFile(data))
-        on.exit(deleteTbl(oldData))
+    on.exit(deleteIfTbl(data))
 
-    cl <- build_smry_formula_rhs(data, grps,
+    cl <- buildSmryFormulaRhs(data, grps,
         quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE)))
     levs <- cl$levs
     cl$call[names(rxArgs)] <- rxArgs
@@ -35,7 +33,7 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     # single call to rxCube if only 1 summary statistic type, otherwise multiple calls
     if(length(unique(stats)) == 1)
     {
-        fm <- formula(paste0("cbind(", paste0(invars, collapse=","), ") ~ ", cl$fm_rhs))
+        fm <- formula(paste0("cbind(", paste0(invars, collapse=","), ") ~ ", cl$fmRhs))
         means <- stats[1] == "mean"
         df <- data.frame(eval(cl$call))
         df <- df[-ncol(df)]
@@ -44,17 +42,17 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     {
         df <- lapply(seq_along(stats), function(i) {
             means <- stats[i] == "mean"
-            fm <- reformulate(cl$fm_rhs, invars[[i]])
+            fm <- reformulate(cl$fmRhs, invars[[i]])
             cube <- data.frame(eval(cl$call))
             cube[-ncol(cube)]
         })
-        byvars <- names(df[[1]])[1:cl$n_rhs]
+        byvars <- names(df[[1]])[1:cl$nRhs]
         df <- Reduce(function(x, y) full_join(x, y, by=byvars), df)
     }
-    names(df)[-(1:cl$n_rhs)] <- outvars
+    names(df)[-(1:cl$nRhs)] <- outvars
 
     # reconstruct grouping variables -- note this will keep char variables as factors
-    gvars <- rebuildGroupVars(df[1:cl$n_rhs], grps, data)
+    gvars <- rebuildGroupVars(df[1:cl$nRhs], grps, data)
     
     # reassign classes to outputs (for Date and POSIXct objects; work around glitch in rxCube, rxSummary)
     df <- setSmryClasses(df[outvars], data, invars, outvars)
@@ -63,7 +61,7 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
 }
 
 
-build_smry_formula_rhs <- function(data, grps, call)
+buildSmryFormulaRhs <- function(data, grps, call)
 {
     numeric_logical <- c("numeric", "integer", "logical", "Date", "POSIXct")
     gvarTypes <- varTypes(data, grps)
@@ -73,8 +71,8 @@ build_smry_formula_rhs <- function(data, grps, call)
     {
         # using F() assumes that numeric columns are integers; do a check on this
         if(any(gvarTypes %in% numeric_logical))
-            verify_numerics_are_integers(data, grps)
-        n_rhs <- length(grps)
+            verifyNumericsAreIntegers(data, grps)
+        nRhs <- length(grps)
         call$transformFunc <- quote(function(varlst) {
             varlst[[".n."]] <- rep(1, .rxNumRows)
             varlst
@@ -82,7 +80,7 @@ build_smry_formula_rhs <- function(data, grps, call)
         call$transformVars <- quote(grps[1])
         rhs_vars <- ifelse(gvarTypes %in% numeric_logical,
             paste0("F(", grps, ")"), grps)
-        fm_rhs <- paste(rhs_vars, collapse=":")
+        fmRhs <- paste(rhs_vars, collapse=":")
         levs <- NULL
     }
     else
@@ -99,10 +97,10 @@ build_smry_formula_rhs <- function(data, grps, call)
         })
         call$transformObjects <- quote(list(.levs=levs, .factor=makeGroupVar))
         call$transformVars <- quote(grps)
-        n_rhs <- 1
-        fm_rhs <- ".group."
+        nRhs <- 1
+        fmRhs <- ".group."
     }
-    list(call=call, n_rhs=n_rhs, fm_rhs=fm_rhs, levs=levs)
+    list(call=call, nRhs=nRhs, fmRhs=fmRhs, levs=levs)
 }
 
 
@@ -120,7 +118,7 @@ setSmryClasses <- function(df, origdata, invars, outvars)
 }
 
 
-verify_numerics_are_integers <- function(data, grps)
+verifyNumericsAreIntegers <- function(data, grps)
 {
     data <- rxDataStep(data, varsToKeep=grps, numRows=1000)
     n <- 1

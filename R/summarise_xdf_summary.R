@@ -26,11 +26,9 @@ smryRxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(any(isChar))
         data <- factorise_(data, .dots=grps[isChar])
 
-    oldData <- data
-    if(hasTblFile(data))
-        on.exit(deleteTbl(oldData))
+    on.exit(deleteIfTbl(data))
 
-    cl <- build_smry_formula_rhs(data, grps,
+    cl <- buildSmryFormulaRhs(data, grps,
         quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE)))
     cl$call[names(rxArgs)] <- rxArgs
 
@@ -49,20 +47,20 @@ smryRxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs)
     }
 
     levs <- cl$levs
-    fm <- reformulate(paste(invars, cl$fm_rhs, sep=":"))
+    fm <- reformulate(paste(invars, cl$fmRhs, sep=":"))
     uniqueStat <- unique(rxSummaryStat(stats))
     tables <- eval(cl$call)$categorical
     df <- lapply(seq_along(stats), function(i) {
         tab <- findTable(invars[[i]])  # have to search for correct table (!)
         x <- selectCol(tab, stats[i])
-        cbind(tab[2:(cl$n_rhs + 1)], x)
+        cbind(tab[2:(cl$nRhs + 1)], x)
     })
-    byvars <- names(df[[1]])[1:cl$n_rhs]
+    byvars <- names(df[[1]])[1:cl$nRhs]
     df <- Reduce(function(x, y) full_join(x, y, by=byvars), df)
-    names(df)[-(1:cl$n_rhs)] <- outvars
+    names(df)[-(1:cl$nRhs)] <- outvars
 
     # reconstruct grouping variables -- note this will keep char variables as factors
-    gvars <- rebuildGroupVars(df[1:cl$n_rhs], grps, data)
+    gvars <- rebuildGroupVars(df[1:cl$nRhs], grps, data)
 
     # reassign classes to outputs (for Date and POSIXct objects; work around glitch in rxCube, rxSummary)
     df <- setSmryClasses(df[outvars], data, invars, outvars)

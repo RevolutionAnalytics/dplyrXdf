@@ -27,17 +27,17 @@
 #' @aliases summarise summarize
 #' @rdname summarise
 #' @export
-summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method)
+summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method=NULL)
 {
     dots <- quos(..., .named=TRUE)
     if(length(dots) > 1)
-        env <- get_env(dots[[1]])
-    else env <- get_env(caller_env())
+        env <- rlang::get_env(dots[[1]])
+    else env <- rlang::get_env(rlang::caller_env())
 
     #    arglst <- list(.data)
     #    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-    exprs <- lapply(dots, get_expr)
+    exprs <- lapply(dots, rlang::get_expr)
     stats <- sapply(exprs, function(term) as.character(term[[1]]))
     needs_mutate <- vapply(exprs, function(e)
     {
@@ -46,7 +46,7 @@ summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method)
     if(any(needs_mutate))
         stop("summarise with xdf tbls only works with named variables, not expressions") # TODO: do actual mutate
 
-    .rxArgs <- if(!missing(.rxArgs))
+    .rxArgs <- if(!missing(.rxArgs))  # no easy way of handling missing
     {
         .rxArgs <- rlang::enquo(.rxArgs)
         if(rlang::is_lang(.rxArgs))
@@ -74,12 +74,8 @@ summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method)
         smryRxCube, smryRxSummary, smryRxSummary2, smryRxSplitDplyr, smryRxSplit)
     smry <- smryFunc(.data, grps, stats, exprs, .rxArgs)
 
-    on.exit(deleteIfTbl(smry))
-    output <- if(is.null(smry))
-        as.data.frame(smry)
-    else if(is.character(.outFile))
-        rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
-    else rxDataStep(smry, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+    on.exit(deleteIfTbl(.data))
+    output <- makeSmryOutput(smry, .data, .outFile)
 
     # strip off one level of grouping
     simpleRegroup(output, grps[-length(grps)])
@@ -170,3 +166,28 @@ invars <- function(exprs)
     })
 }
 
+
+makeSmryOutput <- function(smry, .data, .outFile)
+{
+    if(is.data.frame(smry))
+    {
+        if(missing(.outFile))
+            rxDataStep(smry, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead)
+        else if(is.character(.outFile))
+            rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead)
+        else smry
+    }
+    else  # xdf output from summary worker
+    {
+        if(missing(.outFile))
+        {
+            as(smry, "tbl_xdf")
+        }
+        else if(is.character(.outFile))
+        {
+            file.rename(smry@file, .outFile)
+            RxXdfData(.outFile)
+        }
+        else as.data.frame(smry)
+    }
+}

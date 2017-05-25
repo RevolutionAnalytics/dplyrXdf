@@ -71,15 +71,15 @@ test_that("output to data.frame works", {
 })
 
 test_that("output to xdf works", {
-    tbl <- mtx %>% group_by(gear) %>% filter(mpg > 15, cyl <= 6, .outFile="test01.xdf")
+    tbl <- mtx %>% group_by(gear) %>% filter(mpg > 15, cyl <= 6, .outFile="test02.xdf")
     expect_true(verifyData(tbl, "RxXdfData"))
-    tbl <- mtx %>% group_by(gear) %>% select(mpg, cyl, drat, .outFile="test01.xdf")
+    tbl <- mtx %>% group_by(gear) %>% select(mpg, cyl, drat, .outFile="test02.xdf")
     expect_true(verifyData(tbl, "RxXdfData"))
-    tbl <- mtx %>% group_by(gear) %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile="test01.xdf")
+    tbl <- mtx %>% group_by(gear) %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile="test02.xdf")
     expect_true(verifyData(tbl, "RxXdfData"))
-    tbl <- mtx %>% group_by(gear) %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test01.xdf")
+    tbl <- mtx %>% group_by(gear) %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test02.xdf")
     expect_true(verifyData(tbl, "RxXdfData"))
-    tbl <- mtx %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test01.xdf")
+    tbl <- mtx %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test02.xdf")
     expect_true(verifyData(tbl, "RxXdfData"))
 })
 
@@ -114,5 +114,5 @@ test_that(".rxArgs works", {
 
 
 # cleanup
-file.remove("mtx.xdf", "test01.xdf")
+file.remove("mtx.xdf", "test02.xdf")
 
