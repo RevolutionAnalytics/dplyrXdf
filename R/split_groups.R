@@ -10,11 +10,11 @@ splitGroups <- function(data, outXdf=data)
     # this will be very slow with large no. of factor levels
     if(inherits(rxGetFileSystem(data), "RxHdfsFileSystem"))
     {
-        levs <- get_grouplevels(data)
+        levs <- getGroupLevels(data)
         rxDataStep(data, outXdf, transformFunc=function(varlst) {
             varlst[[".group."]] <- .factor(varlst, .levs)
             varlst
-        }, transformObjects=list(.levs=levs, .factor=make_groupvar), transformVars=grps, overwrite=TRUE)
+        }, transformObjects=list(.levs=levs, .factor=makeGroupVar), transformVars=grps, overwrite=TRUE)
 
         outFile <- rxXdfFileName(outXdf)
         lst <- sapply(levs, function(l) {

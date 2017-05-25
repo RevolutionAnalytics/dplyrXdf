@@ -12,7 +12,7 @@ smryRxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
     outvars <- names(exprs)
     invars <- invars(exprs)
 
-    levs <- get_grouplevels(data)
+    levs <- getGroupLevels(data)
 
     output <- newTbl(data)
     if(hasTblFile(data))
@@ -22,7 +22,7 @@ smryRxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
     output <- rxDataStep(data, output, transformFunc=function(varlst) {
         varlst[[".group."]] <- .factor(varlst, .levs)
         varlst
-    }, transformObjects=list(.levs=levs, .factor=make_groupvar), transformVars=grps, overwrite=TRUE)
+    }, transformObjects=list(.levs=levs, .factor=makeGroupVar), transformVars=grps, overwrite=TRUE)
     output <- as(output, "grouped_tbl_xdf")
     output@groups <- grps
     output@hasTblFile <- TRUE

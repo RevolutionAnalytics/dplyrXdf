@@ -90,14 +90,14 @@ build_smry_formula_rhs <- function(data, grps, call)
         # smry_rxCube and smry_rxSummary methods should have converted all char columns to factor
         # this code block should never be needed, but leave it in as a safety check
         warning("unexpected non-factor, non-numeric grouping variable in summarise", call.=FALSE)
-        levs <- get_grouplevels(data)
+        levs <- getGroupLevels(data)
         # put grouping variable on to dataset in call to rxCube; faster than separate rxDataStep
         call$transformFunc <- quote(function(varlst) {
             varlst[[".group."]] <- .factor(varlst, .levs)
             varlst[[".n."]] <- rep(1, length(varlst[[1]]))
             varlst
         })
-        call$transformObjects <- quote(list(.levs=levs, .factor=make_groupvar))
+        call$transformObjects <- quote(list(.levs=levs, .factor=makeGroupVar))
         call$transformVars <- quote(grps)
         n_rhs <- 1
         fm_rhs <- ".group."
