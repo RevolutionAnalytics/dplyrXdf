@@ -76,8 +76,7 @@ smryRxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfOu
     invars <- invars(exprs)
 
     oldData <- data
-    if(hasTblFile(data))
-        on.exit(deleteTbl(oldData))
+    on.exit(deleteIfTbl(oldData))
 
     cl <- quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE, transformFunc=function(varlst) {
         varlst[[".n."]] <- rep(1, length(varlst[[1]]))
@@ -92,7 +91,7 @@ smryRxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfOu
         stats[bad] <- "sum"
         invars[bad] <- ".n."
         cl$transforms <- if(is.null(cl$transforms))
-            list(quote(.n.=rep(1, .rxNumRows)))
+            quote(list(.n.=rep(1, .rxNumRows)))
         else
         {
             ntrans <- length(cl$transforms) + 1

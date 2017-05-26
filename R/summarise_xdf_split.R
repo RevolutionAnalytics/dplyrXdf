@@ -6,12 +6,12 @@ NULL
 smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     if(is.null(grps))
-        return(smry_rxSummary(data, grps, stats, exprs, rxArgs))
+        return(smryRxSummary(data, grps, stats, exprs, rxArgs))
 
-    outSource <- tbl(newTbl(data), hasTblFile=TRUE)
+    outSource <- tbl_xdf(data)
     xdflst <- splitGroups(data)
     outlst <- rxExec(smryRxSummaryWithGroupvars, data=rxElemArg(xdflst), grps, stats, exprs, rxArgs,
-        execObjects="deleteTbl", packagesToLoad="dplyrXdf")
+        execObjects="deleteIfTbl", packagesToLoad="dplyrXdf")
     combineGroups(outlst, outSource, NULL)
 }
 
@@ -29,19 +29,18 @@ smryRxSplitDplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(is.null(grps))
     {
         oldData <- data
-        if(hasTblFile(data))
-            on.exit(deleteTbl(oldData))
+        on.exit(deleteIfTbl(oldData))
 
         cl <- quote(rxDataStep(data, maxRowsByCols=NULL))
         cl[names(rxArgs)] <- rxArgs
         return(eval(cl) %>%
-               dplyr::summarise_(.dots=exprs))
+               dplyr::summarise(!!!exprs))
     }
 
-    outSource <- tbl(newTbl(data), hasTblFile=TRUE)
+    outSource <- tbl_xdf(data)
     xdflst <- splitGroups(data)
     outlst <- rxExec(smryDplyrWithGroupvars, data=rxElemArg(xdflst), grps, exprs, rxArgs,
-        execObjects="deleteTbl", packagesToLoad="dplyr")
+        execObjects="deleteIfTbl", packagesToLoad="dplyr")
     combineGroups(outlst, outSource, NULL)
 }
 
@@ -49,15 +48,17 @@ smryRxSplitDplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
 smryDplyrWithGroupvars <- function(data, grps, exprs, rxArgs)
 {
     oldData <- data
-    if(hasTblFile(data))
-        on.exit(deleteTbl(oldData))
+    on.exit(deleteIfTbl(oldData))
 
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     cl <- quote(rxDataStep(data, maxRowsByCols=NULL))
     cl[names(rxArgs)] <- rxArgs
-    exprs <- lazyeval::as.lazy_dots(exprs, attr(exprs, "env"))
+    #exprs <- lazyeval::as.lazy_dots(exprs, attr(exprs, "env"))
     smry <- eval(cl) %>%
-        dplyr::summarise_(.dots=exprs)
+        dplyr::summarise(!!!exprs)
         
     cbind(gvars, smry, stringsAsFactors=FALSE)
 }
+
+
+

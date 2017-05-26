@@ -14,12 +14,10 @@ smryRxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
 
     levs <- getGroupLevels(data)
 
-    output <- newTbl(data)
-    if(hasTblFile(data))
-        on.exit(deleteTbl(data))
+    on.exit(deleteIfTbl(data))
 
     # put grouping variable on to dataset
-    output <- rxDataStep(data, output, transformFunc=function(varlst) {
+    output <- rxDataStep(data, tbl_xdf(data), transformFunc=function(varlst) {
         varlst[[".group."]] <- .factor(varlst, .levs)
         varlst
     }, transformObjects=list(.levs=levs, .factor=makeGroupVar), transformVars=grps, overwrite=TRUE)
