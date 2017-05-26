@@ -6,56 +6,37 @@ splitGroups <- function(data, outXdf=data)
 
     on.exit(deleteIfTbl(data))
 
-    # rxSplit not supported on HDFS -- fake it with multiple rxDataSteps
-    # this will be very slow with large no. of factor levels
+    # no splitting on Hdfs
     if(inherits(rxGetFileSystem(data), "RxHdfsFileSystem"))
-    {
-        levs <- getGroupLevels(data)
-        rxDataStep(data, outXdf, transformFunc=function(varlst) {
-            varlst[[".group."]] <- .factor(varlst, .levs)
-            varlst
-        }, transformObjects=list(.levs=levs, .factor=makeGroupVar), transformVars=grps, overwrite=TRUE)
+        stop("splitting groups not supported on HDFS")
 
-        outFile <- rxXdfFileName(outXdf)
-        lst <- sapply(levs, function(l) {
-            thisXdf <- outXdf
-            thisXdf@file <- paste(sub(".xdf$", "", outFile), "_lev_", l, ".xdf", sep="")
-            cl <- substitute(rxDataStep(outXdf, thisXdf, rowsToKeep=.group. == .l, overwrite=TRUE),
-                list(.l=l))
-            as(eval(cl), "tbl_xdf")
-        }, simplify=FALSE)
-        return(lst)
-    }
-    else
-    {
-        fname <- tools::file_path_sans_ext(rxXdfFileName(outXdf))
-        fname <- file.path(getXdfTblDir(), basename(fname))
+    fname <- tools::file_path_sans_ext(rxXdfFileName(outXdf))
+    fname <- file.path(getXdfTblDir(), basename(fname))
 
-        # if files exist that could interfere with splitting output, delete them
-        # should never be necessary because base filename is a randomly generated tempfile
-        # and each split should be followed by a combine
-        deleteSplitOutputs(fname, grps)
+    # if files exist that could interfere with splitting output, delete them
+    # should never be necessary because base filename is a randomly generated tempfile
+    # and each split should be followed by a combine
+    deleteSplitOutputs(fname, grps)
 
-        # mimic behaviour of rxSplit: rxDataStep that splits each chunk, calls rxDataStep on each split
-        lst <- rxDataStep(data, transformFunc=function(varlst) {
-                datlst <- split(as.data.frame(varlst, stringsAsFactors=FALSE), varlst[.grps], drop=TRUE, sep="_&&_")
-                # fix problematic characters in filenames: ?*<>|+ etc
-                names(datlst) <- sapply(names(datlst), URLencode, reserved=TRUE)
-                filelst <- paste(.fname, paste(.grps, collapse="_"), names(datlst), "xdf", sep=".")
-                for(i in seq_along(datlst))
-                {
-                    out <- if(file.exists(filelst[i]))
-                        rxDataStep(datlst[[i]], filelst[i], append="rows")
-                    else rxDataStep(datlst[[i]], filelst[i], append="none")
-                }
-                .outFiles <<- base::union(.outFiles, filelst)
-                NULL
-            },
-            transformObjects=list(.grps=grps, .fname=fname, .outFiles=character(0)),
-            returnTransformObjects=TRUE)$.outFiles
-        #print(lst)
-        sapply(sort(lst), function(obj) as(RxXdfData(obj), "tbl_xdf"), simplify=FALSE)
-    }
+    # mimic behaviour of rxSplit: rxDataStep that splits each chunk, calls rxDataStep on each split
+    lst <- rxDataStep(data, transformFunc=function(varlst) {
+            datlst <- split(as.data.frame(varlst, stringsAsFactors=FALSE), varlst[.grps], drop=TRUE, sep="_&&_")
+            # fix problematic characters in filenames: ?*<>|+ etc
+            names(datlst) <- sapply(names(datlst), URLencode, reserved=TRUE)
+            filelst <- paste(.fname, paste(.grps, collapse="_"), names(datlst), "xdf", sep=".")
+            for(i in seq_along(datlst))
+            {
+                out <- if(file.exists(filelst[i]))
+                    rxDataStep(datlst[[i]], filelst[i], append="rows")
+                else rxDataStep(datlst[[i]], filelst[i], append="none")
+            }
+            .outFiles <<- base::union(.outFiles, filelst)
+            NULL
+        },
+        transformObjects=list(.grps=grps, .fname=fname, .outFiles=character(0)),
+        returnTransformObjects=TRUE)$.outFiles
+
+    sapply(sort(lst), function(obj) as(RxXdfData(obj), "tbl_xdf"), simplify=FALSE)
 }
 
 

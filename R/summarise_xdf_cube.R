@@ -4,7 +4,7 @@ NULL
 
 smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
-    if(is.null(grps))
+    if(length(grps) == 0)
         stop("rxCube method only for grouped xdf tbls")
     outvars <- names(exprs)
     invars <- invars(exprs)

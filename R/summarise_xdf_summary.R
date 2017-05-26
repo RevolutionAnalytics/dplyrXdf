@@ -79,7 +79,7 @@ smryRxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfOu
     on.exit(deleteIfTbl(oldData))
 
     cl <- quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE, transformFunc=function(varlst) {
-        varlst[[".n."]] <- rep(1, length(varlst[[1]]))
+        varlst[[".n."]] <- rep(1, .rxNumRows)
         varlst
     }, transformVars=names(data)[1]))
     cl[names(rxArgs)] <- rxArgs
@@ -116,7 +116,7 @@ smryRxSummary.RxFileData <- function(data, grps=NULL, stats, exprs, rxArgs, dfOu
 
     if(dfOut)  # output as data frame
         df
-    else rxDataStep(as.data.frame(df), tbl(newTbl(data), hasTblFile=TRUE), overwrite=TRUE)
+    else rxDataStep(as.data.frame(df), tbl_xdf(data), overwrite=TRUE)
 }
 
 

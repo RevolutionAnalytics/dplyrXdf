@@ -6,7 +6,7 @@ NULL
 smryRxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     # should always have groups
-    if(is.null(grps))
+    if(length(grps) == 0)
         stop("no grouping variables supplied", call.=FALSE)
 
     outvars <- names(exprs)

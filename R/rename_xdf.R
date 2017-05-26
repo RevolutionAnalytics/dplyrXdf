@@ -55,7 +55,7 @@ rename_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
 
     names(.data) <- names(vars)
     # check if grouping vars were renamed -- but only if output is data frame or tbl_xdf 
-    if(!is.null(grps) && inherits(.data, c("data.frame", "tbl_xdf")))
+    if(length(grps) > 0 && inherits(.data, c("data.frame", "tbl_xdf")))
     {
         renamed <- vars[vars != names(vars)]
         renamed <- grps %in% names(renamed)

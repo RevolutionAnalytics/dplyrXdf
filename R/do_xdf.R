@@ -168,7 +168,7 @@ do_base <- function(data, exprs, grps=NULL, env)
     }, simplify=FALSE)
     data <- as.data.frame(data)
     out <- do_(data, .dots=dots)
-    if(!is.null(grps))
+    if(length(grps) > 0)
     {
         grps <- data[rep(1, nrow(out)), grps, drop=FALSE]
         cbind(grps, out)
@@ -197,7 +197,7 @@ doXdf_base <- function(data, exprs, grps=NULL, rxArgs, env, named)
         out <- as.data.frame(lazyeval::lazy_eval(expr, datlst))
     }
     class(out) <- c("tbl_df", "data.frame")
-    if(!is.null(grps))
+    if(length(grps) > 0)
     {
         grps <- head(data, 1)[rep(1, nrow(out)), grps, drop=FALSE]
         cbind(grps, out[names(out) != ".group."])
