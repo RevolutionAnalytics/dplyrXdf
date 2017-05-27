@@ -6,9 +6,8 @@ verifyData <- function(xdf, expectedClass)
     is.data.frame(head(xdf)) && class(xdf) == expectedClass  # test for exact class
 }
 
-library(rlang)
 x <- "mpg"
-xs <- sym(x)
+xs <- rlang::sym(x)
 
 xnew <- "mpg2"
 
@@ -17,7 +16,7 @@ test_that("filter works", {
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
     tbl <- mtx %>% group_by(gear) %>% filter((!!xs) > 15, cyl <= 6)
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
-    tbl <- mtx %>% group_by(gear) %>% filter((!!sym(x)) > 15, cyl <= 6)
+    tbl <- mtx %>% group_by(gear) %>% filter((!!rlang::sym(x)) > 15, cyl <= 6)
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
 })
 
@@ -26,7 +25,7 @@ test_that("select works", {
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
     tbl <- mtx %>% group_by(gear) %>% select(!!xs, cyl, drat)
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
-    tbl <- mtx %>% group_by(gear) %>% select(!!sym(x), cyl, drat)
+    tbl <- mtx %>% group_by(gear) %>% select(!!rlang::sym(x), cyl, drat)
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
 })
 
@@ -35,7 +34,7 @@ test_that("subset works", {
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
     tbl <- mtx %>% group_by(gear) %>% subset((!!xs) > 15, c(!!xs, cyl, drat))
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
-    tbl <- mtx %>% group_by(gear) %>% subset((!!sym(x)) > 15, c(!!sym(x), cyl, drat))
+    tbl <- mtx %>% group_by(gear) %>% subset((!!rlang::sym(x)) > 15, c(!!rlang::sym(x), cyl, drat))
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
 })
 

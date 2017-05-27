@@ -6,9 +6,8 @@ verifyData <- function(xdf, expectedClass)
     is.data.frame(head(xdf)) && class(xdf) == expectedClass  # test for exact class
 }
 
-library(rlang)
 x <- "mpg"
-xs <- sym(x)
+xs <- rlang::sym(x)
 
 xnew <- "mpg2"
 
@@ -17,7 +16,7 @@ test_that("filter works", {
     expect_true(verifyData(tbl, "tbl_xdf"))
     tbl <- mtx %>% filter((!!xs) > 15, cyl <= 6)
     expect_true(verifyData(tbl, "tbl_xdf"))
-    tbl <- mtx %>% filter((!!sym(x)) > 15, cyl <= 6)
+    tbl <- mtx %>% filter((!!rlang::sym(x)) > 15, cyl <= 6)
     expect_true(verifyData(tbl, "tbl_xdf"))
 })
 
@@ -26,7 +25,7 @@ test_that("select works", {
     expect_true(verifyData(tbl, "tbl_xdf"))
     tbl <- mtx %>% select(!!xs, cyl, drat)
     expect_true(verifyData(tbl, "tbl_xdf"))
-    tbl <- mtx %>% select(!!sym(x), cyl, drat)
+    tbl <- mtx %>% select(!!rlang::sym(x), cyl, drat)
     expect_true(verifyData(tbl, "tbl_xdf"))
 })
 
@@ -35,7 +34,7 @@ test_that("subset works", {
     expect_true(verifyData(tbl, "tbl_xdf"))
     tbl <- mtx %>% subset((!!xs) > 15, c(!!xs, cyl, drat))
     expect_true(verifyData(tbl, "tbl_xdf"))
-    tbl <- mtx %>% subset((!!sym(x)) > 15, c(!!sym(x), cyl, drat))
+    tbl <- mtx %>% subset((!!rlang::sym(x)) > 15, c(!!rlang::sym(x), cyl, drat))
     expect_true(verifyData(tbl, "tbl_xdf"))
 })
 

@@ -73,11 +73,18 @@ buildSmryFormulaRhs <- function(data, grps, call)
         if(any(gvarTypes %in% numeric_logical))
             verifyNumericsAreIntegers(data, grps)
         nRhs <- length(grps)
-        call$transformFunc <- quote(function(varlst) {
-            varlst[[".n."]] <- rep(1, .rxNumRows)
-            varlst
-        })
-        call$transformVars <- quote(grps[1])
+        #call$transformFunc <- quote(function(varlst) {
+            #varlst[[".n."]] <- rep(1, .rxNumRows)
+            #varlst
+        #})
+        #call$transformVars <- quote(grps[1])
+        tmpVar <- grps[[1]]
+
+        if(!is.null(call$transforms))
+            call$transforms$.n. <- quote(rep(1, .rxNumRows))
+        else call$transforms <- quote(list(.n.=rep(1, .rxNumRows)))
+        print(call)
+
         rhs_vars <- ifelse(gvarTypes %in% numeric_logical,
             paste0("F(", grps, ")"), grps)
         fmRhs <- paste(rhs_vars, collapse=":")

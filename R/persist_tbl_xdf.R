@@ -39,7 +39,7 @@ persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=FALSE, ...)
     else  # do it the long way otherwise
     {
         if(move)
-            on.exit(deleteTbl(.data))
+            on.exit(deleteIfTbl(.data))
         rxDataStep(.data, outFile, overwrite=overwrite, ...)
     }
 }

@@ -26,8 +26,8 @@
 #' @export
 mutate.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
-    dots <- quos(..., .named=TRUE)
-    transforms <- lapply(dots, get_expr)
+    dots <- rlang::quos(..., .named=TRUE)
+    transforms <- lapply(dots, rlang::get_expr)
     # turn a list of quoted expressions into a quoted list of expressions
     transforms <- if(length(transforms) > 0)
         as.call(c(as.name("list"), transforms))
@@ -47,8 +47,8 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
 {
     stopIfHdfs(.data, "mutate on grouped data not supported on HDFS")
 
-    dots <- quos(..., .named=TRUE)
-    transforms <- lapply(dots, get_expr)
+    dots <- rlang::quos(..., .named=TRUE)
+    transforms <- lapply(dots, rlang::get_expr)
     # turn a list of quoted expressions into a quoted list of expressions
     transforms <- if(length(transforms) > 0)
         as.call(c(as.name("list"), transforms))

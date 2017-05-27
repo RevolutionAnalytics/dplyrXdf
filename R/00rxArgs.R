@@ -68,7 +68,7 @@ NULL
 doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
 {
     arglst <- rlang::modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)
-    if(is_lang(.rxArgs))
+    if(rlang::is_lang(.rxArgs))
         arglst <- rlang::modify(arglst, rlang::splice(rlang::lang_args(.rxArgs)))
 
     if(!missing(.outFile))

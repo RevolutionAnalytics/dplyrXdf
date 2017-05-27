@@ -29,7 +29,7 @@
 #' @export
 summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method=NULL)
 {
-    dots <- quos(..., .named=TRUE)
+    dots <- rlang::quos(..., .named=TRUE)
     if(length(dots) > 1)
         env <- rlang::get_env(dots[[1]])
     else env <- rlang::get_env(rlang::caller_env())
@@ -172,9 +172,9 @@ makeSmryOutput <- function(smry, .data, .outFile)
     if(is.data.frame(smry))
     {
         if(missing(.outFile))
-            rxDataStep(smry, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead)
+            rxDataStep(smry, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         else if(is.character(.outFile))
-            rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead)
+            rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         else smry
     }
     else  # xdf output from summary worker

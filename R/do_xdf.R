@@ -18,21 +18,11 @@
 #' @aliases do do_
 #' @rdname do
 #' @export
-do_.RxFileData <- function(.data, ..., .dots)
+do.RxFileData <- function(.data, ..., .rxArgs)
 {
-    dots <- lazyeval::all_dots(.dots, ...)
+    args <- lapply(rlang::quos(...), rlang::get_expr)
 
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots, fromDo=TRUE)
-    exprs <- dots$exprs
-    .outFile <- dots$output
-    .rxArgs <- dots$rxArgs
-
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
-
-    if(!is.null(.rxArgs))
+    if(!missing(.rxArgs))
     {
         warning("do() doesn't support .rxArgs argument", call.=FALSE)
         .rxArgs <- NULL
@@ -40,30 +30,24 @@ do_.RxFileData <- function(.data, ..., .dots)
     if(!is.null(.outFile) && !is.na(.outFile))
         warning("do() only outputs data frames", call.=FALSE)
 
-    named <- check_named_args(dots)
-    do_base(.data, exprs, grps=NULL, dots$env)
+    named <- checkNamedArgs(args)
+
+    on.exit(deleteIfTbl(.data))
+    do(as.data.frame(.data), ...)
 }
 
 
 #' @rdname do
 #' @export
-doXdf <- function (.data, ...) 
+doXdf <- function(.data, ...)
 {
-    doXdf_(.data, .dots = lazyeval::lazy_dots(...))
+    UseMethod("doXdf")
 }
 
 
 #' @rdname do
 #' @export
-doXdf_ <- function(.data, ..., .dots)
-{
-    UseMethod("doXdf_")
-}
-
-
-#' @rdname do
-#' @export
-doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
+doXdf.RxFileData <- function(.data, ..., .rxArgs)
 {
     dots <- lazyeval::all_dots(.dots, ...)
 
@@ -80,7 +64,7 @@ doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
     if(!is.null(.outFile) && !is.na(.outFile))
         warning("doXdf() only outputs data frames", call.=FALSE)
 
-    named <- check_named_args(dots)
+    named <- checkNamedArgs(dots)
     doXdf_base(.data, exprs, grps=NULL, .rxArgs, dots$env, named)
 }
 
@@ -89,7 +73,7 @@ doXdf_.RxFileData <- function(.data, ..., .rxArgs, .dots)
 #' To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} split the data into one file per group, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
 #' @rdname do
 #' @export
-do_.grouped_tbl_xdf <- function(.data, ..., .outFile, .dots)
+do.grouped_tbl_xdf <- function(.data, ..., .outFile)
 {
     stopIfHdfs(.data, "do on grouped data not supported on HDFS")
 
@@ -109,7 +93,7 @@ do_.grouped_tbl_xdf <- function(.data, ..., .outFile, .dots)
     if(!is.null(.outFile) && !is.na(.outFile))
         warning("do() only outputs data frames", call.=FALSE)
 
-    named <- check_named_args(exprs)
+    named <- checkNamedArgs(exprs)
     grps <- group_vars(.data)
 
     on.exit(deleteTbl(xdflst), add=TRUE)
@@ -128,7 +112,7 @@ do_.grouped_tbl_xdf <- function(.data, ..., .outFile, .dots)
 
 #' @rdname do
 #' @export
-doXdf_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots)
+doXdf.grouped_tbl_xdf <- function(.data, ..., .rxArgs)
 {
     stopIfHdfs(.data, "doXdf on grouped data not supported on HDFS")
 
@@ -143,7 +127,7 @@ doXdf_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots)
     if(!is.null(.outFile) && !is.na(.outFile))
         warning("doXdf() only outputs data frames", call.=FALSE)
 
-    named <- check_named_args(exprs)
+    named <- checkNamedArgs(exprs)
     grps <- group_vars(.data)
 
     on.exit(deleteTbl(xdflst), add=TRUE)
@@ -207,7 +191,7 @@ doXdf_base <- function(data, exprs, grps=NULL, rxArgs, env, named)
 
 
 # copied from dplyr:::named_args: check that all args are named, or there is exactly 1 unnamed, 0 named
-check_named_args <- function (args) 
+checkNamedArgs <- function (args) 
 {
     names2 <- if(is.null(names(args))) rep("", length(args)) else names(args)
     named <- sum(names2 != "")
@@ -217,10 +201,6 @@ check_named_args <- function (args)
     }
     if (named == 0 && length(args) > 1) {
         stop("Can only supply single unnamed argument to do()", 
-            call. = FALSE)
-    }
-    if (named == 1 && names(args) == ".f") {
-        stop("do syntax changed in dplyr 0.2. Please see documentation for details", 
             call. = FALSE)
     }
     named != 0
