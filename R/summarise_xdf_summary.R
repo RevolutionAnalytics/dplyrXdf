@@ -29,8 +29,7 @@ smryRxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs)
     on.exit(deleteIfTbl(data))
 
     cl <- buildSmryFormulaRhs(data, grps,
-        quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE)))
-    cl$call[names(rxArgs)] <- rxArgs
+        quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE)), rxArgs)
 
     findTable <- function(s)
     {
@@ -46,7 +45,6 @@ smryRxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs)
         table
     }
 
-    levs <- cl$levs
     fm <- reformulate(paste(invars, cl$fmRhs, sep=":"))
     uniqueStat <- unique(rxSummaryStat(stats))
     tables <- eval(cl$call)$categorical

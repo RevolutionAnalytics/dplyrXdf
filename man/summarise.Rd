@@ -6,7 +6,7 @@
 \alias{summarize}
 \title{Summarise multiple values to a single value}
 \usage{
-\method{summarise}{RxFileData}(.data, ..., .outFile, .rxArgs, .method)
+\method{summarise}{RxFileData}(.data, ..., .outFile, .rxArgs, .method = NULL)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}

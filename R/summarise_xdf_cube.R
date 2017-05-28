@@ -19,16 +19,14 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     stopifnot(all(nchar(invars) > 0))
 
     # convert non-factor character cols into factors
-    is_char <- varTypes(data, grps) == "character"
-    if(any(is_char))
-        data <- factorise_(data, .dots=grps[is_char])
+    isChar <- varTypes(data, grps) == "character"
+    if(any(isChar))
+        data <- factorise_(data, .dots=grps[isChar])
 
     on.exit(deleteIfTbl(data))
 
     cl <- buildSmryFormulaRhs(data, grps,
-        quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE)))
-    levs <- cl$levs
-    cl$call[names(rxArgs)] <- rxArgs
+        quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE)), rxArgs)
 
     # single call to rxCube if only 1 summary statistic type, otherwise multiple calls
     if(length(unique(stats)) == 1)
@@ -61,52 +59,32 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
 }
 
 
-buildSmryFormulaRhs <- function(data, grps, call)
+buildSmryFormulaRhs <- function(data, grps, call, rxArgs)
 {
     numeric_logical <- c("numeric", "integer", "logical", "Date", "POSIXct")
     gvarTypes <- varTypes(data, grps)
 
-    # use fast rxCube/rxSummary if possible, otherwise construct grouping factor
-    if(all(gvarTypes %in% c("factor", numeric_logical)))
-    {
-        # using F() assumes that numeric columns are integers; do a check on this
-        if(any(gvarTypes %in% numeric_logical))
-            verifyNumericsAreIntegers(data, grps)
-        nRhs <- length(grps)
-        #call$transformFunc <- quote(function(varlst) {
-            #varlst[[".n."]] <- rep(1, .rxNumRows)
-            #varlst
-        #})
-        #call$transformVars <- quote(grps[1])
-        tmpVar <- grps[[1]]
+    if(!is.null(rxArgs))
+        call <- rlang::lang_modify(call, rxArgs)
 
-        if(!is.null(call$transforms))
-            call$transforms$.n. <- quote(rep(1, .rxNumRows))
-        else call$transforms <- quote(list(.n.=rep(1, .rxNumRows)))
-        print(call)
+    # smry_rxCube and smry_rxSummary methods should have converted all char columns to factor
+    if(!all(gvarTypes %in% c("factor", numeric_logical)))
+        stop("unexpected non-factor, non-numeric grouping variable in summarise", call.=FALSE)
 
-        rhs_vars <- ifelse(gvarTypes %in% numeric_logical,
-            paste0("F(", grps, ")"), grps)
-        fmRhs <- paste(rhs_vars, collapse=":")
-        levs <- NULL
-    }
-    else
-    {
-        # smry_rxCube and smry_rxSummary methods should have converted all char columns to factor
-        # this code block should never be needed, but leave it in as a safety check
-        warning("unexpected non-factor, non-numeric grouping variable in summarise", call.=FALSE)
-        levs <- getGroupLevels(data)
-        # put grouping variable on to dataset in call to rxCube; faster than separate rxDataStep
-        call$transformFunc <- quote(function(varlst) {
-            varlst[[".group."]] <- .factor(varlst, .levs)
-            varlst[[".n."]] <- rep(1, length(varlst[[1]]))
-            varlst
-        })
-        call$transformObjects <- quote(list(.levs=levs, .factor=makeGroupVar))
-        call$transformVars <- quote(grps)
-        nRhs <- 1
-        fmRhs <- ".group."
-    }
+    # using F() assumes that numeric columns are integers; do a check on this
+    if(any(gvarTypes %in% numeric_logical))
+        verifyNumericsAreIntegers(data, grps)
+    nRhs <- length(grps)
+
+    if(!is.null(call$transforms))
+        call$transforms$.n. <- 1
+    else call$transforms <- quote(list(.n.=1))
+
+    rhsVars <- ifelse(gvarTypes %in% numeric_logical,
+        paste0("F(", grps, ")"), grps)
+    fmRhs <- paste(rhsVars, collapse=":")
+    levs <- NULL
+
     list(call=call, nRhs=nRhs, fmRhs=fmRhs, levs=levs)
 }
 
