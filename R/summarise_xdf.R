@@ -34,9 +34,6 @@ summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method=NULL)
         env <- rlang::get_env(dots[[1]])
     else env <- rlang::get_env(rlang::caller_env())
 
-    #    arglst <- list(.data)
-    #    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
-
     exprs <- lapply(dots, rlang::get_expr)
     stats <- sapply(exprs, function(term) as.character(term[[1]]))
     needs_mutate <- vapply(exprs, function(e)
@@ -44,15 +41,11 @@ summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method=NULL)
         (length(e) < 2 || !is.name(e[[2]])) && !identical(e, quote(n()))
     }, logical(1))
     if(any(needs_mutate))
-        stop("summarise with xdf tbls only works with named variables, not expressions") # TODO: do actual mutate
+        stop("summarise with xdf tbls only works with named variables, not expressions")
 
-    .rxArgs <- if(!missing(.rxArgs))  # no easy way of handling missing
-    {
-        .rxArgs <- rlang::enquo(.rxArgs)
-        if(rlang::is_lang(.rxArgs))
-            rlang::splice(rlang::lang_args(.rxArgs))
-        else NULL
-    }
+    .rxArgs <- rlang::enquo(.rxArgs)
+    .rxArgs <- if(!rlang::quo_is_missing(.rxArgs) && rlang::is_lang(.rxArgs))
+        rlang::lang_args(.rxArgs)
     else NULL
 
     grps <- group_vars(.data)
@@ -67,15 +60,14 @@ summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method=NULL)
 
     # only summarise methods 1-2 work with HDFS
     if(.method > 2)
-        stopIfHdfs(sprintf("chosen summarise method not (%d) supported on HDFS",
-                           .method))
+        stopIfHdfs(sprintf("chosen summarise method not (%d) supported on HDFS", .method))
 
     smryFunc <- switch(.method,
         smryRxCube, smryRxSummary, smryRxSummary2, smryRxSplitDplyr, smryRxSplit)
     smry <- smryFunc(.data, grps, stats, exprs, .rxArgs)
 
-    on.exit(deleteIfTbl(.data))
     output <- makeSmryOutput(smry, .data, .outFile)
+    on.exit(deleteIfTbl(.data))
 
     # strip off one level of grouping
     simpleRegroup(output, grps[-length(grps)])

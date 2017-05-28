@@ -79,14 +79,14 @@ test_that("output to xdf works", {
 
 test_that(".rxArgs works", {
     tbl <- mtx %>% summarise(n=n(), mpg2=mean(mpg2), .rxArgs=list(transformFunc=function(varlst) {
-        varlst$mpg2=varlst$mpg * 2
+        varlst$mpg2 <- varlst$mpg * 2
         varlst
-    }))
+    }, transformVars="mpg"))
     expect_true(verifyData(tbl, "tbl_xdf"))
     tbl <- mtx %>% group_by(cyl, gear) %>% summarise(n=n(), mpg2=mean(mpg2), .rxArgs=list(transformFunc=function(varlst) {
-        varlst$mpg2=varlst$mpg * 2
+        varlst$mpg2 <- varlst$mpg * 2
         varlst
-    }))
+    }, transformVars="mpg"))
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
 })
 

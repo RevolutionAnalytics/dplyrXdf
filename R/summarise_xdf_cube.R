@@ -23,8 +23,6 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(any(isChar))
         data <- factorise_(data, .dots=grps[isChar])
 
-    on.exit(deleteIfTbl(data))
-
     cl <- buildSmryFormulaRhs(data, grps,
         quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE)), rxArgs)
 
@@ -55,6 +53,7 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     # reassign classes to outputs (for Date and POSIXct objects; work around glitch in rxCube, rxSummary)
     df <- setSmryClasses(df[outvars], data, invars, outvars)
 
+    on.exit(deleteIfTbl(data))
     data.frame(gvars, df, stringsAsFactors=FALSE)
 }
 
@@ -65,7 +64,7 @@ buildSmryFormulaRhs <- function(data, grps, call, rxArgs)
     gvarTypes <- varTypes(data, grps)
 
     if(!is.null(rxArgs))
-        call <- rlang::lang_modify(call, rxArgs)
+        call <- rlang::lang_modify(call, rlang::splice(rxArgs))
 
     # smry_rxCube and smry_rxSummary methods should have converted all char columns to factor
     if(!all(gvarTypes %in% c("factor", numeric_logical)))

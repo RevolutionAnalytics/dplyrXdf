@@ -26,8 +26,6 @@ smryRxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(any(isChar))
         data <- factorise_(data, .dots=grps[isChar])
 
-    on.exit(deleteIfTbl(data))
-
     cl <- buildSmryFormulaRhs(data, grps,
         quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE)), rxArgs)
 
@@ -63,6 +61,7 @@ smryRxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs)
     # reassign classes to outputs (for Date and POSIXct objects; work around glitch in rxCube, rxSummary)
     df <- setSmryClasses(df[outvars], data, invars, outvars)
 
+    on.exit(deleteIfTbl(data))
     data.frame(gvars, df, stringsAsFactors=FALSE)
 }
 

@@ -18,7 +18,7 @@
 #' @aliases do do_
 #' @rdname do
 #' @export
-do.RxFileData <- function(.data, ..., .rxArgs)
+do.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
     args <- lapply(rlang::quos(...), rlang::get_expr)
 
@@ -27,7 +27,7 @@ do.RxFileData <- function(.data, ..., .rxArgs)
         warning("do() doesn't support .rxArgs argument", call.=FALSE)
         .rxArgs <- NULL
     }
-    if(!is.null(.outFile) && !is.na(.outFile))
+    if(!missing(.outFile))
         warning("do() only outputs data frames", call.=FALSE)
 
     named <- checkNamedArgs(args)
