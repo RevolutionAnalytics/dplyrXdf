@@ -1,7 +1,5 @@
 splitGroups <- function(data, outXdf=data)
 {
-    if(is.character(outXdf))
-        stop("must supply output data source to splitGroups")
     grps <- group_vars(data)
 
     on.exit(deleteIfTbl(data))

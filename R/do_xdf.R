@@ -18,54 +18,25 @@
 #' @aliases do do_
 #' @rdname do
 #' @export
-do.RxFileData <- function(.data, ..., .outFile, .rxArgs)
+do.RxFileData <- function(.data, ...)
 {
-    args <- lapply(rlang::quos(...), rlang::get_expr)
+    args <- rlang::quos(...)
 
-    if(!missing(.rxArgs))
+    if(!missing(args$.rxArgs))
     {
-        warning("do() doesn't support .rxArgs argument", call.=FALSE)
-        .rxArgs <- NULL
+        warning("do() doesn't use .rxArgs argument", call.=FALSE)
+        args$.rxArgs <- NULL
     }
-    if(!missing(.outFile))
+    if(!missing(args$.outFile))
+    {
         warning("do() only outputs data frames", call.=FALSE)
+        args$.outFile <- NULL
+    }
 
     named <- checkNamedArgs(args)
 
     on.exit(deleteIfTbl(.data))
     do(as.data.frame(.data), ...)
-}
-
-
-#' @rdname do
-#' @export
-doXdf <- function(.data, ...)
-{
-    UseMethod("doXdf")
-}
-
-
-#' @rdname do
-#' @export
-doXdf.RxFileData <- function(.data, ..., .rxArgs)
-{
-    dots <- lazyeval::all_dots(.dots, ...)
-
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots, fromDo=TRUE)
-    exprs <- dots$exprs
-    .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
-
-    if(!is.null(.outFile) && !is.na(.outFile))
-        warning("doXdf() only outputs data frames", call.=FALSE)
-
-    named <- checkNamedArgs(dots)
-    doXdf_base(.data, exprs, grps=NULL, .rxArgs, dots$env, named)
 }
 
 
@@ -77,28 +48,25 @@ do.grouped_tbl_xdf <- function(.data, ..., .outFile)
 {
     stopIfHdfs(.data, "do on grouped data not supported on HDFS")
 
-    dots <- lazyeval::all_dots(.dots, ...)
+    args <- rlang::quos(...)
 
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots, fromDo=TRUE)
-    exprs <- dots$exprs
-    .outFile <- dots$output
-    .rxArgs <- dots$rxArgs
-
-    if(!is.null(.rxArgs))
+    if(!missing(args$.rxArgs))
     {
-        warning("do() doesn't support .rxArgs argument", call.=FALSE)
-        .rxArgs <- NULL
+        warning("do() doesn't use .rxArgs argument", call.=FALSE)
+        args$.rxArgs <- NULL
     }
-    if(!is.null(.outFile) && !is.na(.outFile))
+    if(!missing(args$.outFile))
+    {
         warning("do() only outputs data frames", call.=FALSE)
+        args$.outFile <- NULL
+    }
 
-    named <- checkNamedArgs(exprs)
+    named <- checkNamedArgs(args)
     grps <- group_vars(.data)
 
     on.exit(deleteTbl(xdflst), add=TRUE)
-    xdflst <- splitGroups(.data, .data)
-    dolst <- rxExec(do_base, data=rxElemArg(xdflst), exprs, grps, dots$env, packagesToLoad="dplyrXdf")
+    xdflst <- splitGroups(.data)
+    dolst <- rxExec(doBase, data=rxElemArg(xdflst), exprs, grps, packagesToLoad="dplyrXdf")
     df <- bind_rows(dolst)
 
     # mimic grouping behaviour of do for data frames
@@ -106,13 +74,67 @@ do.grouped_tbl_xdf <- function(.data, ..., .outFile)
         df
     else if(named)
         rowwise(df)
-    else group_by_(df, .dots=grps)
+    else group_by_at(df, grps)
+}
+
+
+doBase <- function(data, exprs, grps=NULL)
+{
+    data <- as.data.frame(data)
+    out <- do(data, !!!exprs)
+    if(length(grps) > 0)
+    {
+        grps <- data[rep(1, nrow(out)), grps, drop=FALSE]
+        cbind(grps, out)
+    }
+    else out
 }
 
 
 #' @rdname do
 #' @export
-doXdf.grouped_tbl_xdf <- function(.data, ..., .rxArgs)
+do_xdf <- function(.data, ...)
+{
+    UseMethod("do_xdf")
+}
+
+
+#' @rdname do
+#' @export
+doXdf <- function(.data, ...)
+{
+    warning("doXdf is deprecated; use do_xdf instead", call.=FALSE)
+    UseMethod("do_xdf")
+}
+
+
+#' @rdname do
+#' @export
+do_xdf.RxFileData <- function(.data, ...)
+{
+    args <- lapply(rlang::quos(...), rlang::get_expr)
+
+    if(!missing(args$.rxArgs))
+    {
+        warning("do_xdf() doesn't use .rxArgs argument", call.=FALSE)
+        args$.rxArgs <- NULL
+    }
+    if(!missing(args$.outFile))
+    {
+        warning("do_xdf() only outputs data frames", call.=FALSE)
+        args$.outFile <- NULL
+    }
+
+    named <- checkNamedArgs(args)
+
+    on.exit(deleteIfTbl(.data))
+    doXdfBase(.data, exprs, grps=NULL, .rxArgs, dots$env, named)
+}
+
+
+#' @rdname do
+#' @export
+do_xdf.grouped_tbl_xdf <- function(.data, ..., .rxArgs)
 {
     stopIfHdfs(.data, "doXdf on grouped data not supported on HDFS")
 
@@ -132,7 +154,7 @@ doXdf.grouped_tbl_xdf <- function(.data, ..., .rxArgs)
 
     on.exit(deleteTbl(xdflst), add=TRUE)
     xdflst <- splitGroups(.data)
-    dolst <- rxExec(doXdf_base, data=rxElemArg(xdflst), exprs, grps, .rxArgs, dots$env, named,
+    dolst <- rxExec(doXdfBase, data=rxElemArg(xdflst), exprs, grps, .rxArgs, dots$env, named,
                     packagesToLoad="dplyrXdf")
     df <- bind_rows(dolst)
 
@@ -145,24 +167,8 @@ doXdf.grouped_tbl_xdf <- function(.data, ..., .rxArgs)
 }
 
 
-do_base <- function(data, exprs, grps=NULL, env)
-{
-    dots <- sapply(exprs, function(expr) {
-        lazyeval::as.lazy(expr, env)
-    }, simplify=FALSE)
-    data <- as.data.frame(data)
-    out <- do_(data, .dots=dots)
-    if(length(grps) > 0)
-    {
-        grps <- data[rep(1, nrow(out)), grps, drop=FALSE]
-        cbind(grps, out)
-    }
-    else out
-}
-
-
 # copy functionality of dplyr:::do_.data.frame, except dots must be named
-doXdf_base <- function(data, exprs, grps=NULL, rxArgs, env, named)
+doXdfBase <- function(data, exprs, grps=NULL, rxArgs, env, named)
 {
     datlst <- list(.=data)
     if(named)
@@ -170,7 +176,7 @@ doXdf_base <- function(data, exprs, grps=NULL, rxArgs, env, named)
         out <- lapply(exprs, function(arg) {
             arg[names(rxArgs)] <- rxArgs
             arg <- lazyeval::as.lazy(arg, env)
-            list(lazyeval::lazy_eval(arg, datlst))
+            list(rlang::eval_tidy(arg, datlst, caller_env()))
         })
         attr(out, "row.names") <- .set_row_names(1L)
         names(out) <- names(exprs)
