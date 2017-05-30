@@ -5,20 +5,23 @@
 \alias{do.RxFileData}
 \alias{do.grouped_tbl_xdf}
 \alias{doXdf}
-\alias{doXdf.RxFileData}
-\alias{doXdf.grouped_tbl_xdf}
 \alias{do_}
+\alias{do_xdf}
+\alias{do_xdf.RxFileData}
+\alias{do_xdf.grouped_tbl_xdf}
 \title{Do arbitrary operations on a tbl}
 \usage{
-\method{do}{RxFileData}(.data, ..., .rxArgs)
-
-doXdf(.data, ...)
-
-\method{doXdf}{RxFileData}(.data, ..., .rxArgs)
+\method{do}{RxFileData}(.data, ...)
 
 \method{do}{grouped_tbl_xdf}(.data, ..., .outFile)
 
-\method{doXdf}{grouped_tbl_xdf}(.data, ..., .rxArgs)
+do_xdf(.data, ...)
+
+doXdf(.data, ...)
+
+\method{do_xdf}{RxFileData}(.data, ...)
+
+\method{do_xdf}{grouped_tbl_xdf}(.data, ..., .rxArgs)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}
