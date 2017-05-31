@@ -5,7 +5,6 @@
 #' @param .data A tbl for an Xdf data source; or a raw Xdf data source.
 #' @param ... Expressions to apply.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
-#' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
 #' @details
 #' The difference between the \code{do} and \code{doXdf} verbs is that the former converts the data into a data frame before running the expressions on it; while the latter passes the data as Xdf files. \code{do} is thus more flexible in the expressions it can run (basically anything that works with data frames), whereas \code{doXdf} is better able to handle large datasets. The final output from \code{doXdf} must still be able to fit in memory (see below).
@@ -43,7 +42,7 @@ do.RxFileData <- function(.data, ...)
 #' To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} split the data into one file per group, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
 #' @rdname do
 #' @export
-do.grouped_tbl_xdf <- function(.data, ..., .outFile)
+do.grouped_tbl_xdf <- function(.data, ...)
 {
     stopIfHdfs(.data, "do on grouped data not supported on HDFS")
 
@@ -169,19 +168,14 @@ do_xdf.grouped_tbl_xdf <- function(.data, ...)
 doXdfBase <- function(.data, exprs, grps=NULL, named)
 {
     datlst <- env(.=.data, .data=.data)
-    #overscope <- rlang::child_env(NULL, !(!(!list(.=.data, .data=.data))))
     if(named)
     {
         out <- lapply(exprs, function(arg) {
-            #arg[names(rxArgs)] <- rxArgs
-            #arg <- lazyeval::as.lazy(arg, env)
             list(rlang::eval_tidy(arg, datlst))
         })
-        names(out) <- names(exprs)
     }
-    else ## unimplemented
+    else
     {
-        #expr <- lazyeval::as.lazy(exprs[[1]], env)
         out <- list(rlang::eval_tidy(exprs[[1]], datlst))
     }
     out <- as_tibble(out)
