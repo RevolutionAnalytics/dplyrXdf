@@ -22,24 +22,13 @@ arrange.RxXdfData <- function(.data, ..., .by_group=FALSE, .outFile, .rxArgs)
 
     dots <- rlang::quos(...)
 
-    transforms <- lapply(dots, get_expr)
-    # turn a list of quoted expressions into a quoted list of expressions
-    transforms <- if(length(transforms) > 0)
-        as.call(c(as.name("list"), transforms))
-    else NULL
-
-    if(any(sapply(transforms, is.null)))
-        stop("do not set variables to NULL in transmute; to delete variables, leave them out of the function call")
-
-    grps <- group_vars(.data)
-    if(.by_group)
-    {
-        dots <- c(grps, dots)
-    }
-
     exprs <- lapply(dots, function(e) rlang::get_expr(e))
     desc <- sapply(exprs, function(e) !is.name(e) && identical(e[[1]], as.name("desc")))
     vars <- sapply(exprs, function(e) all.vars(e)[1])
+
+    grps <- group_vars(.data)
+    if(.by_group && length(grps) > 0)
+        vars <- c(grps, vars)
 
     arglst <- list(.data, sortByVars=vars, decreasing=desc)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
