@@ -13,7 +13,7 @@
 \usage{
 \method{do}{RxFileData}(.data, ...)
 
-\method{do}{grouped_tbl_xdf}(.data, ..., .outFile)
+\method{do}{grouped_tbl_xdf}(.data, ...)
 
 do_xdf(.data, ...)
 
@@ -21,7 +21,7 @@ doXdf(.data, ...)
 
 \method{do_xdf}{RxFileData}(.data, ...)
 
-\method{do_xdf}{grouped_tbl_xdf}(.data, ..., .rxArgs)
+\method{do_xdf}{grouped_tbl_xdf}(.data, ...)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}
@@ -29,8 +29,6 @@ doXdf(.data, ...)
 \item{...}{Expressions to apply.}
 
 \item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
-
-\item{.dots}{Used to work around non-standard evaluation. See the dplyr vignettes for details.}
 }
 \value{
 The \code{do} and \code{doXdf} verbs always return a data frame, unlike the other verbs for Xdf objects. This is because they are meant to execute code that can return arbitrarily complex objects, and Xdf files can only store atomic data.

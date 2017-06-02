@@ -4,7 +4,6 @@
 #' @param ... Key-value pairs of unquoted variables to rename, in new = old format.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
-#' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
 #' @details
 #' Renaming is generally a very fast operation, as only the metadata in the Xdf file header is changed. The exception is when the dataset needs to be copied, either to preserve dplyrXdf's semantics of never modifying the source data for a pipeline, or if the the desired output format is a data frame or persistent Xdf file. If a copy is made, \code{rxDataStep} is used and will accept arguments supplied in \code{.rxArgs}.
@@ -15,22 +14,14 @@
 #' @seealso
 #' \code{\link[dplyr]{rename}} in package dplyr
 #' @rdname rename
-#' @aliases rename rename_
+#' @aliases rename
 #' @export
-rename_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
+rename.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
-    dots <- lazyeval::all_dots(.dots, ...)
-
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+    dots <- rlang::quos(..., .named=TRUE)
 
     grps <- group_vars(.data)
     vars <- rename_vars_(names(.data), exprs)
-
-    .outFile <- createOutput(.data, .outFile)
 
     ## permutations of input -> output
     # filesrc -> df          rxDataStep
@@ -41,16 +32,15 @@ rename_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
     # xdf -> tbl_xdf         rxDataStep
     # tbl_xdf -> df          rxDataStep
     # tbl_xdf -> xdf         rxDataStep
-    # tbl_xdf -> tbl_xdf     in-place
-    if(!(hasTblFile(.data) && inherits(.outFile, "tbl_xdf")))
+    # tbl_xdf -> tbl_xdf     in-place if rxArgs not supplied, rxDataStep otherwise
+    if(!(hasTblFile(.data) && inherits(.outFile, "tbl_xdf")) || !missing(.rxArgs))
     {
-        oldData <- .data
-        if(hasTblFile(.data))
-            on.exit(deleteTbl(oldData))
+        arglst <- list(.data)
+        arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-        cl <- quote(rxDataStep(.data, .outFile, overwrite=TRUE))
-        cl[names(.rxArgs)] <- .rxArgs
-        .data <- eval(cl)
+        oldData <- .data
+        .data <- rlang::invoke("rxDataStep", arglst, .env=parent.frame())
+        on.exit(deleteIfTbl(oldData))
     }
 
     names(.data) <- names(vars)
@@ -60,7 +50,7 @@ rename_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
         renamed <- vars[vars != names(vars)]
         renamed <- grps %in% names(renamed)
         grps[renamed] <- vars[renamed]
-        group_by_(.data, .dots=grps)
+        group_by_at(.data, grps)
     }
     else .data
 }

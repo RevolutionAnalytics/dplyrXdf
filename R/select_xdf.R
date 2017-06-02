@@ -27,7 +27,7 @@ select.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep
+    # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep (?)
     output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame())
     simpleRegroup(output, grps)
 }

@@ -4,39 +4,19 @@
 #' @param ... Variables to use for determining uniqueness. If left blank, all variables in \code{.data} are used to determine uniqueness.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
-#' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
-#' @param .keep_all If \code{TRUE}, keep all variables in the dataset; otherwise, only keep variables used in defining uniqueness. Only used if dplyr version 0.5 or greater is installed.
+#' @param .keep_all If \code{TRUE}, keep all variables in the dataset; otherwise, only keep variables used in defining uniqueness.
 #'
 #' @seealso
 #' \code{\link[dplyr]{distinct}} in package dplyr
 #' @aliases distinct distinct_
 #' @rdname distinct
 #' @export
-distinct_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots, .keep_all=FALSE)
+distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile, .rxArgs)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
+    dots <- rlang::quos(...)
 
-    dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
-
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-
-    # hack to accommodate dplyr 0.5 keep_all argument when dplyr 0.4.x is installed
-    if(!is.null(exprs$.keep_all))
-    {
-        .keep_all <- exprs$.keep_all
-        exprs$.keep_all <- NULL
-    }
-
-    needs_mutate <- vapply(exprs, function(e) !is.name(e), logical(1))
-    if(any(needs_mutate))
-        .data <- mutate_(.data, .dots=exprs[needs_mutate])
-
-    .outFile <- createOutput(.data, .outFile)
-    .data <- distinct_base(.data, .outFile, names(exprs), .rxArgs, keep_all=.keep_all)
+    .data <- distinctBase(.data, dots, .keep_all, .outFile, rlang::enexpr(.rxArgs))
     simpleRegroup(.data)
 }
 
@@ -49,67 +29,42 @@ distinct_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots, .keep_all
 #'
 #' @rdname distinct
 #' @export
-distinct_.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs, .dots, .keep_all=FALSE)
+distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile, .rxArgs)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
 
-    dots <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+    dots <- rlang::quos(...)
 
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
     grps <- group_vars(.data)
-
-    # hack to accommodate dplyr 0.5 keep_all argument when dplyr 0.4.x is installed
-    if(!is.null(exprs$.keep_all))
-    {
-        .keep_all <- exprs$.keep_all
-        exprs$.keep_all <- NULL
-    }
-
-    needs_mutate <- vapply(exprs, function(e) !is.name(e), logical(1))
-    if(any(needs_mutate))
-        .data <- mutate_(.data, .dots=exprs[needs_mutate])
 
     xdflst <- splitGroups(.data)
     outlst <- createSplitOutput(xdflst, .outFile)
-    outlst <- rxExec(distinct_base, data=rxElemArg(xdflst), output=rxElemArg(outlst), names(exprs), .rxArgs, .keep_all,
-        execObjects=c("deleteTbl", ".dxOptions"), packagesToLoad="dplyrXdf")
+    outlst <- rxExec(distinctBase, data=rxElemArg(xdflst), dots, .keep_all, rxElemArg(outlst), rlang::enexpr(.rxArgs),
+        execObjects="deleteIfTbl", packagesToLoad="dplyrXdf")
     combine_groups(outlst, createOutput(.data, .outFile), grps)
 }
 
 
-distinct_base <- function(data, output, vars, rxArgs, keep_all)
+distinctBase <- function(data, vars, keep_all, output, rxArgs)
 {
     oldData <- data
-    if(hasTblFile(data))
-        on.exit(deleteTbl(oldData))
 
-    dplyr5 <- .dxOptions$dplyrVersion >= package_version("0.5")
-    df <- rxDataStep(data, transformFunc=function(varlst) {
-            df <- if(.dplyr5)
-                dplyr::distinct_(data.frame(varlst), .dots=.vars, .keep_all=.keep_all)
-            else dplyr::distinct_(data.frame(varlst), .dots=.vars)
-            if(!.rxIsTestChunk)
-                .out <<- c(.out, list(df))
-            NULL
-        },
-        transformObjects=list(.vars=vars, .keep_all=keep_all, .dplyr5=dplyr5, .out=list()),
-        transformPackages="dplyr",
-        returnTransformObjects=TRUE)$.out %>% dplyr::bind_rows(.)
+    data <- rxDataStep(data, transformFunc=function(varlst) {
+                df <- distinct(data.frame(varlst), !!!.vars, .keep_all=.keep_all)
+                if(!.rxIsTestChunk)
+                    .out <<- c(.out, list(df))
+                NULL
+            },
+            transformObjects=list(.vars=vars, .keep_all=keep_all, .out=list()),
+            transformPackages="dplyr",
+            returnTransformObjects=TRUE)$.out %>%
+        bind_rows %>%
+        distinct(!!!vars, .keep_all=keep_all)
 
-    df <- if(dplyr5)
-        dplyr::distinct_(df, .dots=vars, .keep_all=keep_all)
-    else dplyr::distinct_(df, .dots=vars)
-    
-    if(inherits(output, "RxXdfData"))
-    {
-        cl <- quote(rxDataStep(df, output, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead))
-        cl[names(rxArgs)] <- rxArgs
-        eval(cl)
-    }
+    arglst <- doExtraArgs(list(data), data, rxArgs, output)
+    on.exit(deleteIfTbl(oldData))
+    if(inherits(output, "RxXdfData") || !missing(rxArgs))
+        rlang::invoke("rxDataStep", arglst, .env=parent.frame())
     else df
 }
 

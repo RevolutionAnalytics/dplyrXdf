@@ -30,9 +30,9 @@
 #' \code{\link{chol}}, \code{\link{qr}}, \code{\link{svd}} for the other meaning of factorise
 #' @rdname factorise
 #' @export
-factorise <- function(.data, ...)
+factorise <- function(.data, ..., .dots)
 {
-    factorise_(.data, .dots=lazyeval::lazy_dots(...))
+    UseMethod("factorise")
 }
 
 
@@ -43,32 +43,13 @@ factorize <- factorise
 
 #' @rdname factorise
 #' @export
-factorise_ <- function(.data, ..., .dots)
+factorise.RxXdfData <- function(.data, ..., .outFile, .rxArgs)
 {
-    UseMethod("factorise_")
-}
-
-
-#' @rdname factorise
-#' @export
-factorize_ <- factorise_
-
-
-#' @rdname factorise
-#' @export
-factorise_.RxXdfData <- function(.data, ..., .outFile, .rxArgs, .dots)
-{
-    dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
-
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
+    dots <- rlang::quos(..., .named=TRUE)
 
     grps <- group_vars(.data)
     types <- varTypes(.data)
-    vars <- factoriseVars(types, lapply(exprs, lazyeval::as.lazy, dots$env))
+    vars <- factoriseVars(types, dots)
 
     factorInfo <- c(
         sapply(vars$blankArgs, function(nam) list(varName=nam), simplify=FALSE),
@@ -80,42 +61,28 @@ factorise_.RxXdfData <- function(.data, ..., .outFile, .rxArgs, .dots)
         }, simplify=FALSE)
     )
 
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
+    arglst <- list(.data, factorInfo=factorInfo)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-    .outFile <- createOutput(.data, .outFile)
-    cl <- quote(rxFactors(.data, factorInfo, outFile=.outFile, overwrite=TRUE))
-    cl[names(.rxArgs)] <- .rxArgs
-
-     # rxFactors is noisy when given already-existing factors; shut it up
-    .data <- suppressWarnings(eval(cl))
+    # rxFactors is noisy when given already-existing factors; shut it up
+    output <- suppressWarnings(rlang::invoke("rxFactors", arglst, .env=parent.frame()))
+    on.exit(deleteIfTbl(.data))
 
     # rxFactors won't preserve class of output object, unlike rxDataStep
-    if(inherits(.outFile, "tbl_xdf"))
-    {
-        .data <- as(.data, "tbl_xdf")
-        .data@hasTblFile <- TRUE
-    }
-    simpleRegroup(.data, grps)
+    if(missing(.outFile))
+        output <- as(output, "tbl_xdf")
+    simpleRegroup(output, grps)
 }
 
 
 #' @rdname factorise
 #' @export
-factorise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
+factorise.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 {
-    dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
+    dots <- rlang::quos(..., .named=TRUE)
 
-    # .outFile and .rxArgs will be passed in via .dots if called by NSE
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- dots$output
-    if(missing(.rxArgs)) .rxArgs <- dots$rxArgs
-
-    grps <- group_vars(.data)
     types <- varTypes(.data)
-    vars <- factoriseVars(types, lapply(exprs, lazyeval::as.lazy, dots$env))
+    vars <- factoriseVars(types, dots)
 
     colInfo <- sapply(names(.data), function(x) {
         if(x %in% (vars$blankArgs))
@@ -125,16 +92,10 @@ factorise_.RxFileData <- function(.data, ..., .outFile, .rxArgs, .dots)
         else list(type=types[x])
     }, simplify=FALSE)
 
-    oldData <- .data
-    if(hasTblFile(.data))
-        on.exit(deleteTbl(oldData))
-
-    .outFile <- createOutput(.data, .outFile)
-    cl <- quote(rxImport(.data, .outFile, colInfo=colInfo, overwrite=TRUE))
-    cl[names(.rxArgs)] <- .rxArgs
-
-    .data <- eval(cl)
-    simpleRegroup(.data, grps)
+    arglst <- list(.data, colInfo=colInfo)
+    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    output <- rlang::invoke("rxImport", arglst, .env=parent.frame())
+    on.exit(deleteIfTbl(.data))
 }
 
 
@@ -153,14 +114,13 @@ factoriseVars <- function(types, args)
     # do blank arguments and arguments specifying new factor levels separately
     # unlike select, named arguments always treated as specifying factor levels, not indices
     # blank arguments can also include variable selector functions
-    isBlankArg <- sapply(names(args), function(n) {
-        e <- args[[n]]$expr
-        deparse(e) == n || (is.call(e) && deparse(e[[1]]) %in% selectionFuncs)
+    isBlankArg <- sapply(args, function(e) {
+        is.name(e) || (is.call(e) && as.character(e[[1]]) %in% selectionFuncs)
     })
 
-    blankArgs <- select_vars_(names(types), args[isBlankArg])
+    blankArgs <- select_vars(names(types), args[isBlankArg])
     names(blankArgs) <- sapply(blankArgs, as.character)
-    newlevelArgs <- lapply(args[!isBlankArg], lazyeval::lazy_eval)
+    newlevelArgs <- lapply(args[!isBlankArg], rlang::eval_tidy)
 
     list(blankArgs=blankArgs, newlevelArgs=newlevelArgs)
 }
@@ -171,7 +131,7 @@ factoriseVars <- function(types, args)
 #' @export
 all_character <- function(vars=.varTypes)
 {
-    factorise_sel(vars, "character")
+    factoriseSelect(vars, "character")
 }
 
 
@@ -179,7 +139,7 @@ all_character <- function(vars=.varTypes)
 #' @export
 all_integer <- function(vars=.varTypes)
 {
-    factorise_sel(vars, c("logical", "integer"))
+    factoriseSelect(vars, c("logical", "integer"))
 }
 
 
@@ -187,11 +147,11 @@ all_integer <- function(vars=.varTypes)
 #' @export
 all_numeric <- function(vars=.varTypes)
 {
-    factorise_sel(vars, c("numeric", "logical", "integer"))
+    factoriseSelect(vars, c("numeric", "logical", "integer"))
 }
 
 
-factorise_sel <- function(vars, target)
+factoriseSelect <- function(vars, target)
 {
     n <- which(vars %in% target)
     if(length(n) == 0)

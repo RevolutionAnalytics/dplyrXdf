@@ -65,7 +65,7 @@ NULL
 
 
 
-doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
+doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
 {
     arglst <- rlang::modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)
     if(rlang::is_lang(.rxArgs))
@@ -75,7 +75,7 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, ...)
     {
         if(is.null(.outFile))
             arglst["maxRowsByCols"] <- list(NULL)
-        else if(is.character(.outFile))
+        else if(is.character(.outFile) || inherits(.outFile, "RxXdfData"))
             arglst$outFile <- .outFile
         else
         {
