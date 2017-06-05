@@ -167,7 +167,7 @@ do_xdf.grouped_tbl_xdf <- function(.data, ...)
 # copy functionality of dplyr:::do_.data.frame, except dots must be named
 doXdfBase <- function(.data, exprs, grps=NULL, named)
 {
-    datlst <- env(.=.data, .data=.data)
+    datlst <- rlang::env(.=.data, .data=.data)
     if(named)
     {
         out <- lapply(exprs, function(arg) {
@@ -176,7 +176,7 @@ doXdfBase <- function(.data, exprs, grps=NULL, named)
     }
     else
     {
-        out <- list(rlang::eval_tidy(exprs[[1]], datlst))
+        out <- rlang::eval_tidy(exprs[[1]], datlst)
     }
     out <- as_tibble(out)
     if(length(grps) > 0)

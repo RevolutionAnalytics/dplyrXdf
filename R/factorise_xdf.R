@@ -63,6 +63,7 @@ factorise.RxXdfData <- function(.data, ..., .outFile, .rxArgs)
 
     arglst <- list(.data, factorInfo=factorInfo)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst$rowsPerRead <- NULL
 
     # rxFactors is noisy when given already-existing factors; shut it up
     output <- suppressWarnings(rlang::invoke("rxFactors", arglst, .env=parent.frame()))
@@ -94,8 +95,7 @@ factorise.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 
     arglst <- list(.data, colInfo=colInfo)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
-    output <- rlang::invoke("rxImport", arglst, .env=parent.frame())
-    on.exit(deleteIfTbl(.data))
+    rlang::invoke("rxImport", arglst, .env=parent.frame())
 }
 
 
@@ -109,16 +109,17 @@ factoriseVars <- function(types, args)
                         "starts_with", "ends_with", "contains", "matches", "num_range", "one_of", "everything")
 
     if(length(args) == 0)
-        return(list(blankArgs=all_character(types), newlevelArgs=NULL))
+        args <- list(quo(all_character()))
 
     # do blank arguments and arguments specifying new factor levels separately
     # unlike select, named arguments always treated as specifying factor levels, not indices
     # blank arguments can also include variable selector functions
     isBlankArg <- sapply(args, function(e) {
+        e <- rlang::get_expr(e)
         is.name(e) || (is.call(e) && as.character(e[[1]]) %in% selectionFuncs)
     })
 
-    blankArgs <- select_vars(names(types), args[isBlankArg])
+    blankArgs <- select_vars(names(types), !!!args[isBlankArg])
     names(blankArgs) <- sapply(blankArgs, as.character)
     newlevelArgs <- lapply(args[!isBlankArg], rlang::eval_tidy)
 

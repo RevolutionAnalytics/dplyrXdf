@@ -43,7 +43,7 @@ deleteSplitOutputs <- function(fname, grps)
     dname <- dirname(fname)
     fname <- basename(fname)
     pattern <- paste(fname, paste(grps, collapse="_"), sep=".")
-    #print(pattern)
+
     existingFiles <- grep(pattern, dir(dname), value=TRUE, fixed=TRUE)
 
     if(length(existingFiles) > 0)

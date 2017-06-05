@@ -41,7 +41,7 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile, .rxA
     outlst <- createSplitOutput(xdflst, .outFile)
     outlst <- rxExec(distinctBase, data=rxElemArg(xdflst), dots, .keep_all, rxElemArg(outlst), rlang::enexpr(.rxArgs),
         execObjects="deleteIfTbl", packagesToLoad="dplyrXdf")
-    combine_groups(outlst, createOutput(.data, .outFile), grps)
+    combineGroups(outlst, .outFile, grps)
 }
 
 
@@ -49,22 +49,40 @@ distinctBase <- function(data, vars, keep_all, output, rxArgs)
 {
     oldData <- data
 
-    data <- rxDataStep(data, transformFunc=function(varlst) {
-                df <- distinct(data.frame(varlst), !!!.vars, .keep_all=.keep_all)
-                if(!.rxIsTestChunk)
-                    .out <<- c(.out, list(df))
-                NULL
-            },
-            transformObjects=list(.vars=vars, .keep_all=keep_all, .out=list()),
-            transformPackages="dplyr",
-            returnTransformObjects=TRUE)$.out %>%
+    data <- distinctBase2(data, vars, keep_all) %>%
+        #rxDataStep(data, transformFunc=function(varlst) {
+                #df <- distinct(data.frame(varlst), !!!.vars, .keep_all=.keep_all)
+                #if(!.rxIsTestChunk)
+                    #.out <<- c(.out, list(df))
+                #NULL
+            #},
+            #transformObjects=list(.vars=vars, .keep_all=keep_all, .out=list()),
+            #transformPackages="dplyr",
+            #returnTransformObjects=TRUE)$.out %>%
         bind_rows %>%
         distinct(!!!vars, .keep_all=keep_all)
 
     arglst <- doExtraArgs(list(data), data, rxArgs, output)
     on.exit(deleteIfTbl(oldData))
-    if(inherits(output, "RxXdfData") || !missing(rxArgs))
+    if(missing(output) || inherits(output, "RxXdfData") || !missing(rxArgs))
         rlang::invoke("rxDataStep", arglst, .env=parent.frame())
-    else df
+    else data
+}
+
+
+# need to define separate function for transform because missing arguments to distinctBase will break rxDataStep
+distinctBase2 <- function(data, vars, keep_all)
+{
+    data <- rxDataStep(data, transformFunc=function(varlst)
+        {
+            df <- distinct(data.frame(varlst), !!!.vars, .keep_all=.keep_all)
+            if(!.rxIsTestChunk)
+                .out <<- c(.out, list(df))
+            NULL
+        },
+        transformObjects=list(.vars=vars, .keep_all=keep_all, .out=list()),
+        transformPackages="dplyr",
+        returnTransformObjects=TRUE)
+    data$.out
 }
 

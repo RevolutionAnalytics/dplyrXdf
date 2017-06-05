@@ -21,7 +21,7 @@ rename.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     dots <- rlang::quos(..., .named=TRUE)
 
     grps <- group_vars(.data)
-    vars <- rename_vars_(names(.data), exprs)
+    vars <- rename_vars(names(.data), !!!dots)
 
     ## permutations of input -> output
     # filesrc -> df          rxDataStep
@@ -33,7 +33,7 @@ rename.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     # tbl_xdf -> df          rxDataStep
     # tbl_xdf -> xdf         rxDataStep
     # tbl_xdf -> tbl_xdf     in-place if rxArgs not supplied, rxDataStep otherwise
-    if(!(hasTblFile(.data) && inherits(.outFile, "tbl_xdf")) || !missing(.rxArgs))
+    if(!(missing(.outFile) && inherits(.data, "tbl_xdf") && .data@hasTblFile && missing(.rxArgs)))
     {
         arglst <- list(.data)
         arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)

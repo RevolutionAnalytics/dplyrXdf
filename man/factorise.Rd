@@ -5,25 +5,19 @@
 \alias{all_integer}
 \alias{all_numeric}
 \alias{factorise}
-\alias{factorise_}
-\alias{factorise_.RxFileData}
-\alias{factorise_.RxXdfData}
-\alias{factorise_.data.frame}
+\alias{factorise.RxFileData}
+\alias{factorise.RxXdfData}
+\alias{factorise.data.frame}
 \alias{factorize}
-\alias{factorize_}
 \title{Convert columns in an Xdf file to factor}
 \usage{
-factorise(.data, ...)
+factorise(.data, ..., .dots)
 
-factorize(.data, ...)
+factorize(.data, ..., .dots)
 
-factorise_(.data, ..., .dots)
+\method{factorise}{RxXdfData}(.data, ..., .outFile, .rxArgs)
 
-factorize_(.data, ..., .dots)
-
-\method{factorise_}{RxXdfData}(.data, ..., .outFile, .rxArgs, .dots)
-
-\method{factorise_}{RxFileData}(.data, ..., .outFile, .rxArgs, .dots)
+\method{factorise}{RxFileData}(.data, ..., .outFile, .rxArgs)
 
 all_character(vars = .varTypes)
 
@@ -31,7 +25,7 @@ all_integer(vars = .varTypes)
 
 all_numeric(vars = .varTypes)
 
-\method{factorise_}{data.frame}(.data, ..., .dots)
+\method{factorise}{data.frame}(.data, ...)
 }
 \arguments{
 \item{.data}{A data source.}

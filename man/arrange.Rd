@@ -2,13 +2,13 @@
 % Please edit documentation in R/arrange_xdf.R
 \name{arrange.RxXdfData}
 \alias{arrange}
+\alias{arrange.RxFileData}
 \alias{arrange.RxXdfData}
-\alias{arrange.rxFileData}
 \title{Arrange the rows in an Xdf file}
 \usage{
 \method{arrange}{RxXdfData}(.data, ..., .by_group = FALSE, .outFile, .rxArgs)
 
-\method{arrange}{rxFileData}(.data, ...)
+\method{arrange}{RxFileData}(.data, ...)
 }
 \arguments{
 \item{...}{List of unquoted variable names. Use \code{desc} to sort in descending order.}

@@ -13,7 +13,6 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, ...) {
 
 
 setMethod("coerce", list(from="RxFileData", to="tbl_xdf"), function(from, to, strict=TRUE) {
-    print("foobar")
     out <- tbl_xdf(from)
     rxImport(from, out)
 })

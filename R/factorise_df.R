@@ -4,20 +4,14 @@ NULL
 #' The data frame method simply calls \code{factor} to convert the specified columns into factors.
 #' @rdname factorise
 #' @export
-factorise_.data.frame <- function(.data, ..., .dots)
+factorise.data.frame <- function(.data, ...)
 {
     # add a method for data frames because merging with xdfs can get messy
-    dots <- lazyeval::all_dots(.dots, ..., all_named=TRUE)
-
-    # identify Revo-specific arguments
-    dots <- rxArgs(dots)
-    exprs <- dots$exprs
-    .outFile <- dots$output
-    .rxArgs <- dots$rxArgs
+    dots <- rlang::quos(..., .named = TRUE)
 
     grps <- group_vars(.data)
-    types <- sapply(.data, function(x) class(x)[1])
-    vars <- factorise_vars(types, exprs)
+    types <- varTypes(.data)
+    vars <- factoriseVars(types, dots)
 
     .data[] <- lapply(names(.data), function(n) {
         x <- .data[[n]]

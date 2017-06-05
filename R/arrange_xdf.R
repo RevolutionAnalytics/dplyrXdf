@@ -34,14 +34,14 @@ arrange.RxXdfData <- function(.data, ..., .by_group=FALSE, .outFile, .rxArgs)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    rlang::invoke("rxSort", arglst, .env=parent.frame())
-    simpleRegroup(.data, grps)
+    output <- rlang::invoke("rxSort", arglst, .env=parent.frame())
+    simpleRegroup(output, grps)
 }
 
 
 #' @rdname arrange
 #' @export
-arrange.rxFileData <- function(.data, ...)
+arrange.RxFileData <- function(.data, ...)
 {
     # rxSort only works with xdf files, not other data sources
     .data <- as(.data, "tbl_xdf")
