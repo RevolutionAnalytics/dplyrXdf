@@ -57,6 +57,9 @@ combineGroupXdfs <- function(xdflst, output, grps)
 # paste individual group data frames back together
 combineGroupDfs <- function(dflst, output)
 {
+    if(missing(output))
+        output <- tbl_xdf()
+
     if(is.null(output))
         bind_rows(dflst)
     else rxDataStep(bind_rows(dflst), output, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)

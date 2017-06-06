@@ -8,6 +8,16 @@ factorise.data.frame <- function(.data, ...)
 {
     # add a method for data frames because merging with xdfs can get messy
     dots <- rlang::quos(..., .named = TRUE)
+    if(".rxArgs" %in% names(dots))
+    {
+        warning("factorise() with data frame input doesn't use .rxArgs argument", call.=FALSE)
+        dots$.rxArgs <- NULL
+    }
+    if(".outFile" %in% names(dots))
+    {
+        warning("factorise() with data frame input only outputs data frames", call.=FALSE)
+        dots$.outFile <- NULL
+    }
 
     grps <- group_vars(.data)
     types <- varTypes(.data)

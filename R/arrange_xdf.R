@@ -28,7 +28,10 @@ arrange.RxXdfData <- function(.data, ..., .by_group=FALSE, .outFile, .rxArgs)
 
     grps <- group_vars(.data)
     if(.by_group && length(grps) > 0)
-        vars <- c(grps, vars)
+    {
+        vars <- unique(c(grps, vars))
+        desc <- c(rep(FALSE, length(grps)), desc)
+    }
 
     arglst <- list(.data, sortByVars=vars, decreasing=desc)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)

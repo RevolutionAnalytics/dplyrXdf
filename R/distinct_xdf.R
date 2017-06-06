@@ -16,8 +16,7 @@ distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile, .rxArgs)
     stopIfHdfs(.data, "distinct not supported on HDFS")
     dots <- rlang::quos(...)
 
-    .data <- distinctBase(.data, dots, .keep_all, .outFile, rlang::enexpr(.rxArgs))
-    simpleRegroup(.data)
+    distinctBase(.data, dots, .keep_all, .outFile, rlang::enexpr(.rxArgs))
 }
 
 
@@ -34,34 +33,25 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile, .rxA
     stopIfHdfs(.data, "distinct not supported on HDFS")
 
     dots <- rlang::quos(...)
-
     grps <- group_vars(.data)
+
+    # workaround to keep rxExec from complaining about missing arg
+    .rxArgs <- if(missing(.rxArgs))
+        NULL
+    else rlang::enexpr(.rxArgs)
 
     xdflst <- splitGroups(.data)
     outlst <- createSplitOutput(xdflst, .outFile)
-    outlst <- rxExec(distinctBase, data=rxElemArg(xdflst), dots, .keep_all, rxElemArg(outlst), rlang::enexpr(.rxArgs),
+    outlst <- rxExec(distinctBase, data=rxElemArg(xdflst), dots, .keep_all, rxElemArg(outlst), .rxArgs, grps,
         execObjects="deleteIfTbl", packagesToLoad="dplyrXdf")
     combineGroups(outlst, .outFile, grps)
 }
 
 
-distinctBase <- function(data, vars, keep_all, output, rxArgs)
+distinctBase <- function(data, vars, keep_all, output, rxArgs, grps=NULL)
 {
     oldData <- data
-
-    data <- distinctBase2(data, vars, keep_all) %>%
-        #rxDataStep(data, transformFunc=function(varlst) {
-                #df <- distinct(data.frame(varlst), !!!.vars, .keep_all=.keep_all)
-                #if(!.rxIsTestChunk)
-                    #.out <<- c(.out, list(df))
-                #NULL
-            #},
-            #transformObjects=list(.vars=vars, .keep_all=keep_all, .out=list()),
-            #transformPackages="dplyr",
-            #returnTransformObjects=TRUE)$.out %>%
-        bind_rows %>%
-        distinct(!!!vars, .keep_all=keep_all)
-
+    data <- distinctBase2(data, vars, keep_all, grps)
     arglst <- doExtraArgs(list(data), data, rxArgs, output)
     on.exit(deleteIfTbl(oldData))
     if(missing(output) || inherits(output, "RxXdfData") || !missing(rxArgs))
@@ -71,18 +61,28 @@ distinctBase <- function(data, vars, keep_all, output, rxArgs)
 
 
 # need to define separate function for transform because missing arguments to distinctBase will break rxDataStep
-distinctBase2 <- function(data, vars, keep_all)
+distinctBase2 <- function(data, vars, keep_all, grps=NULL)
 {
     data <- rxDataStep(data, transformFunc=function(varlst)
         {
-            df <- distinct(data.frame(varlst), !!!.vars, .keep_all=.keep_all)
+            varlst <- data.frame(varlst)
+            df <- distinct(varlst, !!!.vars, .keep_all=.keep_all)
+            if(length(.grps) > 0 && !keep_all)
+                df <- cbind(varlst[1, .grps], df)
             if(!.rxIsTestChunk)
                 .out <<- c(.out, list(df))
             NULL
         },
-        transformObjects=list(.vars=vars, .keep_all=keep_all, .out=list()),
+        transformObjects=list(.vars=vars, .keep_all=keep_all, .grps=grps, .out=list()),
         transformPackages="dplyr",
-        returnTransformObjects=TRUE)
-    data$.out
+        returnTransformObjects=TRUE)$.out %>%
+        bind_rows %>%
+        distinct
+    if(length(grps) > 0 && !keep_all)
+    {
+        ngrps <- length(grps)
+        names(data)[ngrps] <- grps
+    }
+    data
 }
 

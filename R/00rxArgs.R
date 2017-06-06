@@ -28,43 +28,6 @@
 #' @name rxArgs
 NULL
 
-#rxArgs <- function(dots, fromDo=FALSE)
-#{
-    #env <- if(length(dots) > 0) dots[[1]]$env else globalenv()
-    #exprs <- lapply(dots, "[[", "expr")
-
-    #if(!is.null(exprs$.rxArgs))
-    #{
-        ## some arguments have to be passed as unevaluated expressions: transforms and rowSelection
-        #rxArgs <- mapply(function(value, name) {
-            #if(name %in% c("transforms", "rowSelection"))
-                #value
-            #else eval(value, env)
-        #}, exprs$.rxArgs[-1], names(exprs$.rxArgs[-1]), SIMPLIFY=FALSE)
-        #exprs[[".rxArgs"]] <- NULL
-    #}
-    #else rxArgs <- NULL
-
-    ## capture output format
-    ## NULL -> data frame output
-    ## char -> target filename, xdf output
-    ## missing -> xdf tbl output, coded as NA in returned value
-    #if(".outFile" %in% names(exprs))
-    #{
-        #output <- exprs$.outFile
-        #exprs$.outFile <- NULL
-        ## turn off row x col size check if outputting to dataframe AND not otherwise specified AND not called from do()
-        #if(is.null(output) && !("maxRowsByCols" %in% names(rxArgs)) & !fromDo)
-            #rxArgs["maxRowsByCols"] <- list(NULL)
-    #}
-    #else output <- NA
-
-    #list(rxArgs=rxArgs, exprs=exprs, output=output, env=env)
-#}
-
-
-
-
 doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
 {
     arglst <- rlang::modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)

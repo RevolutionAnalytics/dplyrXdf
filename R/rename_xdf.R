@@ -33,7 +33,10 @@ rename.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     # tbl_xdf -> df          rxDataStep
     # tbl_xdf -> xdf         rxDataStep
     # tbl_xdf -> tbl_xdf     in-place if rxArgs not supplied, rxDataStep otherwise
-    if(!(missing(.outFile) && inherits(.data, "tbl_xdf") && .data@hasTblFile && missing(.rxArgs)))
+    if(!(missing(.outFile) &&
+         inherits(.data, "tbl_xdf") &&
+         .data@hasTblFile &&
+         missing(.rxArgs)))
     {
         arglst <- list(.data)
         arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
