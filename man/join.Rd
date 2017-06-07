@@ -16,17 +16,17 @@
 \alias{semi_join.RxFileData}
 \title{Join two data sources together}
 \usage{
-\method{left_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
-  .rxArgs, ...)
+\method{left_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
+  suffix = c(".x", ".y"), .outFile, .rxArgs, ...)
 
-\method{right_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
-  .rxArgs, ...)
+\method{right_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
+  suffix = c(".x", ".y"), .outFile, .rxArgs, ...)
 
-\method{inner_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
-  .rxArgs, ...)
+\method{inner_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
+  suffix = c(".x", ".y"), .outFile, .rxArgs, ...)
 
-\method{full_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
-  .rxArgs, ...)
+\method{full_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
+  suffix = c(".x", ".y"), .outFile, .rxArgs, ...)
 
 \method{semi_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
   .rxArgs, ...)

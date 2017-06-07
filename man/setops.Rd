@@ -20,7 +20,7 @@
 
 \method{setequal}{RxFileData}(x, y, ...)
 
-\method{union_all}{RxFileData}(x, y, .outFile, .rxArgs, ...)
+\method{union_all}{RxFileData}(x, y, .outFile, .rxArgs)
 
 \method{union}{RxFileData}(x, y, .outFile, .rxArgs, ...)
 }

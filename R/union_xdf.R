@@ -20,7 +20,7 @@
 NULL
 
 #' @rdname setops
-#' @export union_all.RxFileData
+#' @export
 union_all.RxFileData <- function(x, y, .outFile, .rxArgs)
 {
     # need to create a new copy of x?
@@ -59,7 +59,7 @@ union_all.RxFileData <- function(x, y, .outFile, .rxArgs)
         }
         else if(txtInput && xdfOutput)
         {
-            return(rxImport(data, output))
+            return(rxImport(data, output, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE))
         }
         else stop("error handling base table in union", call.=TRUE)
     }
@@ -97,15 +97,19 @@ union_all.RxFileData <- function(x, y, .outFile, .rxArgs)
 }
 
 
+## need explicit @method directive to force this to be treated as an S3 method
 #' @rdname setops
 #' @export
+#' @method union RxFileData
 union.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
 
-    if(missing(.outFile))
-        union_all(x, y, .rxArgs, ...) %>% distinct(.outFile=tbl_xdf(y)) # workaround distinct() bug with missing .outFile
-    else union_all(x, y, .rxArgs) %>% distinct(.outFile=.outFile)
+    out <- union_all(x, y, .rxArgs)
+    distinct(out, .outFile=.outFile)
+    #if(missing(.outFile))
+        #union_all(x, y, .rxArgs, ...) %>% distinct(.outFile=tbl_xdf(y)) # workaround distinct() bug with missing .outFile
+    #else union_all(x, y, .rxArgs) %>% distinct(.outFile=.outFile)
 }
 

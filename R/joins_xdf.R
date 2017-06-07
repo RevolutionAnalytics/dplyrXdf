@@ -101,8 +101,10 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, .
     y <- transmute(y, !!!rlang::syms(by$y), .ones=1L) %>% distinct
 
     on.exit(deleteIfTbl(y))
-    mergeBase(x, y, by, copy, "left", .outFile, rlang::enexpr(.rxArgs)) %>%
-        subset(is.na(.ones), -.ones)
+    #if(missing(.outFile))
+        #.outFile <- tbl_xdf(y)
+    out <- mergeBase(x, y, by, copy, "left", , rlang::enexpr(.rxArgs))
+    subset(out, is.na(.ones),  -.ones, .outFile=.outFile)
 }
 
 
