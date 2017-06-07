@@ -104,17 +104,17 @@ test_that("output to data frame works",
 
 test_that("output to xdf works",
 {
-    tbl <- mtx %>% group_by(gear) %>% factorise(cyl, .outFile="test05.xdf")
+    tbl <- mtx %>% group_by(gear) %>% factorise(cyl, .outFile="test06.xdf")
     expect_true(verifyData(tbl, "RxXdfData") && varTypes(tbl)["cyl"] == "factor")
-    expect_warning(tbl <- mtcars %>% group_by(gear) %>% factorise(cyl, gear, .outFile="test05.xdf"))
+    expect_warning(tbl <- mtcars %>% group_by(gear) %>% factorise(cyl, gear, .outFile="test06.xdf"))
     expect_true(verifyData(tbl, "grouped_df") && varTypes(tbl)["cyl"] == "factor")
-    tbl <- mtt %>% group_by(gear) %>% factorise(cyl, .outFile="test05.xdf")
+    tbl <- mtt %>% group_by(gear) %>% factorise(cyl, .outFile="test06.xdf")
     expect_true(verifyData(tbl, "RxXdfData") && varTypes(tbl)["cyl"] == "factor")
-    tbl <- mtt %>% group_by(gear) %>% arrange(cyl, .outFile="test05.xdf")
+    tbl <- mtt %>% group_by(gear) %>% arrange(cyl, .outFile="test06.xdf")
     expect_true(verifyData(tbl, "RxXdfData"))
-    tbl <- mtx %>% group_by(gear) %>% distinct(cyl, .outFile="test05.xdf")
+    tbl <- mtx %>% group_by(gear) %>% distinct(cyl, .outFile="test06.xdf")
     expect_true(verifyData(tbl, "RxXdfData"))
-    tbl <- mtx %>% group_by(gear) %>% rename(mpg2=mpg, .outFile="test05.xdf")
+    tbl <- mtx %>% group_by(gear) %>% rename(mpg2=mpg, .outFile="test06.xdf")
     expect_true(verifyData(tbl, "RxXdfData") && names(tbl)[1] == "mpg2")
 })
 
@@ -135,4 +135,4 @@ test_that(".rxArgs works",
 })
 
 
-file.remove("mtx.xdf", "mtx.csv", "test05.xdf")
+file.remove("mtx.xdf", "mtx.csv", "test06.xdf")

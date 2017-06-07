@@ -19,13 +19,9 @@
 #' @name setops
 NULL
 
-#' @importFrom dplyr union
-#' @export
-dplyr::union
-
 #' @rdname setops
 #' @export union_all.RxFileData
-union_all.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
+union_all.RxFileData <- function(x, y, .outFile, .rxArgs)
 {
     # need to create a new copy of x?
     # tbl -> tbl: ok
@@ -36,35 +32,34 @@ union_all.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
     # txt -> xdf: copy
     copyBaseTable <- function(data, output)
     {
+        tblInput <- inherits(data, "tbl_xdf")
+        xdfInput <- inherits(data, "RxXdfData") && !tblInput
+        txtInput <- inherits(data, "RxFileData") && !xdfInput && !tblInput
+        tblOutput <- missing(output)
+        xdfOutput <- !tblOutput && is.character(output)
+
         # step through all possible combinations
-        if(inherits(data, "tbl_xdf") && is.na(output))
+        if(tblInput && tblOutput)
             return(data)
-        else if(inherits(data, "RxXdfData") && is.na(output))  # excludes data is tbl_xdf
+        else if(xdfInput && tblOutput)  # excludes data is tbl_xdf
         {
-            oldData <- data
-            if(hasTblFile(data))
-                on.exit(deleteTbl(oldData))
-            output <- tbl(newTbl(data), hasTblFile=TRUE)
+            output <- tbl_xdf(data)
             file.copy(data@file, output@file, overwrite=TRUE)
             return(output)
         }
-        else if(inherits(data, "RxFileData") && is.na(output))
+        else if(txtInput && tblOutput)
         {
-            output <- tbl(data, stringsAsFactors=FALSE)
-            return(output)
+            return(as(data, "tbl_xdf"))
         }
-        else if(inherits(data, "RxXdfData") && is.character(output))  # also includes data is tbl_xdf
+        else if((xdfInput || tblInput) && xdfOutput)  # also includes data is tbl_xdf
         {
-            oldData <- data
-            if(hasTblFile(data))
-                on.exit(deleteTbl(oldData))
+            on.exit(deleteIfTbl(data))
             file.copy(data@file, output, overwrite=TRUE)
             return(RxXdfData(output))
         }
-        else if(inherits(data, "RxFileData") && is.character(output))
+        else if(txtInput && xdfOutput)
         {
-            outFile <- tbl(newTbl(data), hasTblFile=TRUE)
-            return(tbl(data, file=output, overwrite=TRUE, stringsAsFactors=FALSE))
+            return(rxImport(data, output))
         }
         else stop("error handling base table in union", call.=TRUE)
     }
@@ -72,24 +67,11 @@ union_all.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
 
-    dots <- lazyeval::lazy_dots(...)
-    dots <- rxArgs(dots)
-
-    exprs <- dots$exprs
-    if(missing(.outFile)) .outFile <- NA
-    if(missing(.rxArgs)) .rxArgs <- NULL
     grps <- group_vars(x)
 
     # if output is a data frame: convert x and y to df, run dplyr::union_all
-    if(is.null(.outFile))
-    {
-        if(.dxOptions$dplyrVersion < package_version("0.5"))
-        {
-            warning("cannot output directly to data frame with dplyr version < 0.5")
-            .outFile <- NA
-        }
-        else return(union_all(as.data.frame(x), as.data.frame(y)))
-    }
+    if(!missing(.outFile) && is.null(.outFile))
+        return(union_all(as.data.frame(x), as.data.frame(y)))
 
     # use rxDataStep to append y to x, faster than rxMerge(type="union")
     # first, make a copy of x if necessary
@@ -105,12 +87,12 @@ union_all.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
         on.exit(file.remove(y@file))
     }
 
-    cl <- quote(rxDataStep(y, x, append="rows"))
-    cl[names(.rxArgs)] <- .rxArgs
+    arglst <- list(y, append="rows")
+    arglst <- doExtraArgs(arglst, x, rlang::enexpr(.rxArgs), x)
+    x <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
 
-    x <- eval(cl)
-    if(is.character(.outFile))  # do we want a persistent file?
-        x <- as(x, "RxXdfData")
+    #if(is.character(.outFile) || class(.outFile) == "RxXdfData")  # do we want a persistent file?
+        #x <- as(x, "RxXdfData")
     simpleRegroup(x, grps)
 }
 
@@ -122,16 +104,8 @@ union.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
 
-    # call union_all.RxFileData explicitly to allow use in dplyr < 0.5
     if(missing(.outFile))
-        union_all.RxFileData(x, y, .rxArgs, ...) %>% distinct
-    else
-    {
-        # horrible hack
-        # TODO: figure out a better way of passing .outFile
-        cl <- substitute(union_all.RxFileData(x, y, .rxArgs, ...) %>% distinct(.outFile=.outFile),
-            list(.outFile=.outFile))
-        eval(cl)
-    }
+        union_all(x, y, .rxArgs, ...) %>% distinct(.outFile=tbl_xdf(y)) # workaround distinct() bug with missing .outFile
+    else union_all(x, y, .rxArgs) %>% distinct(.outFile=.outFile)
 }
 

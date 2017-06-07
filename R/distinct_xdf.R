@@ -52,10 +52,11 @@ distinctBase <- function(data, vars, keep_all, output, rxArgs, grps=NULL)
 {
     oldData <- data
     data <- distinctBase2(data, vars, keep_all, grps)
+
     arglst <- doExtraArgs(list(data), data, rxArgs, output)
     on.exit(deleteIfTbl(oldData))
     if(missing(output) || inherits(output, "RxXdfData") || !missing(rxArgs))
-        rlang::invoke("rxDataStep", arglst, .env=parent.frame())
+        rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
     else data
 }
 

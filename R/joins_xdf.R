@@ -21,45 +21,45 @@ NULL
 
 #' @rdname join
 #' @export
-left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
+left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile, .rxArgs, ...)
 {    
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
-    by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "left", .outFile, .rxArgs, ...)
+    by <- commonBy(by, x, y)
+    mergeBase(x, y, by, copy, "left", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
 }
 
 
 #' @rdname join
 #' @export
-right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
+right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
-    by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "right", .outFile, .rxArgs, ...)
+    by <- commonBy(by, x, y)
+    mergeBase(x, y, by, copy, "right", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
 }
 
 
 #' @rdname join
 #' @export
-inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
+inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
-    by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "inner", .outFile, .rxArgs, ...)
+    by <- commonBy(by, x, y)
+    mergeBase(x, y, by, copy, "inner", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
 }
 
 
 #' @rdname join
 #' @export
-full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
+full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile, .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
-    by <- dplyr_common_by(by, x, y)
-    merge_base(x, y, by, copy, "full", .outFile, .rxArgs, ...)
+    by <- commonBy(by, x, y)
+    mergeBase(x, y, by, copy, "full", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
 }
 
 
@@ -71,15 +71,15 @@ semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, .
     stopIfHdfs(y, "joining not supported on HDFS")
 
     # no native semi-join functionality in ScaleR, so do it by hand
-    by <- dplyr_common_by(by, x, y)
+    by <- commonBy(by, x, y)
 
     # make sure we don't orphan y
     if(inherits(y, "tbl_xdf"))
         y@hasTblFile <- FALSE
-    y <- select_(y, by$y) %>% distinct
-    if(hasTblFile(y))
-        on.exit(deleteTbl(y))
-    merge_base(x, y, by, copy, "inner", .outFile, .rxArgs,  ...)
+    y <- select(y, !!!rlang::syms(by$y)) %>% distinct
+    if(inherits(y, "tbl_xdf") && y@hasTblFile)
+        on.exit(deleteIfTbl(y))
+    mergeBase(x, y, by, copy, "inner", .outFile, rlang::enexpr(.rxArgs))
 }
 
 
@@ -91,32 +91,22 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, .
     stopIfHdfs(y, "joining not supported on HDFS")
 
     # no native anti-join functionality in ScaleR, so do it by hand
-    by <- dplyr_common_by(by, x, y)
+    by <- commonBy(by, x, y)
 
     # make sure we don't orphan y
     if(inherits(y, "tbl_xdf"))
         y@hasTblFile <- FALSE
-    ones <- sprintf("rep(1L, length(%s))", by$x[1])
-    y <- transmute_(y, by$y, .ones=ones) %>% distinct
-    if(hasTblFile(y))
-        on.exit(deleteTbl(y))
-    if(missing(.outFile))
-    {
-        merge_base(x, y, by, copy, "left", .rxArgs, ...) %>%
-            subset(is.na(.ones), -.ones)
-    }
-    else
-    {
-        # horrible hack
-        # TODO: figure out a better way of passing .outFile
-        cl <- substitute(merge_base(x, y, by, copy, "left", .rxArgs, ...) %>%
-            subset(is.na(.ones), -.ones, .outFile=.outFile), list(.outFile=.outFile))
-        eval(cl)
-    }
+    #ones <- sprintf("rep(1L, length(%s))", by$x[1])
+
+    y <- transmute(y, !!!rlang::syms(by$y), .ones=1L) %>% distinct
+
+    on.exit(deleteIfTbl(y))
+    mergeBase(x, y, by, copy, "left", .outFile, rlang::enexpr(.rxArgs)) %>%
+        subset(is.na(.ones), -.ones)
 }
 
 
-merge_base <- function(x, y, by=NULL, copy=FALSE, type, .outFile, .rxArgs)
+mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile, .rxArgs, suffix=c(".x", ".y"))
 {
     stopIfHdfs(x, "merging not supported on HDFS")
     stopIfHdfs(y, "merging not supported on HDFS")
@@ -125,6 +115,7 @@ merge_base <- function(x, y, by=NULL, copy=FALSE, type, .outFile, .rxArgs)
     if(copy)
         warning("copy argument not currently used")
 
+    grps <- group_vars(x)
     yOrig <- getTblFile(y)
     newxy <- alignInputs(x, y, by, yOrig)
     x <- newxy$x
@@ -132,24 +123,21 @@ merge_base <- function(x, y, by=NULL, copy=FALSE, type, .outFile, .rxArgs)
 
     # cleanup on exit is asymmetric wrt x, y
     on.exit({
-        if(hasTblFile(x))
-            deleteTbl(x)
+        deleteIfTbl(x)
         # make sure not to delete original y by accident after factoring
         if(!is.data.frame(y) && getTblFile(y) != yOrig)
             deleteTbl(y)
      })
 
-    if(missing(.outFile))
-        .outFile <- NA
-    if(missing(.rxArgs))
-        .rxArgs <- NULL
+    # sigh
+    if(all(substr(suffix, 1, 1) == "."))
+        suffix <- substr(suffix, 2, nchar(suffix))
 
-    grps <- group_vars(x)
-    .outFile <- createOutput(x, .outFile)
-    cl <- quote(rxMerge(x, y, matchVars=by$y, outFile=.outFile, type=type, duplicateVarExt=c("x", "y"), overwrite=TRUE))
-    cl[names(.rxArgs)] <- .rxArgs
+    arglst <- list(x, y, matchVars=by$y, type=type, duplicateVarExt=suffix)
+    arglst <- doExtraArgs(arglst, x, .rxArgs, .outFile)
+    arglst$rowsPerRead <- NULL # not used by rxMerge
 
-    out <- eval(cl)
-    simpleRegroup(out)
+    output <- rlang::invoke("rxMerge", arglst, .env=parent.frame())
+    simpleRegroup(output, grps)
 }
 

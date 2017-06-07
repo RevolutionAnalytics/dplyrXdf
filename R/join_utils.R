@@ -84,7 +84,8 @@ alignVars <- function(x, y, by, yOrig)
         changeExpr
     }, simplify=FALSE)
 
-    xFunc <- makeTransformFunc(xChanges, inherits(x, "RxXdfData"))  # x should always inherit from RxXdfData
+    stopifnot(inherits(x, "RxXdfData"))  # x should always inherit from RxXdfData
+    xFunc <- makeTransformFunc(xChanges, inherits(x, "RxXdfData"))
     xVars <- getTransformVars(xChanges)
 
     yChanges <- sapply(by, function(i) {
@@ -116,7 +117,7 @@ alignInputs <- function(x, y, by, yOrig)
         if(inherits(data, c("data.frame", "RxXdfData")))
             data
         else if(inherits(data, "RxFileData"))
-            tbl(data, stringsAsFactors=FALSE)
+            as(data, "tbl_xdf")
         else stop("not a local data source format", call.=FALSE)
     }
 
@@ -135,9 +136,9 @@ alignInputs <- function(x, y, by, yOrig)
         if(length(existing) > 0)
         {
             names(existing) <- paste0(names(existing), ".x")
-            x <- rename_(x, .dots=existing)
+            x <- rename(x, !!!existing)
         }
-        x <- rename_(x, .dots=xby)
+        x <- rename(x, !!!xby)
     }
     
     # align by-variable types and factor levels
@@ -147,21 +148,26 @@ alignInputs <- function(x, y, by, yOrig)
         xRename <- paste0(align$xVars, "__new__")
         names(xRename) <- align$xVars
         x <- mutate(x, .rxArgs=list(transformFunc=align$xFunc, transformVars=align$xVars)) %>%
-            rename_(.dots=xRename)
+            rename(!!!xRename)
     }
     if(!is.null(align$yFunc))
     {
         yRename <- paste0(align$yVars, "__new__")
         names(yRename) <- align$yVars
         if(is.null(yOrig))
-            y <- eval(align$yFunc) %>% rename_(.dots=yRename)
+            y <- eval(align$yFunc) %>% rename(!!!yRename)
         else
         {
             # make sure not to delete original y by accident after factoring
             if(!is.null(yOrig) && getTblFile(y) == yOrig)
                 y <- as(y, "RxXdfData")
+            #y <- rxDataStep(y, tbl_xdf(y), transformFunc=align$yFunc, transformVars=align$yVars)
+            #names(y)[names(y) == yRename] <- names(yRename)
+            #print(names(y))
             y <- mutate(y, .rxArgs=list(transformFunc=align$yFunc, transformVars=align$yVars)) %>%
-                rename_(.dots=yRename)
+                rename(!!!yRename)
+            #y <- mutate(y, a__new__=as.character(a), a=NULL)
+            #y <- rename(y, a=a__new__)
         }
     }
     list(x=x, y=y)
@@ -169,7 +175,7 @@ alignInputs <- function(x, y, by, yOrig)
 
 
 # copied from dplyr:::common_by, dplyr:::`%||%`
-dplyr_common_by <- function (by = NULL, x, y) 
+commonBy <- function (by = NULL, x, y) 
 {
     if (is.list(by)) 
         return(by)
