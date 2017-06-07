@@ -137,7 +137,7 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile, .rxArgs, suffix
     arglst <- doExtraArgs(arglst, x, .rxArgs, .outFile)
     arglst$rowsPerRead <- NULL # not used by rxMerge
 
-    output <- rlang::invoke("rxMerge", arglst, .env=parent.frame())
+    output <- rlang::invoke("rxMerge", arglst, .env=parent.frame(), .bury=NULL)
     simpleRegroup(output, grps)
 }
 

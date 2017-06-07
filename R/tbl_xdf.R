@@ -14,7 +14,7 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, ...) {
 
 setMethod("coerce", list(from="RxFileData", to="tbl_xdf"), function(from, to, strict=TRUE) {
     out <- tbl_xdf(from)
-    rxImport(from, out)
+    rxImport(from, out, rowsPerRead=.dxOptions$rowsPerRead)
 })
 
 

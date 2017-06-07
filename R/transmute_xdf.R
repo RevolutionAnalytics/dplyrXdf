@@ -23,7 +23,7 @@ transmute.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     arglst <- setTransmuteVars(arglst, names(.data))
 
     on.exit(deleteIfTbl(.data))
-    rlang::invoke("rxDataStep", arglst, .env=parent.frame())
+    rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
 }
 
 
@@ -57,7 +57,7 @@ transmute.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
     outlst <- rxExec(function(data, output, arglst) {
         arglst[[1]] <- data
         arglst$outFile <- output
-        rlang::invoke("rxDataStep", arglst, .env=parent.frame())
+        rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
     }, data=rxElemArg(xdflst), output=rxElemArg(outlst), arglst, packagesToLoad="dplyrXdf", execObjects="deleteIfTbl")
 
     combineGroups(outlst, .outFile, grps)
