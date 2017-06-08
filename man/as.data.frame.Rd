@@ -9,6 +9,7 @@
 \alias{collect.RxFileData}
 \alias{compute}
 \alias{compute.RxFileData}
+\alias{pull.tbl_xdf}
 \title{Convert a data source or tbl to a data frame}
 \usage{
 \method{as.data.frame}{RxFileData}(x, maxRowsByCols = NULL,
@@ -21,6 +22,8 @@
 \method{$}{RxFileData}(x, name)
 
 \method{[[}{RxFileData}(x, name, maxRowsByCols = NULL, ...)
+
+\method{pull}{tbl_xdf}(.data, var = -1)
 }
 \arguments{
 \item{x}{A data source object, or tbl wrapping the same.}
