@@ -10,7 +10,8 @@ smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
 
     xdflst <- splitGroups(data)
     outlst <- rxExec(smryRxSummaryWithGroupvars, data=rxElemArg(xdflst), grps, stats, exprs, rxArgs,
-        execObjects="deleteIfTbl", packagesToLoad="dplyrXdf")
+        execObjects=c("deleteIfTbl", "smryRxSummary.RxFileData", "rxSummaryStat", "selectCol", "setSmryClasses"),
+        packagesToLoad="dplyr")
     combineGroups(outlst, tbl_xdf(data), NULL)
 }
 
@@ -18,7 +19,7 @@ smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
 smryRxSummaryWithGroupvars <- function(data, grps, stats, exprs, rxArgs)
 {
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
-    smry <- smryRxSummary(data, NULL, stats, exprs, rxArgs, dfOut=TRUE)
+    smry <- smryRxSummary.RxFileData(data, NULL, stats, exprs, rxArgs, dfOut=TRUE)
     cbind(gvars, smry, stringsAsFactors=FALSE)
 }
 

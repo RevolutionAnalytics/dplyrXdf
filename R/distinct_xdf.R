@@ -41,20 +41,20 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile, .rxA
     else rlang::enexpr(.rxArgs)
 
     xdflst <- splitGroups(.data)
+    on.exit(deleteIfTbl(xdflst))
     outlst <- createSplitOutput(xdflst, .outFile)
+
     outlst <- rxExec(distinctBase, data=rxElemArg(xdflst), dots, .keep_all, rxElemArg(outlst), .rxArgs, grps,
-        execObjects="deleteIfTbl", packagesToLoad="dplyrXdf")
+        execObjects=c("distinctBase2", "doExtraArgs", "deleteIfTbl", "deleteTbl", ".dxOptions"), packagesToLoad="dplyr")
     combineGroups(outlst, .outFile, grps)
 }
 
 
 distinctBase <- function(data, vars, keep_all, output, rxArgs, grps=NULL)
 {
-    oldData <- data
     data <- distinctBase2(data, vars, keep_all, grps)
-
     arglst <- doExtraArgs(list(data), data, rxArgs, output)
-    on.exit(deleteIfTbl(oldData))
+
     if(missing(output) || inherits(output, "RxXdfData") || !missing(rxArgs))
         rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
     else data

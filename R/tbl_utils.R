@@ -44,40 +44,6 @@ varLevels <- function(x, vars=NULL)
 }
 
 
-## do not export this: arbitrarily changing the file pointer of an xdf object can be bad
-#`tblFile<-` <- function(x, value)
-#{
-    #if(!inherits(x, "tbl_xdf"))
-        #stop("bad call to 'tblFile<-': cannot change raw xdf file")
-    #x@file <- value
-    #x@hasTblFile <- TRUE
-    #x
-#}
-
-
-## generate a new Xdf data source with file pointing to a random file, other parameters taken from input data source
-#newTbl <- function(xdf=NULL, fileSystem=rxGetFileSystem(xdf), tblDir=getXdfTblDir())
-#{
-    #fname <- if(inherits(fileSystem, "RxNativeFileSystem"))
-        #tempfile(tmpdir=tblDir, fileext=".xdf")
-    #else if(inherits(fileSystem, "RxHdfsFileSystem"))
-    #{
-        ## ensure HDFS temporary directory exists
-        #makeHdfsWorkDir()
-        #file.path(.dxOptions$hdfsWorkDir, basename(tempfile(pattern="xdfTbl")), fsep="/")
-    #}
-    #else stop("unknown file system")
-
-    #if(!inherits(xdf, "RxXdfData"))
-        #return(RxXdfData(file=fname, fileSystem=fileSystem))
-    #else xdf <- as(xdf, "RxXdfData")  # do coerce to remove any grouping info
-
-    #xdf@file <- fname
-    #xdf@fileSystem <- fileSystem
-    #xdf
-#}
-
-
 # delete one or more xdf tbls (vectorised)
 deleteTbl <- function(xdf)
 {
@@ -106,13 +72,13 @@ deleteTbl <- function(xdf)
 
 
 # on.exit function
-deleteIfTbl <- function(oldData)
+deleteIfTbl <- function(data)
 {
     # sanity check if passed a data frame
-    if(is.data.frame(oldData))
+    if(is.data.frame(data))
         return(NULL)
-    if(isTempTbl(oldData) || is.list(oldData))
-        deleteTbl(oldData)
+    if((inherits(data, "tbl_xdf") && isTRUE(data@hasTblFile)) || is.list(data))
+        dplyrXdf:::deleteTbl(data)  # use explicit namespace for par compute contexts
     NULL
 }
 
@@ -127,7 +93,7 @@ getTblFile <- function(data)
 }
 
 
-isTempTbl <- function(data)
-{
-    inherits(data, "tbl_xdf") && isTRUE(data@hasTblFile)
-}
+#isTempTbl <- function(data)
+#{
+    #inherits(data, "tbl_xdf") && isTRUE(data@hasTblFile)
+#}

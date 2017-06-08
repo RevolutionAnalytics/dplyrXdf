@@ -27,6 +27,7 @@ Collate:
     'factorise_xdf.R'
     'factorise_df.R'
     'filter_xdf.R'
+    'getGroupLevels.R'
     'tbl_xdf.R'
     'group_by_xdf.R'
     'hdfs_utils.R'

@@ -125,6 +125,7 @@ groups.grouped_tbl_xdf <- function(x)
 }
 
 
+#' @rdname groups
 #' @export
 ungroup.grouped_tbl_xdf <- function(x)
 {
@@ -132,6 +133,7 @@ ungroup.grouped_tbl_xdf <- function(x)
 }
 
 
+#' @rdname groups
 #' @export
 ungroup.RxFileData <- function(x)
 {

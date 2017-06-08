@@ -63,7 +63,7 @@ do.grouped_tbl_xdf <- function(.data, ...)
 
     on.exit(deleteTbl(xdflst))
     xdflst <- splitGroups(.data)
-    dolst <- rxExec(doBase, data=rxElemArg(xdflst), args, grps, packagesToLoad="dplyrXdf")
+    dolst <- rxExec(doBase, data=rxElemArg(xdflst), args, grps, packagesToLoad="dplyr")
     df <- bind_rows(dolst)
 
     # mimic grouping behaviour of do for data frames
@@ -152,7 +152,7 @@ do_xdf.grouped_tbl_xdf <- function(.data, ...)
     on.exit(deleteTbl(xdflst))
     xdflst <- splitGroups(.data)
     dolst <- rxExec(doXdfBase, .data=rxElemArg(xdflst), args, grps, named,
-                    packagesToLoad="dplyrXdf")
+                    packagesToLoad="dplyr")
     df <- bind_rows(dolst)
 
     # mimic grouping behaviour of do for data frames

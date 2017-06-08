@@ -51,4 +51,3 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
     arglst
 }
 
-

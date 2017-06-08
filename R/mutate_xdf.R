@@ -37,8 +37,6 @@ mutate.RxFileData <- function(.data, ..., .outFile, .rxArgs)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-#    arglst$transformEnvir <- parent.frame()
-#    print(arglst)
     rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
 }
 
@@ -70,7 +68,7 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
         arglst[[1]] <- data
         arglst$outFile <- output
         rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
-    }, data=rxElemArg(xdflst), output=rxElemArg(outlst), arglst, packagesToLoad="dplyrXdf", execObjects="deleteIfTbl")
+    }, data=rxElemArg(xdflst), output=rxElemArg(outlst), arglst, packagesToLoad="dplyr")
 
     combineGroups(outlst, .outFile, grps)
 }

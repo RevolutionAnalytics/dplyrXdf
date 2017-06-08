@@ -5,6 +5,8 @@
 \alias{group_vars.grouped_tbl_xdf}
 \alias{groups.RxFileData}
 \alias{groups.grouped_tbl_xdf}
+\alias{ungroup.RxFileData}
+\alias{ungroup.grouped_tbl_xdf}
 \title{Get the groups for a file data source, or a tbl wrapping an Xdf file}
 \usage{
 \method{group_vars}{RxFileData}(x)
@@ -14,6 +16,10 @@
 \method{groups}{RxFileData}(x)
 
 \method{groups}{grouped_tbl_xdf}(x)
+
+\method{ungroup}{grouped_tbl_xdf}(x)
+
+\method{ungroup}{RxFileData}(x)
 }
 \arguments{
 \item{x}{A tbl for an Xdf data source; or a raw file data source.}

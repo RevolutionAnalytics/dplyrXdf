@@ -108,8 +108,5 @@ union.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
 
     out <- union_all(x, y, .rxArgs)
     distinct(out, .outFile=.outFile)
-    #if(missing(.outFile))
-        #union_all(x, y, .rxArgs, ...) %>% distinct(.outFile=tbl_xdf(y)) # workaround distinct() bug with missing .outFile
-    #else union_all(x, y, .rxArgs) %>% distinct(.outFile=.outFile)
 }
 
