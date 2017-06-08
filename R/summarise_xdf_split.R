@@ -34,7 +34,6 @@ smryRxSplitDplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
         cl <- quote(rxDataStep(data, maxRowsByCols=NULL))
         if(!is.null(rxArgs))
             cl <- rlang::lang_modify(cl, rlang::splice(rxArgs))
-        #cl[names(rxArgs)] <- rxArgs
 
         return(eval(cl) %>%
                dplyr::summarise(!!!exprs))
@@ -56,8 +55,6 @@ smryDplyrWithGroupvars <- function(data, grps, exprs, rxArgs)
     cl <- quote(rxDataStep(data, maxRowsByCols=NULL))
     if(!is.null(rxArgs))
         cl <- rlang::lang_modify(cl, rlang::splice(rxArgs))
-    #cl[names(rxArgs)] <- rxArgs
-    #exprs <- lazyeval::as.lazy_dots(exprs, attr(exprs, "env"))
     smry <- eval(cl) %>%
         dplyr::summarise(!!!exprs)
         
