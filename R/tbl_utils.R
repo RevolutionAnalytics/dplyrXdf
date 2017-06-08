@@ -78,7 +78,7 @@ deleteIfTbl <- function(data)
     if(is.data.frame(data))
         return(NULL)
     if((inherits(data, "tbl_xdf") && isTRUE(data@hasTblFile)) || is.list(data))
-        dplyrXdf:::deleteTbl(data)  # use explicit namespace for par compute contexts
+        deleteTbl(data)
     NULL
 }
 
@@ -92,8 +92,3 @@ getTblFile <- function(data)
     else stop("not a local data source format", call.=FALSE)
 }
 
-
-#isTempTbl <- function(data)
-#{
-    #inherits(data, "tbl_xdf") && isTRUE(data@hasTblFile)
-#}

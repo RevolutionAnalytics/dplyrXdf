@@ -208,6 +208,10 @@
 {
     .dxOptions$rowsPerRead <- 500000
     .dxOptions$dplyrVersion <- packageVersion("dplyr")
+
+    rxver <- packageVersion("RevoScaleR")
+    .dxOptions$useExecBy <- (rxver >= package_version("9.1"))
+
     setXdfTblDir(fileSystem="native")
     setXdfTblDir(fileSystem="hdfs")
     NULL

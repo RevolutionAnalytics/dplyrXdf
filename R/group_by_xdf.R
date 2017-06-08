@@ -3,16 +3,8 @@ NULL
 
 
 #' @exportClass grouped_tbl_xdf
+#' @export grouped_tbl_xdf
 grouped_tbl_xdf <- setClass("grouped_tbl_xdf", contains="tbl_xdf", slots=c(groups="characterORNULL"))
-
-
-#setMethod("initialize", "grouped_tbl_xdf", function(.Object, groups=NULL, ...) {
-    #.Object <- callNextMethod(.Object, ...)
-    #.Object@groups <- groups
-    #.Object
-#})
-
-
 
 
 #' Group an Xdf file by one or more variables

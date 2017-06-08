@@ -1,4 +1,5 @@
 #' @exportClass tbl_xdf
+#' @export tbl_xdf
 tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical"))
 
 
