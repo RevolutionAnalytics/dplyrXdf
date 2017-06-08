@@ -94,7 +94,7 @@ compute.RxFileData <- collect.RxFileData
 
 #' @rdname as.data.frame
 #' @export
-pull.tbl_xdf <- function(.data, var=-1)
+pull.RxFileData <- function(.data, var=-1)
 {
     # exactly the same as for data frames
     var <- select_var(names(.data), !(!enquo(var)))
