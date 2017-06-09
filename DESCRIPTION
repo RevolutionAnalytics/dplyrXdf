@@ -23,6 +23,7 @@ Collate:
     '00rxArgs.R'
     'arrange_xdf.R'
     'combine_groups.R'
+    'crbind.R'
     'createOutput.R'
     'distinct_xdf.R'
     'do_xdf.R'
