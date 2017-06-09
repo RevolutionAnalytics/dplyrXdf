@@ -42,6 +42,7 @@ compute.RxFileData <- collect.RxFileData
 }
 
 
+## rxGetVarInfo depends on Rx* sources not having a [ method
 ##' @export
 #"[.RxFileData" <- function(x, i, j, drop=FALSE, maxRowsByCols=NULL, ...)
 #{

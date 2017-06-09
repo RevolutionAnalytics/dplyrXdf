@@ -17,6 +17,7 @@ Imports:
 License: MIT + file LICENSE
 URL: https://github.com/RevolutionAnalytics/dplyrXdf
 BugReports: https://github.com/RevolutionAnalytics/dplyrXdf/issues
+Remotes: tidyverse/dplyr@43dc94e88
 LazyData: true
 Collate:
     '00rxArgs.R'
