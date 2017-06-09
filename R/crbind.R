@@ -15,8 +15,9 @@
 #' \code{\link[dplyr]{bind_cols}} and \code{\link[dplyr]{bind_rows}} in package dplyr
 #' @aliases cbind rbind
 #' @rdname crbind
+#' @rawNamespace export(cbind.RxXdfData)
 #' @method cbind RxXdfData
-#' @export cbind.RxXdfData
+#' @export
 cbind.RxXdfData <- function(..., deparse.level=1, .outFile, .rxArgs)
 {
     if(!missing(deparse.level))
@@ -65,8 +66,9 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile, .rxArgs)
 
 
 #' @rdname crbind
+#' @rawNamespace export(rbind.RxXdfData)
 #' @method rbind RxXdfData
-#' @export rbind.RxXdfData
+#' @export
 rbind.RxXdfData <- function(..., deparse.level=1, .outFile, .rxArgs)
 {
     if(!missing(deparse.level))
