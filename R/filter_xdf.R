@@ -13,7 +13,7 @@
 #' @rdname filter
 #' @aliases filter
 #' @export
-filter.RxFileData <- function(.data, ..., .outFile, .rxArgs)
+filter.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     grps <- group_vars(.data)
     dots <- rlang::quos(..., .named=TRUE)

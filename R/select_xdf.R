@@ -16,7 +16,7 @@
 #' @rdname select
 #' @aliases select
 #' @export
-select.RxFileData <- function(.data, ..., .outFile, .rxArgs)
+select.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     grps <- group_vars(.data)
     vars <- c(grps, select_vars(names(.data), ...))

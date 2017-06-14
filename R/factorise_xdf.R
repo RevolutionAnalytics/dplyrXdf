@@ -43,7 +43,7 @@ factorize <- factorise
 
 #' @rdname factorise
 #' @export
-factorise.RxXdfData <- function(.data, ..., .outFile, .rxArgs)
+factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     dots <- rlang::quos(..., .named=TRUE)
 
@@ -78,7 +78,7 @@ factorise.RxXdfData <- function(.data, ..., .outFile, .rxArgs)
 
 #' @rdname factorise
 #' @export
-factorise.RxFileData <- function(.data, ..., .outFile, .rxArgs)
+factorise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     dots <- rlang::quos(..., .named=TRUE)
 

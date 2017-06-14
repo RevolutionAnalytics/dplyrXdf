@@ -18,7 +18,7 @@
 #' @aliases subset
 #' @rdname subset
 #' @export
-subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile, .rxArgs)
+subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile=tbl_xdf(.data), .rxArgs)
 {
     grps <- group_vars(.data)
     select <- rlang::get_expr(rlang::enquo(select))

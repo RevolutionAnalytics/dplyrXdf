@@ -18,7 +18,7 @@
 #' @rawNamespace export(cbind.RxXdfData)
 #' @method cbind RxXdfData
 #' @export
-cbind.RxXdfData <- function(..., deparse.level=1, .outFile, .rxArgs)
+cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .rxArgs)
 {
     if(!missing(deparse.level))
         warn("rbind for Rx source objects doesn't use deparse.level")
@@ -69,7 +69,7 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile, .rxArgs)
 #' @rawNamespace export(rbind.RxXdfData)
 #' @method rbind RxXdfData
 #' @export
-rbind.RxXdfData <- function(..., deparse.level=1, .outFile, .rxArgs)
+rbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .rxArgs)
 {
     if(!missing(deparse.level))
         warn("rbind for Rx source objects doesn't use deparse.level")

@@ -11,7 +11,7 @@
 #' @aliases distinct distinct_
 #' @rdname distinct
 #' @export
-distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile, .rxArgs)
+distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.data), .rxArgs)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
     dots <- rlang::quos(...)
@@ -28,7 +28,7 @@ distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile, .rxArgs)
 #'
 #' @rdname distinct
 #' @export
-distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile, .rxArgs)
+distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.data), .rxArgs)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
 

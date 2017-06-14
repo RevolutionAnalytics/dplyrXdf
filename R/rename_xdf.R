@@ -16,7 +16,7 @@
 #' @rdname rename
 #' @aliases rename
 #' @export
-rename.RxFileData <- function(.data, ..., .outFile, .rxArgs)
+rename.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     dots <- rlang::quos(..., .named=TRUE)
 

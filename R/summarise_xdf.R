@@ -27,7 +27,7 @@
 #' @aliases summarise summarize
 #' @rdname summarise
 #' @export
-summarise.RxFileData <- function(.data, ..., .outFile, .rxArgs, .method=NULL)
+summarise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs, .method=NULL)
 {
     dots <- rlang::quos(..., .named=TRUE)
     if(length(dots) > 1)
@@ -163,7 +163,7 @@ makeSmryOutput <- function(smry, .data, .outFile)
 {
     if(is.data.frame(smry))
     {
-        if(missing(.outFile))
+        if(inherits(.outFile, "tbl_xdf"))
             rxDataStep(smry, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         else if(is.character(.outFile))
             rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
@@ -171,7 +171,7 @@ makeSmryOutput <- function(smry, .data, .outFile)
     }
     else  # xdf output from summary worker
     {
-        if(missing(.outFile))
+        if(inherits(.outFile, "tbl_xdf"))
         {
             as(smry, "tbl_xdf")
         }

@@ -24,7 +24,7 @@
 #' @aliases mutate transmute
 #' @rdname mutate
 #' @export
-mutate.RxFileData <- function(.data, ..., .outFile, .rxArgs)
+mutate.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     dots <- rlang::quos(..., .named=TRUE)
     transforms <- lapply(dots, rlang::get_expr)
@@ -43,7 +43,7 @@ mutate.RxFileData <- function(.data, ..., .outFile, .rxArgs)
 
 #' @rdname mutate
 #' @export
-mutate.grouped_tbl_xdf <- function(.data, ..., .outFile, .rxArgs)
+mutate.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     stopIfHdfs(.data, "mutate on grouped data not supported on HDFS")
 

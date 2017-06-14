@@ -16,7 +16,7 @@
 #' @rdname arrange
 #' @aliases arrange
 #' @export
-arrange.RxXdfData <- function(.data, ..., .by_group=FALSE, .outFile, .rxArgs)
+arrange.RxXdfData <- function(.data, ..., .by_group=FALSE, .outFile=tbl_xdf(.data), .rxArgs)
 {
     stopIfHdfs(.data, "arrange not supported on HDFS")
 

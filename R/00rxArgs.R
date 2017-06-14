@@ -34,7 +34,7 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
     if(rlang::is_lang(.rxArgs))
         arglst <- rlang::modify(arglst, rlang::splice(rlang::lang_args(.rxArgs)))
 
-    if(!missing(.outFile))
+    if(!inherits(.outFile, "tbl_xdf"))
     {
         if(is.null(.outFile))
             arglst["maxRowsByCols"] <- list(NULL)
@@ -46,7 +46,7 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
             arglst$outFile <- tbl_xdf(.data)
         }
     }
-    else arglst$outFile <- tbl_xdf(.data)
+    else arglst$outFile <- .outFile
 
     arglst
 }

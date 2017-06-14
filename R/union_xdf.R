@@ -21,7 +21,7 @@ NULL
 
 #' @rdname setops
 #' @export
-union_all.RxFileData <- function(x, y, .outFile, .rxArgs)
+union_all.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs)
 {
     # need to create a new copy of x?
     # tbl -> tbl: ok
@@ -35,7 +35,7 @@ union_all.RxFileData <- function(x, y, .outFile, .rxArgs)
         tblInput <- inherits(data, "tbl_xdf")
         xdfInput <- inherits(data, "RxXdfData") && !tblInput
         txtInput <- inherits(data, "RxFileData") && !xdfInput && !tblInput
-        tblOutput <- missing(output)
+        tblOutput <- inherits(output, "tbl_xdf")
         xdfOutput <- !tblOutput && is.character(output)
 
         # step through all possible combinations
@@ -101,12 +101,12 @@ union_all.RxFileData <- function(x, y, .outFile, .rxArgs)
 #' @rdname setops
 #' @export
 #' @method union RxFileData
-union.RxFileData <- function(x, y, .outFile, .rxArgs, ...)
+union.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
 
-    out <- union_all(x, y, .rxArgs)
-    distinct(out, .outFile=.outFile)
+    union_all(x, y, .rxArgs=.rxArgs) %>%
+        distinct(.outFile=.outFile)
 }
 

@@ -21,7 +21,7 @@ NULL
 
 #' @rdname join
 #' @export
-left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile, .rxArgs, ...)
+left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {    
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -32,7 +32,7 @@ left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y")
 
 #' @rdname join
 #' @export
-right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile, .rxArgs, ...)
+right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -43,7 +43,7 @@ right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"
 
 #' @rdname join
 #' @export
-inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile, .rxArgs, ...)
+inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -54,7 +54,7 @@ inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"
 
 #' @rdname join
 #' @export
-full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile, .rxArgs, ...)
+full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -65,7 +65,7 @@ full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y")
 
 #' @rdname join
 #' @export
-semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
+semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -85,7 +85,7 @@ semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, .
 
 #' @rdname join
 #' @export
-anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, ...)
+anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     stopIfHdfs(x, "joining not supported on HDFS")
     stopIfHdfs(y, "joining not supported on HDFS")
@@ -101,14 +101,12 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile, .rxArgs, .
     y <- transmute(y, !!!rlang::syms(by$y), .ones=1L) %>% distinct
 
     on.exit(deleteIfTbl(y))
-    #if(missing(.outFile))
-        #.outFile <- tbl_xdf(y)
-    out <- mergeBase(x, y, by, copy, "left", , rlang::enexpr(.rxArgs))
-    subset(out, is.na(.ones),  -.ones, .outFile=.outFile)
+    out <- mergeBase(x, y, by, copy, "left", , rlang::enexpr(.rxArgs)) %>%  # note missing .outFile arg!
+        subset(is.na(.ones),  -.ones, .outFile=.outFile)
 }
 
 
-mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile, .rxArgs, suffix=c(".x", ".y"))
+mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxArgs, suffix=c(".x", ".y"))
 {
     stopIfHdfs(x, "merging not supported on HDFS")
     stopIfHdfs(y, "merging not supported on HDFS")

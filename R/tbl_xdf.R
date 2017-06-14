@@ -4,9 +4,9 @@ tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical
 
 
 setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, ...) {
-    if(is.null(file))
-        file <- tempfile(tmpdir=getXdfTblDir(), fileext=".xdf")
     fileSystem <- rxGetFileSystem(xdf)
+    if(is.null(file))
+        file <- tempfile(tmpdir=getXdfTblDir(fileSystem), fileext=".xdf")
 
     .Object <- callNextMethod(.Object, file=file, fileSystem=fileSystem)
     .Object@hasTblFile <- TRUE
