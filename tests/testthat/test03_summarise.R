@@ -11,6 +11,14 @@ xs <- rlang::sym(x)
 
 xnew <- "mpg2"
 
+cc <- rxGetComputeContext()
+
+test_that("set useExecBy works",
+{
+    dplyrxdf_options(useExecBy=FALSE)
+    expect_false(dplyrxdf_options()$useExecBy)
+})
+
 test_that("ungrouped summarise works",
 {
     tbl <- mtx %>% summarise(n=n(), mpg2=mean(mpg))
@@ -88,6 +96,11 @@ test_that(".rxArgs works", {
         varlst
     }, transformVars="mpg"))
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
+})
+
+test_that("reset compute context works",
+{
+    expect_identical(rxGetComputeContext(), cc)
 })
 
 

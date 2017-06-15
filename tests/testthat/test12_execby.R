@@ -116,6 +116,13 @@ test_that("transmute works",
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
 })
 
+test_that("grouped summarise works",
+{
+    tbl <- mtx %>% group_by(cyl, gear) %>% summarise(n=n(), mpg2=mean(mpg), .method=4)
+    expect_true(verifyData(tbl, "grouped_tbl_xdf"))
+    tbl <- mtx %>% group_by(cyl, gear) %>% summarise(n=n(), mpg2=mean(mpg), .method=5)
+    expect_true(verifyData(tbl, "grouped_tbl_xdf"))
+})
 
 test_that("reset compute context works",
 {
