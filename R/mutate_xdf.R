@@ -61,14 +61,37 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     arglst <- list(.data, transforms=transforms)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-    xdflst <- splitGroups(.data)
-    on.exit(deleteIfTbl(xdflst))
-    outlst <- createSplitOutput(xdflst, .outFile)
-    outlst <- rxExec(function(data, output, arglst) {
-        arglst[[1]] <- data
-        arglst$outFile <- output
-        rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
-    }, data=rxElemArg(xdflst), output=rxElemArg(outlst), arglst, packagesToLoad="dplyr")
+    outlst <- if(.dxOptions$useExecBy)
+        transmutateExecBy(.data, arglst, get_dplyrxdf_dir(), grps)
+    else
+    {
+        xdflst <- splitGroups(.data)
+        on.exit(deleteIfTbl(xdflst))
+        outlst <- createSplitOutput(xdflst, .outFile)
+        rxExec(function(data, output, arglst)
+            {
+                arglst[[1]] <- data
+                arglst$outFile <- output
+                rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+            }, data=rxElemArg(xdflst), output=rxElemArg(outlst), arglst, packagesToLoad="dplyr")
+    }
 
     combineGroups(outlst, .outFile, grps)
+}
+
+
+transmutateExecBy <- function(.data, arglst, tblDir, grps)
+{
+    cc <- rxGetComputeContext()
+    on.exit(rxSetComputeContext(cc))
+
+    execByResult(rxExecBy(.data, grps, function(keys, data, arglst, tblDir, tblFunc)
+        {
+            arglst[[1]] <- data
+            file <- tempfile(tmpdir=tblDir, fileext=".xdf")
+            if(!is.null(arglst$outFile))
+                arglst$outFile <- tblFunc(data, file=file)
+            rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+        },
+        list(arglst=arglst, tblDir=tblDir, tblFunc=tbl_xdf)))
 }

@@ -42,6 +42,7 @@ Collate:
     'joins_xdf.R'
     'mutate_xdf.R'
     'onLoad.R'
+    'options.R'
     'persist_tbl_xdf.R'
     'rename_xdf.R'
     'select_xdf.R'

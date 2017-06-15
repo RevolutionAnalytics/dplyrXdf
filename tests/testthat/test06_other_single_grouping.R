@@ -13,6 +13,14 @@ xs <- rlang::sym(x)
 
 xnew <- "mpg2"
 
+cc <- rxGetComputeContext()
+
+test_that("set useExecBy works",
+{
+    dplyrxdf_options(useExecBy=FALSE)
+    expect_false(dplyrxdf_options()$useExecBy)
+})
+
 test_that("factorise xdf works",
 {
     tbl <- mtx %>% group_by(gear) %>% factorise(cyl)
@@ -89,7 +97,7 @@ test_that("output to data frame works",
 {
     tbl <- mtx %>% group_by(gear) %>% factorise(cyl, .outFile=NULL)
     expect_true(verifyData(tbl, "grouped_df") && varTypes(tbl)["cyl"] == "factor")
-    expect_warning(tbl <- mtcars %>% group_by(gear) %>% factorise(cyl, gear, .outFile=NULL))
+    expect_warning(tbl <- mtcars %>% group_by(gear) %>% factorise(cyl, .outFile=NULL))
     expect_true(verifyData(tbl, "grouped_df") && varTypes(tbl)["cyl"] == "factor")
     tbl <- mtt %>% group_by(gear) %>% factorise(cyl, .outFile=NULL)
     expect_true(verifyData(tbl, "grouped_df") && varTypes(tbl)["cyl"] == "factor")
@@ -106,7 +114,7 @@ test_that("output to xdf works",
 {
     tbl <- mtx %>% group_by(gear) %>% factorise(cyl, .outFile="test06.xdf")
     expect_true(verifyData(tbl, "RxXdfData") && varTypes(tbl)["cyl"] == "factor")
-    expect_warning(tbl <- mtcars %>% group_by(gear) %>% factorise(cyl, gear, .outFile="test06.xdf"))
+    expect_warning(tbl <- mtcars %>% group_by(gear) %>% factorise(cyl, .outFile="test06.xdf"))
     expect_true(verifyData(tbl, "grouped_df") && varTypes(tbl)["cyl"] == "factor")
     tbl <- mtt %>% group_by(gear) %>% factorise(cyl, .outFile="test06.xdf")
     expect_true(verifyData(tbl, "RxXdfData") && varTypes(tbl)["cyl"] == "factor")
@@ -132,6 +140,11 @@ test_that(".rxArgs works",
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
     tbl <- mtx %>% group_by(gear) %>% rename(mpg2=mpg, .rxArgs=list(rowsPerRead=1))
     expect_true(verifyData(tbl, "grouped_tbl_xdf") && names(tbl)[1] == "mpg2")
+})
+
+test_that("reset compute context works",
+{
+    expect_identical(rxGetComputeContext(), cc)
 })
 
 

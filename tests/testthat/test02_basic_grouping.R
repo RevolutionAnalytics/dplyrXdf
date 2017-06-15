@@ -11,6 +11,13 @@ xs <- rlang::sym(x)
 
 xnew <- "mpg2"
 
+cc <- rxGetComputeContext()
+
+test_that("set useExecBy works", {
+    dplyrxdf_options(useExecBy=FALSE)
+    expect_false(dplyrxdf_options()$useExecBy)
+})
+
 test_that("filter works", {
     tbl <- mtx %>% group_by(gear) %>% filter(mpg > 15, cyl <= 6)
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
@@ -109,6 +116,10 @@ test_that(".rxArgs works", {
         varlst
     }))
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
+})
+
+test_that("reset compute context works", {
+    expect_identical(rxGetComputeContext(), cc)
 })
 
 

@@ -40,16 +40,17 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_x
         NULL
     else rlang::enexpr(.rxArgs)
 
-    if(.dxOptions$useExecBy)
-        outlst <- distinctExecBy(.data, dots, .keep_all, .rxArgs, grps)
+    outlst <- if(.dxOptions$useExecBy)
+        distinctExecBy(.data, dots, .keep_all, .rxArgs, grps)
     else
     {
         xdflst <- splitGroups(.data)
         on.exit(deleteIfTbl(xdflst))
         outlst <- createSplitOutput(xdflst, .outFile)
 
-        outlst <- rxExec(distinctBase, data=rxElemArg(xdflst), dots, .keep_all, rxElemArg(outlst), .rxArgs, grps,
-        execObjects=c("distinctBase2", "doExtraArgs", "deleteIfTbl", "deleteTbl", ".dxOptions"), packagesToLoad="dplyr")
+        rxExec(distinctBase, data=rxElemArg(xdflst), dots, .keep_all, rxElemArg(outlst), .rxArgs, grps,
+            execObjects=c("distinctBase2", "doExtraArgs", "deleteIfTbl", "deleteTbl", ".dxOptions"),
+            packagesToLoad="dplyr")
     }
     combineGroups(outlst, .outFile, grps)
 }
