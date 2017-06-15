@@ -133,9 +133,9 @@ flightsMods <- flightsXdf %>%
 flightsMods$model[[1]]
 
 ## ------------------------------------------------------------------------
-getXdfTblDir()
+get_dplyrxdf_dir()
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  # set the tbl directory to a network drive (on Windows)
-#  setXdfTblDir("n:/Rtemp")
+#  set_dplyrxdf_dir("n:/Rtemp")
 

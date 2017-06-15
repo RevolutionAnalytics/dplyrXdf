@@ -28,6 +28,7 @@ Collate:
     'distinct_xdf.R'
     'do_xdf.R'
     'dplyr_pkg.R'
+    'execByUtils.R'
     'factorise_xdf.R'
     'factorise_df.R'
     'filter_xdf.R'

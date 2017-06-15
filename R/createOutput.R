@@ -14,7 +14,7 @@
 #}
 
 
-createSplitOutput <- function(datalst, output, tblDir=getXdfTblDir())
+createSplitOutput <- function(datalst, output, tblDir=get_dplyrxdf_dir())
 {
     n <- length(datalst)
     if(!missing(output) && is.null(output))  # data frame

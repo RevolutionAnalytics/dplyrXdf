@@ -5,8 +5,8 @@
 \alias{subset.RxFileData}
 \title{Subset a data source by rows and/or columns}
 \usage{
-\method{subset}{RxFileData}(.data, subset = NULL, select = NULL, .outFile,
-  .rxArgs)
+\method{subset}{RxFileData}(.data, subset = NULL, select = NULL,
+  .outFile = tbl_xdf(.data), .rxArgs)
 }
 \arguments{
 \item{.data}{A data source object, or tbl wrapping the same.}

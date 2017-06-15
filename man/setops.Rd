@@ -20,9 +20,9 @@
 
 \method{setequal}{RxFileData}(x, y, ...)
 
-\method{union_all}{RxFileData}(x, y, .outFile, .rxArgs)
+\method{union_all}{RxFileData}(x, y, .outFile = tbl_xdf(x), .rxArgs)
 
-\method{union}{RxFileData}(x, y, .outFile, .rxArgs, ...)
+\method{union}{RxFileData}(x, y, .outFile = tbl_xdf(x), .rxArgs, ...)
 }
 \arguments{
 \item{x, y}{Data sources.}

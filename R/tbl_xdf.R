@@ -6,7 +6,7 @@ tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical
 setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, ...) {
     fileSystem <- rxGetFileSystem(xdf)
     if(is.null(file))
-        file <- tempfile(tmpdir=getXdfTblDir(fileSystem), fileext=".xdf")
+        file <- tempfile(tmpdir=get_dplyrxdf_dir(fileSystem), fileext=".xdf")
 
     .Object <- callNextMethod(.Object, file=file, fileSystem=fileSystem)
     .Object@hasTblFile <- TRUE
@@ -31,7 +31,7 @@ deleteXdfTbls <- function(path, fileSystem=rxGetFileSystem())
     if(inherits(fileSystem, "RxNativeFileSystem"))
     {
         if(missing(path))
-            path <- getXdfTblDir("native")
+            path <- get_dplyrxdf_dir("native")
         files <- dir(path, pattern="\\.xdf$", full.names=TRUE, ignore.case=.Platform$OS.type == "windows")
         # use unlink to allow for the possibility of composite xdfs
         unlink(files, recursive=TRUE)
@@ -39,7 +39,7 @@ deleteXdfTbls <- function(path, fileSystem=rxGetFileSystem())
     else if(inherits(fileSystem, "RxHdfsFileSystem"))
     {
         if(missing(path))
-            path <- getXdfTblDir("hdfs")
+            path <- get_dplyrxdf_dir("hdfs")
         # rxHadoopFileExists doesn't always exist, duplicate its functionality
         pathExists <- (path == .dxOptions$hdfsWorkDir && .dxOptions$hdfsWorkDirCreated) ||
             (rxHadoopCommand(paste0("fs -test -e '", path, "'"), intern=FALSE) == 0)

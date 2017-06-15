@@ -5,7 +5,7 @@
 \alias{filter.RxFileData}
 \title{Subset a data source by rows}
 \usage{
-\method{filter}{RxFileData}(.data, ..., .outFile, .rxArgs)
+\method{filter}{RxFileData}(.data, ..., .outFile = tbl_xdf(.data), .rxArgs)
 }
 \arguments{
 \item{.data}{A data source.}

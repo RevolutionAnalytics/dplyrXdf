@@ -212,8 +212,8 @@
     rxver <- packageVersion("RevoScaleR")
     .dxOptions$useExecBy <- (rxver >= package_version("9.1"))
 
-    setXdfTblDir(fileSystem="native")
-    setXdfTblDir(fileSystem="hdfs")
+    set_dplyrxdf_dir(fileSystem="native")
+    set_dplyrxdf_dir(fileSystem="hdfs")
     NULL
 }
 
@@ -230,10 +230,12 @@
 }
 
 
-dxOptions <- function(...)
+#' @export
+dplyrxdf_options <- function(...)
 {
+    oldOpts <- as.list(.dxOptions)
     if(nargs() == 0)
-        return(as.list(.dxOptions))
+        return(oldOpts)
     dots <- list(...)
     nams <- names(dots)
     opts <- names(.dxOptions)
@@ -244,5 +246,5 @@ dxOptions <- function(...)
     }
     for(o in nams)
         .dxOptions[[o]] <- dots[[o]]
-    as.list(.dxOptions)
+    invisible(oldOpts)
 }

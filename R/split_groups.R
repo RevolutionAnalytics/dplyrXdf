@@ -9,7 +9,7 @@ splitGroups <- function(data, outXdf=data)
         stop("splitting groups not supported on HDFS")
 
     fname <- tools::file_path_sans_ext(rxXdfFileName(outXdf))
-    fname <- file.path(getXdfTblDir(), basename(fname))
+    fname <- file.path(get_dplyrxdf_dir(), basename(fname))
 
     # if files exist that could interfere with splitting output, delete them
     # should never be necessary because base filename is a randomly generated tempfile

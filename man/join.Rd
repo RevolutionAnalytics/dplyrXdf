@@ -17,22 +17,22 @@
 \title{Join two data sources together}
 \usage{
 \method{left_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
-  suffix = c(".x", ".y"), .outFile, .rxArgs, ...)
+  suffix = c(".x", ".y"), .outFile = tbl_xdf(x), .rxArgs, ...)
 
 \method{right_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
-  suffix = c(".x", ".y"), .outFile, .rxArgs, ...)
+  suffix = c(".x", ".y"), .outFile = tbl_xdf(x), .rxArgs, ...)
 
 \method{inner_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
-  suffix = c(".x", ".y"), .outFile, .rxArgs, ...)
+  suffix = c(".x", ".y"), .outFile = tbl_xdf(x), .rxArgs, ...)
 
 \method{full_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
-  suffix = c(".x", ".y"), .outFile, .rxArgs, ...)
+  suffix = c(".x", ".y"), .outFile = tbl_xdf(x), .rxArgs, ...)
 
-\method{semi_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
-  .rxArgs, ...)
+\method{semi_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
+  .outFile = tbl_xdf(x), .rxArgs, ...)
 
-\method{anti_join}{RxFileData}(x, y, by = NULL, copy = FALSE, .outFile,
-  .rxArgs, ...)
+\method{anti_join}{RxFileData}(x, y, by = NULL, copy = FALSE,
+  .outFile = tbl_xdf(x), .rxArgs, ...)
 }
 \arguments{
 \item{x, }{y Data sources to join.}

@@ -5,7 +5,7 @@
 \alias{rename.RxFileData}
 \title{Rename columns in an Xdf file}
 \usage{
-\method{rename}{RxFileData}(.data, ..., .outFile, .rxArgs)
+\method{rename}{RxFileData}(.data, ..., .outFile = tbl_xdf(.data), .rxArgs)
 }
 \arguments{
 \item{.data}{A data source.}

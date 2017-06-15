@@ -6,7 +6,8 @@
 \alias{arrange.RxXdfData}
 \title{Arrange the rows in an Xdf file}
 \usage{
-\method{arrange}{RxXdfData}(.data, ..., .by_group = FALSE, .outFile, .rxArgs)
+\method{arrange}{RxXdfData}(.data, ..., .by_group = FALSE,
+  .outFile = tbl_xdf(.data), .rxArgs)
 
 \method{arrange}{RxFileData}(.data, ...)
 }

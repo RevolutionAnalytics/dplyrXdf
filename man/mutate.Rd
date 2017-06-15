@@ -9,13 +9,15 @@
 \alias{transmute.grouped_tbl_xdf}
 \title{Add or modify variables}
 \usage{
-\method{mutate}{RxFileData}(.data, ..., .outFile, .rxArgs)
+\method{mutate}{RxFileData}(.data, ..., .outFile = tbl_xdf(.data), .rxArgs)
 
-\method{mutate}{grouped_tbl_xdf}(.data, ..., .outFile, .rxArgs)
+\method{mutate}{grouped_tbl_xdf}(.data, ..., .outFile = tbl_xdf(.data),
+  .rxArgs)
 
-\method{transmute}{RxFileData}(.data, ..., .outFile, .rxArgs)
+\method{transmute}{RxFileData}(.data, ..., .outFile = tbl_xdf(.data), .rxArgs)
 
-\method{transmute}{grouped_tbl_xdf}(.data, ..., .outFile, .rxArgs)
+\method{transmute}{grouped_tbl_xdf}(.data, ..., .outFile = tbl_xdf(.data),
+  .rxArgs)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}

@@ -7,9 +7,11 @@
 \alias{rbind.RxXdfData}
 \title{Combine data sources by rows or columns}
 \usage{
-\method{cbind}{RxXdfData}(..., deparse.level = 1, .outFile, .rxArgs)
+\method{cbind}{RxXdfData}(..., deparse.level = 1,
+  .outFile = tbl_xdf(lst[[1]]), .rxArgs)
 
-\method{rbind}{RxXdfData}(..., deparse.level = 1, .outFile, .rxArgs)
+\method{rbind}{RxXdfData}(..., deparse.level = 1,
+  .outFile = tbl_xdf(lst[[1]]), .rxArgs)
 }
 \arguments{
 \item{...}{Objects to combine. Can be \code{RxXdfData} or \code{tbl_xdf} data sources.}

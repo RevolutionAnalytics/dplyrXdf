@@ -5,7 +5,7 @@
 \alias{select.RxFileData}
 \title{Select columns in a data source}
 \usage{
-\method{select}{RxFileData}(.data, ..., .outFile, .rxArgs)
+\method{select}{RxFileData}(.data, ..., .outFile = tbl_xdf(.data), .rxArgs)
 }
 \arguments{
 \item{.data}{A data source.}

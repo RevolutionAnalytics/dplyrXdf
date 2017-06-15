@@ -15,9 +15,9 @@ factorise(.data, ..., .dots)
 
 factorize(.data, ..., .dots)
 
-\method{factorise}{RxXdfData}(.data, ..., .outFile, .rxArgs)
+\method{factorise}{RxXdfData}(.data, ..., .outFile = tbl_xdf(.data), .rxArgs)
 
-\method{factorise}{RxFileData}(.data, ..., .outFile, .rxArgs)
+\method{factorise}{RxFileData}(.data, ..., .outFile = tbl_xdf(.data), .rxArgs)
 
 all_character(vars = .varTypes)
 

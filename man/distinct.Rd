@@ -7,11 +7,11 @@
 \alias{distinct_}
 \title{Select distinct/unique rows}
 \usage{
-\method{distinct}{RxFileData}(.data, ..., .keep_all = FALSE, .outFile,
-  .rxArgs)
+\method{distinct}{RxFileData}(.data, ..., .keep_all = FALSE,
+  .outFile = tbl_xdf(.data), .rxArgs)
 
-\method{distinct}{grouped_tbl_xdf}(.data, ..., .keep_all = FALSE, .outFile,
-  .rxArgs)
+\method{distinct}{grouped_tbl_xdf}(.data, ..., .keep_all = FALSE,
+  .outFile = tbl_xdf(.data), .rxArgs)
 }
 \arguments{
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}
