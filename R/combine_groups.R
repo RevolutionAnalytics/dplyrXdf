@@ -10,7 +10,7 @@ combineGroups <- function(datlst, output, grps)
         if(!is.null(output))
             out <- rxDataStep(out, output, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
     }
-    else out <- do.call(rbind.RxXdfData, c(datlst, .outFile=output))
+    else out <- do.call(rbind.RxXdfData, rlang::modify(datlst, .outFile=output))
 
     simpleRegroup(out, grps)
 }
