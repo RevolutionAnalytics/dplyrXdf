@@ -61,10 +61,15 @@ do.grouped_tbl_xdf <- function(.data, ...)
     named <- checkNamedArgs(args)
     grps <- group_vars(.data)
 
-    on.exit(deleteTbl(xdflst))
-    xdflst <- splitGroups(.data)
-    dolst <- rxExec(doBase, data=rxElemArg(xdflst), args, grps, packagesToLoad="dplyr")
-    df <- bind_rows(dolst)
+    df <- if(.dxOptions$useExecBy)
+        doExecBy(.data, args, grps)
+    else
+    {
+        on.exit(deleteTbl(xdflst))
+        xdflst <- splitGroups(.data)
+        dolst <- rxExec(doBase, data=rxElemArg(xdflst), args, grps, packagesToLoad="dplyr")
+        bind_rows(dolst)
+    }
 
     # mimic grouping behaviour of do for data frames
     if(length(grps) == 0)
@@ -75,16 +80,38 @@ do.grouped_tbl_xdf <- function(.data, ...)
 }
 
 
-doBase <- function(data, exprs, grps=NULL)
+doBase <- function(.data, exprs, grps=NULL)
 {
-    data <- as.data.frame(data)
-    out <- do(data, !!!exprs)
+    .data <- as.data.frame(.data)
+    out <- do(.data, !!!exprs)
     if(length(grps) > 0)
     {
-        grps <- data[rep(1, nrow(out)), grps, drop=FALSE]
+        grps <- .data[rep(1, nrow(out)), grps, drop=FALSE]
         cbind(grps, out)
     }
     else out
+}
+
+
+doExecBy <- function(.data, exprs, grps=NULL)
+{
+    cc <- rxGetComputeContext()
+    on.exit(rxSetComputeContext(cc))
+
+    dflst <- rxExecBy(.data, grps, function(keys, data, exprs)
+        {
+            data <- rxDataStep(data, outFile=NULL, maxRowsByCols=NULL) # convert to df
+            dplyr::do(data, !!!exprs)
+        },
+        list(exprs=exprs))
+    execByCheck(dflst)
+    lapply(dflst, function(res, groupVars)
+        {
+            grps <- res$keys
+            names(grps) <- groupVars
+            do.call(cbind, c(grps, list(res$result)))
+        }, groupVars=grps) %>%
+        bind_rows
 }
 
 
@@ -149,11 +176,16 @@ do_xdf.grouped_tbl_xdf <- function(.data, ...)
     named <- checkNamedArgs(args)
     grps <- group_vars(.data)
 
-    on.exit(deleteTbl(xdflst))
-    xdflst <- splitGroups(.data)
-    dolst <- rxExec(doXdfBase, .data=rxElemArg(xdflst), args, grps, named,
+    df <- if(.dxOptions$useExecBy)
+        doXdfExecBy(.data, args, grps, named)
+    else
+    {
+        on.exit(deleteTbl(xdflst))
+        xdflst <- splitGroups(.data)
+        dolst <- rxExec(doXdfBase, .data=rxElemArg(xdflst), args, grps, named,
                     packagesToLoad="dplyr")
-    df <- bind_rows(dolst)
+        bind_rows(dolst)
+    }
 
     # mimic grouping behaviour of do for data frames
     if(length(grps) == 0)
@@ -170,7 +202,8 @@ doXdfBase <- function(.data, exprs, grps=NULL, named)
     datlst <- rlang::env(.=.data, .data=.data)
     if(named)
     {
-        out <- lapply(exprs, function(arg) {
+        out <- lapply(exprs, function(arg)
+        {
             list(rlang::eval_tidy(arg, datlst))
         })
     }
@@ -185,6 +218,39 @@ doXdfBase <- function(.data, exprs, grps=NULL, named)
         cbind(grps, out[names(out) != ".group."])
     }
     else out
+}
+
+
+doXdfExecBy <- function(.data, exprs, grps, named)
+{
+    cc <- rxGetComputeContext()
+    on.exit(rxSetComputeContext(cc))
+
+    dflst <- rxExecBy(.data, grps, function(keys, data, exprs)
+        {
+            datlst <- rlang::env(.=data, .data=data)
+            if(named)
+            {
+                out <- lapply(exprs, function(arg)
+                {
+                    list(rlang::eval_tidy(arg, datlst))
+                })
+            }
+            else
+            {
+                out <- rlang::eval_tidy(exprs[[1]], datlst)
+            }
+            dplyr::as_tibble(out)
+        },
+        list(exprs=exprs))
+    execByCheck(dflst)
+    lapply(dflst, function(res, groupVars)
+        {
+            grps <- res$keys
+            names(grps) <- groupVars
+            do.call(cbind, c(grps, list(res$result)))
+        }, groupVars=grps) %>%
+        bind_rows
 }
 
 

@@ -41,7 +41,7 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_x
     else rlang::enexpr(.rxArgs)
 
     if(.dxOptions$useExecBy)
-        outlst <- distinctExecBy(.data, dots, .keep_all, .outFile, .rxArgs, grps)
+        outlst <- distinctExecBy(.data, dots, .keep_all, .rxArgs, grps)
     else
     {
         xdflst <- splitGroups(.data)
@@ -93,7 +93,7 @@ distinctBase2 <- function(data, vars, keep_all, grps=NULL)
 }
 
 
-distinctExecBy <- function(data, vars, keep_all, output, rxArgs, grps=NULL)
+distinctExecBy <- function(data, vars, keep_all, rxArgs, grps=NULL)
 {
     cc <- rxGetComputeContext()
     on.exit(rxSetComputeContext(cc))
