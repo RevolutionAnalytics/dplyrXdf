@@ -186,7 +186,8 @@
 
     rxver <- packageVersion("RevoScaleR")
     suppressWarnings({
-        assignInNamespace("rxExecInDataHadoop", value=h, ns="RevoScaleR", pos="package:RevoScaleR")
+        if(rxver < package_version("9.0"))
+            assignInNamespace("rxExecInDataHadoop", value=h, ns="RevoScaleR", pos="package:RevoScaleR")
     })
     
     # turn progress reporting off
