@@ -91,8 +91,6 @@ union_all.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs)
     arglst <- doExtraArgs(arglst, x, rlang::enexpr(.rxArgs), x)
     x <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
 
-    #if(is.character(.outFile) || class(.outFile) == "RxXdfData")  # do we want a persistent file?
-        #x <- as(x, "RxXdfData")
     simpleRegroup(x, grps)
 }
 

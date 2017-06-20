@@ -40,6 +40,7 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
     # cannot set rowsPerRead with append="cols"
     arglst$rowsPerRead <- NULL
 
+    dupNameWarn <- FALSE
     for(i in seq_along(lst))
     {
         if(i == 1)
@@ -48,7 +49,8 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
         {
             arglst$append <- "cols"
             # warn if duplicate colnames found
-            dupNameWarn <- any(names(lst[[i]]) %in% names(output))
+            if(!dupNameWarn)
+                dupNameWarn <- any(names(lst[[i]]) %in% names(output))
         }
         arglst$inData <- lst[[i]]
         output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
