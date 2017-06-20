@@ -44,6 +44,7 @@ Collate:
     'options.R'
     'persist_tbl_xdf.R'
     'rename_xdf.R'
+    'sample.R'
     'select_xdf.R'
     'simpleRegroup.R'
     'split_groups.R'
