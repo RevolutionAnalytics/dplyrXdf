@@ -3,11 +3,11 @@
 \docType{package}
 \name{dplyrXdf}
 \alias{dplyrXdf}
-\alias{dplyrXdf-package}
 \alias{dplyrXdf_package}
+\alias{dplyrXdf-package}
 \title{dplyr backend for Xdf files}
 \description{
-The dplyrXdf package implements a \code{\link[dplyr]{dplyr}} backend for Microsoft R Server (MRS). A key feature of MRS is that it allows you to break R's memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the .xdf extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.
+The dplyrXdf package implements a \link[dplyr]{dplyr} backend for Microsoft R Server (MRS). A key feature of MRS is that it allows you to break R's memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the .xdf extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.
 }
 \details{
 dplyrXdf supports all the basic dplyr single-table verbs, plus some additions:
@@ -27,6 +27,14 @@ Similarly, dplyrXdf also supports all the table-join verbs from dplyr, \emph{exc
   \item \code{left_join}, \code{right_join}, \code{inner_join} and \code{full_join}
   \item \code{anti_join} and \code{semi_join}
   \item \code{union} and \code{union_all}
+}
+
+It also provides the following utility methods:
+\itemize{
+  \item \code{sample_n} and \code{sample_frac} methods for random sampling
+  \item \code{cbind} and \code{rbind} methods for combining Xdf files
+  \item \code{[[}, \code{$} and \code{pull} methods for extracting a column
+  \item \code{as.data.frame}, \code{collect} and \code{compute} methods to convert an Xdf file into a data frame
 }
 
 A basic idea behind dplyrXdf is that all operations should be isolated from the original data source. The benefit of this is that it protects your data: if you accidentally delete a variable or make a wrong transformation, your original file remains intact. This principle is also consistent with dplyr pipelines and R data operations in general.

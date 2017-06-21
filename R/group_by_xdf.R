@@ -15,12 +15,14 @@ grouped_tbl_xdf <- setClass("grouped_tbl_xdf", contains="tbl_xdf", slots=c(group
 #' @param .dots Used to work around non-standard evaluation.
 #'
 #' @details
-#' \code{group_by} itself does not do any data processing; it only sets up the necessary metadata for verbs accepting grouped tbls to generate the groups.
+#' When called on an Xdf file, \code{group_by} does not do any data processing; it only sets up the necessary metadata for verbs accepting grouped tbls to handle the data correctly. When called on a non-Xdf data source, it imports the data into an Xdf tbl.
 #'
-#' Most verbs that accept grouped data as input will split the data into multiple Xdf files, and then process each file separately. The exception is \code{\link[dplyrXdf]{summarise}}, which allows a range of options in how to treat groups.
+#' Note that by default, the levels of the grouping variables for Xdf files are \emph{unsorted.}
+#'
+#' Most verbs that have specific methods for grouped data will split the data into multiple Xdf files, and then process each file separately (the exception is \code{\link[dplyrXdf]{summarise}}, which allows a range of options in how to treat groups). There are two options for splitting the data: use the \code{\link[RevoScaleR]{rxExecBy}} supplied in the RevoScaleR package, or via dplyrXdf-internal code. The former is the default if the version of Microsoft R installed is 9.1 or higher.
 #'
 #' @seealso
-#' \code{\link[dplyr]{group_by}}
+#' \code{\link[dplyr]{group_by}}, \code{\link{dplyrxdf_options}} for how to change the splitting procedure
 #' @aliases group_by
 #' @rdname group_by
 #' @export
@@ -131,3 +133,5 @@ ungroup.RxFileData <- function(x)
 {
     x
 }
+
+

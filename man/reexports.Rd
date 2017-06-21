@@ -2,11 +2,14 @@
 % Please edit documentation in R/joins_unsupported.R
 \docType{import}
 \name{reexports}
+\alias{reexports}
 \alias{intersect}
 \alias{reexports}
 \alias{setdiff}
+\alias{reexports}
 \alias{setequal}
 \title{Objects exported from other packages}
+\keyword{internal}
 \description{
 These objects are imported from other packages. Follow the links
 below to see their documentation.
@@ -14,5 +17,4 @@ below to see their documentation.
 \describe{
   \item{dplyr}{\code{\link[dplyr]{intersect}}, \code{\link[dplyr]{setdiff}}, \code{\link[dplyr]{setequal}}}
 }}
-\keyword{internal}
 

@@ -1,3 +1,15 @@
+#' Do random sampling from an Xdf file
+#'
+#' @param tbl An Xdf file or a tbl wrapping the same.
+#' @param size For \code{sample_n}, the number of rows to select. For \code{sample_frac}, the fraction of rows to select. For a grouped dataset, \code{size} applies to each group.
+#' @param replace,weight,.env Not used.
+#'
+#' @details
+#' Sampling from Xdf files is slightly more limited than the data frame case. Only unweighted sampling without replacement is supported, and attempts to specify otherwise will result in a warning.
+#'
+#' @seealso
+#' \code{\link[dplyr]{sample_frac}}, \code{\link[dplyr]{sample_n}}, \code{\link{sample}}
+#' @rdname sample
 #' @export
 sample_n.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {
@@ -10,6 +22,7 @@ sample_n.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NUL
 }
 
 
+#' @rdname sample
 #' @export
 sample_frac.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {
@@ -22,6 +35,7 @@ sample_frac.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=
 }
 
 
+#' @rdname sample
 #' @export
 sample_n.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {
@@ -31,6 +45,7 @@ sample_n.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .e
 }
 
 
+#' @rdname sample
 #' @export
 sample_frac.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {

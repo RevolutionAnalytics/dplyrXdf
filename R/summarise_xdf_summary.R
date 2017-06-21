@@ -24,7 +24,7 @@ smryRxSummary.grouped_tbl_xdf <- function(data, grps=NULL, stats, exprs, rxArgs)
     # convert non-factor character cols into factors
     isChar <- varTypes(data, grps) == "character"
     if(any(isChar))
-        data <- factorise_(data, .dots=grps[isChar])
+        data <- factorise(data, !!!rlang::syms(grps[isChar]))
 
     cl <- buildSmryFormulaRhs(data, grps,
         quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE)), rxArgs)

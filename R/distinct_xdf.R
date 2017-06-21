@@ -2,6 +2,7 @@
 #'
 #' @param .data A tbl for an Xdf data source; or a raw Xdf data source.
 #' @param ... Variables to use for determining uniqueness. If left blank, all variables in \code{.data} are used to determine uniqueness.
+#' @param .keep_all Whether to keep all the variables in the dataset, or only those used in determining uniqueness.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param .keep_all If \code{TRUE}, keep all variables in the dataset; otherwise, only keep variables used in defining uniqueness.

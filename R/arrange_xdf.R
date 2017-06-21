@@ -2,6 +2,7 @@
 #'
 #' @param data An Xdf data source, tbl, or other RevoScaleR file data source.
 #' @param ... List of unquoted variable names. Use \code{desc} to sort in descending order.
+#' @param .by_group If TRUE, will sort first by grouping variables.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #'
@@ -9,7 +10,7 @@
 #' The underlying RevoScaleR function is \code{rxSort}. This has many sorting options, including removing duplicated keys, adding a column of frequency counts, and so on.
 #'
 #' @return
-#' An object representing the sorted data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
+#' An object representing the sorted data. This depends on the \code{.outFile} argument: by default, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
 #' \code{\link{rxSort}}, \code{\link[dplyr]{arrange}} in package dplyr

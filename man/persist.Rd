@@ -2,8 +2,8 @@
 % Please edit documentation in R/persist_tbl_xdf.R
 \name{persist}
 \alias{persist}
-\alias{persist.RxFileData}
 \alias{persist.tbl_xdf}
+\alias{persist.RxFileData}
 \title{Copy an xdf tbl to a permanent storage location.}
 \usage{
 persist(.data, ...)
@@ -40,4 +40,3 @@ Calling this verb on a non-tbl data source (eg a raw \code{RxXdfData} object) wi
 \seealso{
 \code{\link{as.data.frame.RxXdfData}}, \code{\link[RevoScaleR]{rxDataStep}}
 }
-

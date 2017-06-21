@@ -5,8 +5,8 @@
 \alias{group_vars.grouped_tbl_xdf}
 \alias{groups.RxFileData}
 \alias{groups.grouped_tbl_xdf}
-\alias{ungroup.RxFileData}
 \alias{ungroup.grouped_tbl_xdf}
+\alias{ungroup.RxFileData}
 \title{Get the groups for a file data source, or a tbl wrapping an Xdf file}
 \usage{
 \method{group_vars}{RxFileData}(x)
@@ -30,4 +30,3 @@ If \code{x} is a grouped tbl, a character vector giving the grouping variable na
 \description{
 Get the groups for a file data source, or a tbl wrapping an Xdf file
 }
-

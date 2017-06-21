@@ -7,14 +7,16 @@
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #'
 #' @details
-#' The difference between the \code{do} and \code{doXdf} verbs is that the former converts the data into a data frame before running the expressions on it; while the latter passes the data as Xdf files. \code{do} is thus more flexible in the expressions it can run (basically anything that works with data frames), whereas \code{doXdf} is better able to handle large datasets. The final output from \code{doXdf} must still be able to fit in memory (see below).
+#' The difference between the \code{do} and \code{do_xdf} verbs is that the former converts the data into a data frame before running the expressions on it; while the latter passes the data as Xdf files. \code{do} is thus more flexible in the expressions it can run (basically anything that works with data frames), whereas \code{do_xdf} is better able to handle large datasets. The final output from \code{do_xdf} must still be able to fit in memory (see below).
+#'
+#' \code{do_xdf} was called \code{doXdf} in previous versions of this package; it has been renamed to match dplyr's snake_case naming convention.
 #'
 #' @return
-#' The \code{do} and \code{doXdf} verbs always return a data frame, unlike the other verbs for Xdf objects. This is because they are meant to execute code that can return arbitrarily complex objects, and Xdf files can only store atomic data.
+#' The \code{do} and \code{do_xdf} verbs always return a data frame, unlike the other verbs for Xdf objects. This is because they are meant to execute code that can return arbitrarily complex objects, and Xdf files can only store atomic data.
 #'
 #' @seealso
 #' \code{\link[dplyr]{do}} in package dplyr
-#' @aliases do do_
+#' @aliases do
 #' @rdname do
 #' @export
 do.RxFileData <- function(.data, ...)
@@ -39,7 +41,7 @@ do.RxFileData <- function(.data, ...)
 
 
 #' @details
-#' To run expressions on a grouped Xdf tbl, \code{do} and \code{doXdf} split the data into one file per group, and the arguments are called on each file. This ensures that the groups will be appropriately generated regardless of the types of the grouping variables. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
+#' To run expressions on a grouped Xdf tbl, \code{do} and \code{do_xdf} split the data into one file per group, and the arguments are called on each file. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
 #' @rdname do
 #' @export
 do.grouped_tbl_xdf <- function(.data, ...)

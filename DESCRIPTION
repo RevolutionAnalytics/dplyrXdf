@@ -6,11 +6,11 @@ Authors@R: c(
     person("Microsoft", role="cph")
     )
 Description: Interface to xdf files for the dplyr package
-Depends:
+Depends: 
     R (>= 3.3.2),
     dplyr (>= 0.6),
     RevoScaleR (>= 8.0)
-Imports:
+Imports: 
     dplyr,
     magrittr,
     rlang (>= 0.1)
@@ -18,7 +18,7 @@ License: MIT + file LICENSE
 URL: https://github.com/RevolutionAnalytics/dplyrXdf
 BugReports: https://github.com/RevolutionAnalytics/dplyrXdf/issues
 LazyData: true
-Collate:
+Collate: 
     '00rxArgs.R'
     'arrange_xdf.R'
     'combine_groups.R'
@@ -59,8 +59,8 @@ Collate:
     'transmute_xdf.R'
     'union_xdf.R'
     'workdir_utils.R'
-Suggests:
+Suggests: 
     knitr,
     testthat
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
