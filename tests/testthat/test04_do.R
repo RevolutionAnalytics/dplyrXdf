@@ -11,6 +11,14 @@ xs <- rlang::sym(x)
 
 xnew <- "mpg2"
 
+cc <- rxGetComputeContext()
+
+test_that("set useExecBy works",
+{
+    dplyrxdf_options(useExecBy=FALSE)
+    expect_false(dplyrxdf_options()$useExecBy)
+})
+
 test_that("ungrouped do works",
 {
     tbl <- mtx %>% do(m=lm(mpg ~ cyl, data=.), w=lm(wt ~ cyl, data=.))
@@ -77,6 +85,11 @@ test_that("grouped do_xdf works",
         .
     }))
     expect_true(verifyData(tbl, "grouped_df"))
+})
+
+test_that("reset compute context works",
+{
+    expect_identical(rxGetComputeContext(), cc)
 })
 
 

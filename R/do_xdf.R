@@ -69,7 +69,7 @@ do.grouped_tbl_xdf <- function(.data, ...)
     {
         on.exit(deleteTbl(xdflst))
         xdflst <- splitGroups(.data)
-        dolst <- rxExec(doBase, data=rxElemArg(xdflst), args, grps, packagesToLoad="dplyr")
+        dolst <- rxExec(doBase, .data=rxElemArg(xdflst), args, grps, packagesToLoad="dplyr")
         bind_rows(dolst)
     }
 

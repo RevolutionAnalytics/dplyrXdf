@@ -9,6 +9,16 @@ verifyData <- function(xdf, expectedClass)
 doParallel::registerDoParallel()
 rxSetComputeContext("dopar")
 
+
+cc <- rxGetComputeContext()
+
+test_that("set useExecBy works",
+{
+    dplyrxdf_options(useExecBy=FALSE)
+    expect_false(dplyrxdf_options()$useExecBy)
+})
+
+
 test_that("arrange works",
 {
     expect_true(verifyData(mtx %>% group_by(gear) %>% arrange(mpg, disp), "grouped_tbl_xdf"))
@@ -71,6 +81,11 @@ test_that("summarise works",
 test_that("transmute works",
 {
     expect_true(verifyData(mtx %>% group_by(gear) %>% transmute(m2=2 * mpg, sw=sqrt(wt)), "grouped_tbl_xdf"))
+})
+
+test_that("reset compute context works",
+{
+    expect_identical(rxGetComputeContext(), cc)
 })
 
 rxSetComputeContext("local")
