@@ -33,6 +33,8 @@ tbl_types <- function(x)
 # assorted unexported functions
 varTypes <- function(x, vars=NULL)
 {
+    if(!is.null(vars) && length(vars) == 0)  # handle no-variable input
+        return(character(0))
     sapply(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE), "[[", "varType")
 }
 

@@ -18,8 +18,7 @@ License: MIT + file LICENSE
 URL: https://github.com/RevolutionAnalytics/dplyrXdf
 BugReports: https://github.com/RevolutionAnalytics/dplyrXdf/issues
 LazyData: true
-Collate: 
-    '00rxArgs.R'
+Collate:     '00rxArgs.R'
     'arrange_xdf.R'
     'combine_groups.R'
     'crbind.R'
@@ -47,12 +46,13 @@ Collate:
     'sample.R'
     'select_xdf.R'
     'simpleRegroup.R'
+    'smryHelpers.R'
     'split_groups.R'
     'subset_xdf.R'
     'summarise_xdf.R'
     'summarise_xdf_cube.R'
-    'summarise_xdf_summary.R'
     'summarise_xdf_split.R'
+    'summarise_xdf_summary.R'
     'summarise_xdf_summary2.R'
     'tbl_df_methods.R'
     'tbl_utils.R'

@@ -71,6 +71,21 @@ test_that("grouped summarise works with quoting",
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
 })
 
+test_that("grouped summarise works with implicit factoring",
+{
+    
+    tbl <- mtx %>% mutate(x=as.character(sample(4, .rxNumRows, TRUE))) %>% group_by(x) %>% summarise(n=n(), .method=1)
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% mutate(x=as.character(sample(4, .rxNumRows, TRUE))) %>% group_by(x) %>% summarise(n=n(), .method=2)
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% mutate(x=as.character(sample(4, .rxNumRows, TRUE))) %>% group_by(x) %>% summarise(n=n(), .method=3)
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% mutate(x=as.character(sample(4, .rxNumRows, TRUE))) %>% group_by(x) %>% summarise(n=n(), .method=4)
+    expect_true(verifyData(tbl, "tbl_xdf"))
+    tbl <- mtx %>% mutate(x=as.character(sample(4, .rxNumRows, TRUE))) %>% group_by(x) %>% summarise(n=n(), .method=5)
+    expect_true(verifyData(tbl, "tbl_xdf"))
+})
+
 test_that("output to data frame works", {
     tbl <- mtx %>% summarise(n=n(), mpg2=mean(mpg), .outFile=NULL)
     expect_true(verifyData(tbl, "data.frame"))

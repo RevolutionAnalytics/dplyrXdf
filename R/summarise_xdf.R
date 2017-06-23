@@ -30,9 +30,6 @@
 summarise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs, .method=NULL)
 {
     dots <- rlang::quos(..., .named=TRUE)
-    if(length(dots) > 1)
-        env <- rlang::get_env(dots[[1]])
-    else env <- rlang::get_env(rlang::caller_env())
 
     exprs <- lapply(dots, rlang::get_expr)
     stats <- sapply(exprs, function(term) as.character(term[[1]]))
@@ -67,7 +64,6 @@ summarise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs, .
     smry <- smryFunc(.data, grps, stats, exprs, .rxArgs)
 
     output <- makeSmryOutput(smry, .data, .outFile)
-    on.exit(deleteIfTbl(.data))
 
     # strip off one level of grouping
     simpleRegroup(output, grps[-length(grps)])

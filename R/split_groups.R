@@ -1,9 +1,7 @@
 splitGroups <- function(data, outXdf=data)
 {
     grps <- group_vars(data)
-
     on.exit(deleteIfTbl(data))
-
     # no splitting on Hdfs
     if(inherits(rxGetFileSystem(data), "RxHdfsFileSystem"))
         stop("splitting groups not supported on HDFS")
@@ -21,7 +19,7 @@ splitGroups <- function(data, outXdf=data)
             datlst <- split(as.data.frame(varlst, stringsAsFactors=FALSE), varlst[.grps], drop=TRUE, sep="_&&_")
             # fix problematic characters in filenames: ?*<>|+ etc
             names(datlst) <- sapply(names(datlst), URLencode, reserved=TRUE)
-            filelst <- paste(.fname, paste(.grps, collapse="_"), names(datlst), "xdf", sep=".")
+            filelst <- paste(.fname, paste(.grps, collapse="_"), names(datlst), ".xdf", sep="__")
             for(i in seq_along(datlst))
             {
                 out <- if(file.exists(filelst[i]))
@@ -42,10 +40,8 @@ deleteSplitOutputs <- function(fname, grps)
 {
     dname <- dirname(fname)
     fname <- basename(fname)
-    pattern <- paste(fname, paste(grps, collapse="_"), sep=".")
-
+    pattern <- paste(fname, paste(grps, collapse="_"), sep="__")
     existingFiles <- grep(pattern, dir(dname), value=TRUE, fixed=TRUE)
-
     if(length(existingFiles) > 0)
     {
         # should never happen, warn if it does
