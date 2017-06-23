@@ -105,7 +105,7 @@ test_that("transmute works",
 
     tbl <- mtx %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile=NULL)
     expect_true(verifyData(tbl, "grouped_df"))
-    tbl <- mtx %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test02.xdf")
+    tbl <- mtx %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test12.xdf")
     expect_true(verifyData(tbl, "RxXdfData"))
     tbl <- mtx %>% group_by(gear) %>% transmute(.rxArgs=list(transformFunc=function(varlst)
     {
