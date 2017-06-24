@@ -5,17 +5,28 @@ tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical
 
 setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, ...) {
     fileSystem <- rxGetFileSystem(xdf)
+    createCompositeSet <- if(!is.null(xdf) && inherits(xdf, "RxXdfData"))
+        xdf@createCompositeSet
+    else NULL
     if(is.null(file))
-        file <- tempfile(tmpdir=get_dplyrxdf_dir(fileSystem), fileext=".xdf")
+    {
+        tmpdir <- get_dplyrxdf_dir(fileSystem)
+        if(is.null(createCompositeSet))
+            file <- tempfile(tmpdir=tmpdir, fileext=".xdf")
+        else file <- tempfile(tmpdir=tmpdir)
+    }
 
-    .Object <- callNextMethod(.Object, file=file, fileSystem=fileSystem)
-    .Object@hasTblFile <- TRUE
+    arglst <- rlang::modify(list(.Object, file=file, fileSystem=fileSystem, createCompositeSet=createCompositeSet),
+        !!!list(...))
+    .Object <- rlang::invoke("callNextMethod", arglst, .env=parent.frame(), .bury=NULL)
+    # hasTblFile should really be isDeletable; misnomer is for back-compatibility
+    .Object@hasTblFile <- !file.exists(.Object@file)
     .Object
 })
 
 
 setMethod("coerce", list(from="RxFileData", to="tbl_xdf"), function(from, to, strict=TRUE) {
-    out <- tbl_xdf(from)
+    out <- tbl_xdf()
     rxImport(from, out, rowsPerRead=.dxOptions$rowsPerRead)
 })
 

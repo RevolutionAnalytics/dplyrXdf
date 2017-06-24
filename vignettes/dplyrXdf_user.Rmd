@@ -32,14 +32,12 @@ flightsXdf <- rxDataStep(flights, "flights.xdf", overwrite=TRUE)
 
 To facilitate the task of file management, dplyrXdf defines a new `tbl_xdf` class that extends the `RxXdfData` class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an `tbl_xdf` object is just a normal xdf data source; thus, existing code dealing with xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a `tbl_xdf`, as opposed to a normal xdf file, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.
 
-To create a `tbl_xdf` yourself, you can call the `tbl_xdf` function on an Xdf file:
+In general, you never need to create a `tbl_xdf` manually. The exception is if you want to create a `tbl_xdf` from a non-Xdf data source. In that case you can do the following, which will transparently import the data into an Xdf file:
 
-```{r}
-flightsTbl <- tbl_xdf(flightsXdf)
-flightsTbl
+```{r, eval=FALSE}
+txt <- RxTextData("path/to/file.txt")
+txtTbl <- as(txt, "tbl_xdf")
 ```
-
-However this should rarely (if ever) be necessary, as dplyrXdf will automatically handle such matters.
 
 A side-effect of dplyrXdf managing files for you is that you should be careful when passing the result from an initial pipeline into subsequent pipelines. Consider the following example:
 
@@ -249,17 +247,17 @@ There are a number of ways to specify the variables to convert, in addition to n
 By default, if no variables are specified in the `factorise` call, then all character variables will be converted to factors. As with `select`, renaming variables as part of the factor conversion is not supported.
 
 
-## Executing code with `do` and `doXdf`
+## Executing code with `do` and `do_xdf`
 
 The `do` verb is an exception to the rule that `dplyrXdf` verbs write their output as xdf files. This is because `do` executes arbitrary R code, and can return arbitrary R objects; while a data frame is capable of storing these objects, an xdf file is limited to character and numeric vectors only.
 
-The `doXdf` verb is similar to `do`, but where `do` splits its input into one data frame per group, `doXdf` splits it into one xdf file per group. This allows `do`-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to `doXdf` must obviously know how to handle xdfs.
+The `doXdf` verb is similar to `do`, but where `do` splits its input into one data frame per group, `do_xdf` splits it into one xdf file per group. This allows `do`-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to `do_xdf` must obviously know how to handle xdfs.
 
 ```{r}
 # fit a regression model by carrier, using rxLinMod
 flightsMods <- flightsXdf %>%
     group_by(carrier) %>%
-    doXdf(model=rxLinMod(arr_delay ~ dep_delay + hour, data=.))
+    do_xdf(model=rxLinMod(arr_delay ~ dep_delay + hour, data=.))
 
 flightsMods$model[[1]]
 ```
@@ -267,17 +265,17 @@ flightsMods$model[[1]]
 
 ## Setting the tbl directory
 
-By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large xdf files. You can view the location of the current xdf tbl directory with `getXdfTblDir`:
+By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large xdf files. You can view the location of the current xdf tbl directory with `get_dplyrxdf_dir`:
 
 ```{r}
-getXdfTblDir()
+get_dplyrxdf_dir()
 ```
 
-Similarly, you can change the location of the xdf tbl directory with the `setXdfTblDir` function:
+Similarly, you can change the location of the xdf tbl directory with the `set_dplyrxdf_dir` function:
 
 ```{r, eval=FALSE}
 # set the tbl directory to a network drive (on Windows)
-setXdfTblDir("n:/Rtemp")
+set_dplyrxdf_dir("n:/Rtemp")
 ```
 
 For best results, you should avoid setting the xdf tbl directory to a remote location/network drive unless you have a fast network connection.

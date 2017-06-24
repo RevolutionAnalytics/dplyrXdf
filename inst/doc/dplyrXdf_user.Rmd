@@ -267,17 +267,17 @@ flightsMods$model[[1]]
 
 ## Setting the tbl directory
 
-By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large xdf files. You can view the location of the current xdf tbl directory with `getXdfTblDir`:
+By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large xdf files. You can view the location of the current xdf tbl directory with `getdplyrxdf_dir`:
 
 ```{r}
-getXdfTblDir()
+getdplyrxdf_dir()
 ```
 
-Similarly, you can change the location of the xdf tbl directory with the `setXdfTblDir` function:
+Similarly, you can change the location of the xdf tbl directory with the `setdplyrxdf_dir` function:
 
 ```{r, eval=FALSE}
 # set the tbl directory to a network drive (on Windows)
-setXdfTblDir("n:/Rtemp")
+setdplyrxdf_dir("n:/Rtemp")
 ```
 
 For best results, you should avoid setting the xdf tbl directory to a remote location/network drive unless you have a fast network connection.
