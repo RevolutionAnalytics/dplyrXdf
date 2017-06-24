@@ -32,10 +32,10 @@ flightsXdf <- rxDataStep(flights, "flights.xdf", overwrite=TRUE)
 
 To facilitate the task of file management, dplyrXdf defines a new `tbl_xdf` class that extends the `RxXdfData` class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an `tbl_xdf` object is just a normal xdf data source; thus, existing code dealing with xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a `tbl_xdf`, as opposed to a normal xdf file, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.
 
-To create a `tbl_xdf` yourself, you can call the `tbl` function on an xdf data source:
+To create a `tbl_xdf` yourself, you can call the `tbl_xdf` function on an Xdf file:
 
 ```{r}
-flightsTbl <- tbl(flightsXdf)
+flightsTbl <- tbl_xdf(flightsXdf)
 flightsTbl
 ```
 

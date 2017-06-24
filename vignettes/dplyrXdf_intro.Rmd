@@ -146,6 +146,15 @@ flightsJoin <- left_join(
 head(flightsJoin)
 ```
 
+### Utility functions
+
+In addition, dplyrXdf provides methods for the following utilities:
+
+* `cbind` and `rbind` to combine Xdf files
+* `as.data.frame`, `collect` and `compute` to convert an Xdf file into a data frame
+* `[[`, `$` and `pull` to extract a column into memory
+* `sample_frac` and `sample_n` to do random sampling
+
 
 ## Non-xdf and non-local data sources
 
@@ -156,7 +165,7 @@ For the moment, dplyrXdf only supports files stored in the local filesystem. Sup
 
 ## Conclusion
 
-This article has been a quick executive-summary introduction to dplyrXdf. Like dplyr, dplyrXdf is a package under active development. If you have any suggestions on features to add (including bits of dplyr that have been left out) or bugs that need fixing, please contact me at [hongooi@microsoft.com](hongooi@microsoft.com).
+This article has been a quick executive-summary introduction to dplyrXdf. If you have any suggestions on features to add (including bits of dplyr that have been left out) or bugs that need fixing, please contact me at [hongooi@microsoft.com](hongooi@microsoft.com).
 
 
 
