@@ -105,39 +105,3 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile=tbl_xdf(x),
         subset(is.na(.ones),  -.ones, .outFile=.outFile)
 }
 
-
-mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxArgs, suffix=c(".x", ".y"))
-{
-    stopIfHdfs(x, "merging not supported on HDFS")
-    stopIfHdfs(y, "merging not supported on HDFS")
-
-    # copy not used by dplyrXdf at the moment
-    if(copy)
-        warning("copy argument not currently used")
-
-    grps <- group_vars(x)
-    yOrig <- getTblFile(y)
-    newxy <- alignInputs(x, y, by, yOrig)
-    x <- newxy$x
-    y <- newxy$y
-
-    # cleanup on exit is asymmetric wrt x, y
-    on.exit({
-        deleteIfTbl(x)
-        # make sure not to delete original y by accident after factoring
-        if(!is.data.frame(y) && getTblFile(y) != yOrig)
-            deleteTbl(y)
-     })
-
-    # sigh
-    if(all(substr(suffix, 1, 1) == "."))
-        suffix <- substr(suffix, 2, nchar(suffix))
-
-    arglst <- list(x, y, matchVars=by$y, type=type, duplicateVarExt=suffix)
-    arglst <- doExtraArgs(arglst, x, .rxArgs, .outFile)
-    arglst$rowsPerRead <- NULL # not used by rxMerge
-
-    output <- rlang::invoke("rxMerge", arglst, .env=parent.frame(), .bury=NULL)
-    simpleRegroup(output, grps)
-}
-
