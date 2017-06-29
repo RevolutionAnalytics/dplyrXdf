@@ -1,6 +1,6 @@
 context("Composite Xdf input")
-mtc <- RxXdfData("mtcc", createCompositeSet=TRUE)
-rxDataStep(mtcars, "mtcc", overwrite=TRUE)
+mtc <- RxXdfData("mtc", createCompositeSet=TRUE)
+rxDataStep(mtcars, mtc, overwrite=TRUE)
 
 verifyCompositeData <- function(xdf, expectedClass)
 {
@@ -68,4 +68,4 @@ test_that("output to xdf works",
 
 
 # cleanup
-file.remove("mtx.xdf", "test14.xdf")
+unlink(c("mtc", "test14"), recursive=TRUE)

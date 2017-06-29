@@ -38,8 +38,14 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
     {
         if(is.null(.outFile))
             arglst["maxRowsByCols"] <- list(NULL)
-        else if(is.character(.outFile) || inherits(.outFile, "RxXdfData"))
+        else if(inherits(.outFile, "RxXdfData"))
             arglst$outFile <- .outFile
+        else if(is.character(.outFile))
+        {
+            composite <- isCompositeXdf(.data)
+            .outFile <- validateXdfFile(.outFile, composite)
+            arglst$outFile <- RxXdfData(.outFile, createCompositeSet=composite)
+        }
         else
         {
             warning("unexpected value for .outFile ignored")

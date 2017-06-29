@@ -19,6 +19,24 @@ isCompositeXdf <- function(data)
 }
 
 
+# ensure that composite xdf has no extension, normal xdf has extension
+validateXdfFile <- function(filename, composite)
+{
+    ext <- tools::file_ext(filename)
+    if(composite)
+    {
+        if(ext != "")
+            filename <- tools::file_path_sans_ext(filename)
+    }
+    else
+    {
+        if(ext != "xdf")
+            filename <- paste0(tools::file_path_sans_ext(filename), ".xdf")
+    }
+    filename
+}
+
+
 copyXdf <- function(from, to, move=FALSE)
 {
     if(inherits(from, "RxXdfData"))

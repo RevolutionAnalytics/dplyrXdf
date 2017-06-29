@@ -15,21 +15,7 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, create
             file <- tempfile(tmpdir=tmpdir, fileext=".xdf")
         else file <- tempfile(tmpdir=tmpdir)
     }
-    else
-    {
-        # ensure that composite xdf has no extension, normal xdf has extension
-        ext <- tools::file_ext(file)
-        if(createCompositeSet)
-        {
-            if(ext != "")
-                file <- tools::file_path_sans_ext(file)
-        }
-        else
-        {
-            if(ext != "xdf")
-                file <- paste0(tools::file_path_sans_ext(file), ".xdf")
-        }
-    }
+    else file <- validateXdfFile(file, createCompositeSet)
 
     arglst <- rlang::modify(list(.Object, file=file, fileSystem=fileSystem, createCompositeSet=createCompositeSet),
         !!!list(...))
