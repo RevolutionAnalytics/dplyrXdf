@@ -61,6 +61,7 @@ callSplit <- function(.data, .func, ...)
     xdflst <- splitGroups(.data)
     on.exit(deleteIfTbl(xdflst))
 
-    rxExec(.func, .data=rxElemArg(xdflst), ..., .composite=composite, .tblDir=get_dplyrxdf_dir(), .tblFunc=tbl_xdf)
+    rxExec(.func, .data=rxElemArg(xdflst), ...,
+        .composite=composite, .tblDir=get_dplyrxdf_dir(), .tblFunc=tbl_xdf)
 }
 

@@ -62,14 +62,14 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     outlst <- if(.dxOptions$useExecBy)
-        callExecBy(.data, transmutateBase, arglst=arglst)
-    else callSplit(.data, transmutateBase, arglst=arglst)
+        callExecBy(.data, transmutateGrouped, arglst=arglst)
+    else callSplit(.data, transmutateGrouped, arglst=arglst)
 
     combineGroups(outlst, .outFile, grps)
 }
 
 
-transmutateBase <- function(.data, arglst, .composite=isCompositeXdf(.data), .tblDir=get_dplyrxdf_dir(), .tblFunc=tbl_xdf)
+transmutateGrouped <- function(.data, arglst, .composite, .tblDir, .tblFunc)
 {
     arglst[[1]] <- .data
     file <- tempfile(tmpdir=.tblDir)

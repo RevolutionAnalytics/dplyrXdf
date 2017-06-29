@@ -17,17 +17,16 @@ callExecBy <- function(.data, .func, ...)
 {
     composite <- isCompositeXdf(.data)
     funcParams <- list(...)
-    funcParams <- rlang::modify(funcParams, .func=.func, .composite=composite, .tblDir=get_dplyrxdf_dir(), .tblFunc=tbl_xdf)
+    funcParams <- rlang::modify(funcParams, .func=.func,
+        .composite=composite, .tblDir=get_dplyrxdf_dir(), .tblFunc=tbl_xdf)
 
     cc <- rxGetComputeContext()
     on.exit(rxSetComputeContext(cc))
 
-    outlst <- rxExecBy(.data, group_vars(.data), function(keys, data, .func, ...)
+    rxExecBy(.data, group_vars(.data), function(keys, data, .func, ...)
         .func(data, ...),
         funcParams) %>%
         execByResult
-    print(outlst)
-    outlst
 }
 
 
