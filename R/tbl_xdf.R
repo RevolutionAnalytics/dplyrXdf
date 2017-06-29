@@ -3,18 +3,34 @@
 tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical"))
 
 
-setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, ...) {
+setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, createCompositeSet=NULL, ...) {
     fileSystem <- rxGetFileSystem(xdf)
-    createCompositeSet <- isCompositeXdf(xdf)
-    #createCompositeSet <- if(!is.null(xdf) && inherits(xdf, "RxXdfData"))
-        #xdf@createCompositeSet
-    #else NULL
+    if(is.null(createCompositeSet))
+        createCompositeSet <- isCompositeXdf(xdf)
+
     if(is.null(file))
     {
         tmpdir <- get_dplyrxdf_dir(fileSystem)
         if(!createCompositeSet)
             file <- tempfile(tmpdir=tmpdir, fileext=".xdf")
         else file <- tempfile(tmpdir=tmpdir)
+    }
+    else
+    {
+        # check that composite xdf has no extension, normal xdf has extension
+        ext <- tools::file_ext(file)
+        if(createCompositeSet)
+        {
+            if(ext != "")
+                warning("do not provide a file extension for a composite Xdf", call.=FALSE)
+            file <- tools::file_path_sans_ext(file)
+        }
+        else
+        {
+            if(ext != "xdf")
+                warning("file extension should be .xdf for a non-composite Xdf file", call.=FALSE)
+            file <- paste0(tools::file_path_sans_ext(file), ".xdf")
+        }
     }
 
     arglst <- rlang::modify(list(.Object, file=file, fileSystem=fileSystem, createCompositeSet=createCompositeSet),
@@ -27,7 +43,7 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, ...) {
 
 
 setMethod("coerce", list(from="RxFileData", to="tbl_xdf"), function(from, to, strict=TRUE) {
-    out <- tbl_xdf()
+    out <- tbl_xdf(fileSystem=rxGetFileSystem(from))
     rxImport(from, out, rowsPerRead=.dxOptions$rowsPerRead)
 })
 

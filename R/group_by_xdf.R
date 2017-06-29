@@ -46,9 +46,11 @@ group_by.RxXdfData <- function(.data, ..., add=FALSE)
     grps <- names(rlang::quos(..., .named=TRUE))
     if(length(grps) > 0)
     {
+        composite <- isCompositeXdf(.data)
         .data <- as(.data, "grouped_tbl_xdf")
         .data@groups <- grps
-        .data@hasTblFile <- FALSE  # for raw xdfs, mark file as non-deletable
+        .data@hasTblFile <- FALSE # for raw xdfs, mark file as non-deletable
+        .data@createCompositeSet <- composite
     }
     .data
 }

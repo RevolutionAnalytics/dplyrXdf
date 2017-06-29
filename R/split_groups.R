@@ -8,6 +8,7 @@ splitGroups <- function(data, outXdf=data)
 
     fname <- tools::file_path_sans_ext(rxXdfFileName(outXdf))
     fname <- file.path(get_dplyrxdf_dir(), basename(fname))
+    composite <- isCompositeXdf(data)
 
     # if files exist that could interfere with splitting output, delete them
     # should never be necessary because base filename is a randomly generated tempfile
@@ -15,24 +16,29 @@ splitGroups <- function(data, outXdf=data)
     deleteSplitOutputs(fname, grps)
 
     # mimic behaviour of rxSplit: rxDataStep that splits each chunk, calls rxDataStep on each split
-    lst <- rxDataStep(data, transformFunc=function(varlst) {
+    filelst <- rxDataStep(data, transformFunc=function(varlst) {
             datlst <- split(as.data.frame(varlst, stringsAsFactors=FALSE), varlst[.grps], drop=TRUE, sep="_&&_")
             # fix problematic characters in filenames: ?*<>|+ etc
             names(datlst) <- sapply(names(datlst), URLencode, reserved=TRUE)
-            filelst <- paste(.fname, paste(.grps, collapse="_"), names(datlst), ".xdf", sep="__")
+            filelst <- paste(.fname, paste(.grps, collapse="#"), names(datlst), sep="##")
+            if(!.composite)
+                filelst <- paste0(filelst, ".xdf")
+            outlst <- lapply(filelst, function(f)
+                RxXdfData(f, createCompositeSet=.composite)
+            )
             for(i in seq_along(datlst))
             {
                 out <- if(file.exists(filelst[i]))
-                    rxDataStep(datlst[[i]], filelst[i], append="rows")
-                else rxDataStep(datlst[[i]], filelst[i], append="none")
+                    rxDataStep(datlst[[i]], outlst[[i]], append="rows")
+                else rxDataStep(datlst[[i]], outlst[[i]], append="none")
             }
             .outFiles <<- base::union(.outFiles, filelst)
             NULL
         },
-        transformObjects=list(.grps=grps, .fname=fname, .outFiles=character(0)),
+        transformObjects=list(.grps=grps, .fname=fname, .outFiles=character(0), .composite=composite),
         returnTransformObjects=TRUE)$.outFiles
 
-    sapply(sort(lst), function(obj) as(RxXdfData(obj), "tbl_xdf"), simplify=FALSE)
+    sapply(sort(filelst), function(f) tbl_xdf(file=f, createCompositeSet=composite))
 }
 
 

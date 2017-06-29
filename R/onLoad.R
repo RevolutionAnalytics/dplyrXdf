@@ -211,7 +211,7 @@
     .dxOptions$dplyrVersion <- packageVersion("dplyr")
 
     rxver <- packageVersion("RevoScaleR")
-    .dxOptions$useExecBy <- (rxver >= package_version("9.1"))
+    .dxOptions$useExecBy <- FALSE #(rxver >= package_version("9.1"))
 
     set_dplyrxdf_dir(fileSystem="native")
     set_dplyrxdf_dir(fileSystem="hdfs")
