@@ -59,6 +59,7 @@ Collate:     '00rxArgs.R'
     'transmute_xdf.R'
     'union_xdf.R'
     'workdir_utils.R'
+    'xdf_utils.R'
 Suggests: 
     knitr,
     testthat

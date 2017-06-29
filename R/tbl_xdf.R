@@ -5,13 +5,14 @@ tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical
 
 setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, ...) {
     fileSystem <- rxGetFileSystem(xdf)
-    createCompositeSet <- if(!is.null(xdf) && inherits(xdf, "RxXdfData"))
-        xdf@createCompositeSet
-    else NULL
+    createCompositeSet <- isCompositeXdf(xdf)
+    #createCompositeSet <- if(!is.null(xdf) && inherits(xdf, "RxXdfData"))
+        #xdf@createCompositeSet
+    #else NULL
     if(is.null(file))
     {
         tmpdir <- get_dplyrxdf_dir(fileSystem)
-        if(is.null(createCompositeSet))
+        if(!createCompositeSet)
             file <- tempfile(tmpdir=tmpdir, fileext=".xdf")
         else file <- tempfile(tmpdir=tmpdir)
     }

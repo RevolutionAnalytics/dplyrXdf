@@ -95,16 +95,3 @@ getTblFile <- function(data)
 }
 
 
-copyXdf <- function(from, to, move=FALSE)
-{
-    if(inherits(from, "RxXdfData"))
-        from <- rxXdfFileName(from)
-    from <- normalizePath(from)
-    fname <- basename(from)
-    to <- normalizePath(file.path(to, fname))
-    if(move)
-        file.rename(from, to)
-    else file.copy(from, to)
-    RxXdfData(to)
-}
-
