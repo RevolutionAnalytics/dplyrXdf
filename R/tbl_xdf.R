@@ -17,19 +17,17 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, create
     }
     else
     {
-        # check that composite xdf has no extension, normal xdf has extension
+        # ensure that composite xdf has no extension, normal xdf has extension
         ext <- tools::file_ext(file)
         if(createCompositeSet)
         {
             if(ext != "")
-                warning("do not provide a file extension for a composite Xdf", call.=FALSE)
-            file <- tools::file_path_sans_ext(file)
+                file <- tools::file_path_sans_ext(file)
         }
         else
         {
             if(ext != "xdf")
-                warning("file extension should be .xdf for a non-composite Xdf file", call.=FALSE)
-            file <- paste0(tools::file_path_sans_ext(file), ".xdf")
+                file <- paste0(tools::file_path_sans_ext(file), ".xdf")
         }
     }
 

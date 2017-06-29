@@ -20,12 +20,10 @@ splitGroups <- function(data, outXdf=data)
             datlst <- split(as.data.frame(varlst, stringsAsFactors=FALSE), varlst[.grps], drop=TRUE, sep="_&&_")
             # fix problematic characters in filenames: ?*<>|+ etc
             names(datlst) <- sapply(names(datlst), URLencode, reserved=TRUE)
+
             filelst <- paste(.fname, paste(.grps, collapse="#"), names(datlst), sep="##")
-            if(!.composite)
-                filelst <- paste0(filelst, ".xdf")
-            outlst <- lapply(filelst, function(f)
-                RxXdfData(f, createCompositeSet=.composite)
-            )
+            outlst <- lapply(filelst, RxXdfData, createCompositeSet=.composite)
+
             for(i in seq_along(datlst))
             {
                 out <- if(file.exists(filelst[i]))
@@ -54,5 +52,15 @@ deleteSplitOutputs <- function(fname, grps)
         warning("target files for splitting currently exist, will be overwritten")
         unlink(file.path(dname, existingFiles))
     }
+}
+
+
+callSplit <- function(.data, .func, ...)
+{
+    composite <- isCompositeXdf(.data)
+    xdflst <- splitGroups(.data)
+    on.exit(deleteIfTbl(xdflst))
+
+    rxExec(.func, .data=rxElemArg(xdflst), ..., .composite=composite, .tblDir=get_dplyrxdf_dir(), .tblFunc=tbl_xdf)
 }
 
