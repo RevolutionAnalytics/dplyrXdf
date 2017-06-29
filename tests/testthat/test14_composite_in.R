@@ -54,15 +54,15 @@ test_that("output to data.frame works",
 
 test_that("output to xdf works",
 {
-    tbl <- mtc %>% filter(mpg > 15, cyl <= 6, .outFile="test14.xdf")
+    tbl <- mtc %>% filter(mpg > 15, cyl <= 6, .outFile="test14")
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
-    tbl <- mtc %>% select(mpg, cyl, drat, .outFile="test14.xdf")
+    tbl <- mtc %>% select(mpg, cyl, drat, .outFile="test14")
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
-    tbl <- mtc %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile="test14.xdf")
+    tbl <- mtc %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile="test14")
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
-    tbl <- mtc %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test14.xdf")
+    tbl <- mtc %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test14")
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
-    tbl <- mtc %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test14.xdf")
+    tbl <- mtc %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test14")
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 

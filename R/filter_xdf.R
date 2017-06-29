@@ -17,9 +17,6 @@ filter.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     grps <- group_vars(.data)
     dots <- rlang::quos(..., .named=TRUE)
-    #if(length(dots) > 1)
-        #env <- rlang::get_env(dots[[1]])
-    #else env <- rlang::get_env(caller_env(2))
 
     exprs <- lapply(dots, rlang::get_expr)
     if(length(exprs) > 0)
