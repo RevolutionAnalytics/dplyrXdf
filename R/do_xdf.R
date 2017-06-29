@@ -80,7 +80,7 @@ do.grouped_tbl_xdf <- function(.data, ...)
 doGrouped <- function(.data, exprs, grps, ...)
 {
     .data <- rxDataStep(.data, maxRowsByCols=NULL)
-    out <- dplyr::do(data, !!!exprs)
+    out <- dplyr::do(.data, !!!exprs)
     if(length(grps) > 0)
     {
         grps <- .data[1, grps, drop=FALSE]
