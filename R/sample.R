@@ -18,7 +18,7 @@ sample_n.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NUL
     if(!is.null(weight))
         warning("weighted sampling not supported for Xdf files")
 
-    sampleBase(tbl, tbl_xdf(tbl), size, FALSE)
+    sampleBase(tbl, size, FALSE)
 }
 
 
@@ -31,7 +31,7 @@ sample_frac.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=
     if(!is.null(weight))
         warning("weighted sampling not supported for Xdf files")
 
-    sampleBase(tbl, tbl_xdf(tbl), size, TRUE)
+    sampleBase(tbl, size, TRUE)
 }
 
 
@@ -40,8 +40,8 @@ sample_frac.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=
 sample_n.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {
     grps <- group_vars(tbl)
-    outlst <- sampleGroupedXdf(tbl, size, replace, weight, FALSE)
-    combineGroups(outlst, tbl_xdf(tbl), grps)
+    sampleGroupedXdf(tbl, size, replace, weight, FALSE) %>%
+        combineGroups(tbl_xdf(tbl), grps)
 }
 
 
@@ -50,49 +50,27 @@ sample_n.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .e
 sample_frac.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {
     grps <- group_vars(tbl)
-    outlst <- sampleGroupedXdf(tbl, size, replace, weight, TRUE)
-    combineGroups(outlst, tbl_xdf(tbl), grps)
+    sampleGroupedXdf(tbl, size, replace, weight, TRUE) %>%
+        combineGroups(tbl_xdf(tbl), grps)
 }
 
 
-sampleGroupedXdf <- function(data, size, replace=FALSE, weight=NULL, frac)
+sampleGroupedXdf <- function(.data, size, replace=FALSE, weight=NULL, frac)
 {
     if(replace)
         warning("sampling with replacement not supported for Xdf files")
     if(!is.null(weight))
         warning("weighted sampling not supported for Xdf files")
 
-    if(.dxOptions$useExecBy)
-        sampleGroupedExecBy(data, size, frac)
-    else sampleGroupedSplit(data, size, frac)
+    callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
+
+    callFunc(.data, sampleBase, size, frac)
 }
 
 
-sampleGroupedExecBy <- function(data, size, frac)
+sampleBase <- function(.data, size, frac, .composite=isCompositeXdf(.data), .tblDir=get_dplyrxdf_dir())
 {
-    cc <- rxGetComputeContext()
-    on.exit(rxSetComputeContext(cc))
-
-    grps <- group_vars(data)
-    tblDir <- get_dplyrxdf_dir()
-    execByResult(rxExecBy(data, grps, function(keys, data, sampleFunc, ...) sampleFunc(data, ...),
-        list(sampleFunc=sampleBase, size=size, frac=frac, tblDir=tblDir, tblFunc=tbl_xdf)))
-}
-
-
-sampleGroupedSplit <- function(data, size, frac)
-{
-    xdflst <- splitGroups(data)
-    on.exit(deleteIfTbl(xdflst))
-    outlst <- createSplitOutput(xdflst, tbl_xdf(data))
-    rxExec(sampleBase,
-        data=rxElemArg(xdflst), output=rxElemArg(outlst), size=size, frac=frac)
-}
-
-
-sampleBase <- function(data, output=tblFunc(file=tempfile(tmpdir=tblDir, fileext=".xdf")), size, frac, tblDir, tblFunc)
-{
-    n <- nrow(data)
+    n <- nrow(.data)
     if(frac)
         size <- round(size * n)
     if(size > n)
@@ -100,6 +78,10 @@ sampleBase <- function(data, output=tblFunc(file=tempfile(tmpdir=tblDir, fileext
     if(size < 1)
         stop("sample size must be at least 1")
     sel <- sample.int(n, size=size)
-    rxDataStep(data, output, rowSelection=(.rxStartRow + seq_len(.rxNumRows) - 1) %in% .sel,
+
+    file <- tempfile(tmpdir=.tblDir)
+    # explicit namespace reference to allow for parallel/execBy backends
+    output <- dplyrXdf:::tbl_xdf(.data, file=file, createCompositeSet=.composite)
+    rxDataStep(.data, output, rowSelection=(.rxStartRow + seq_len(.rxNumRows) - 1) %in% .sel,
         transformObjects=list(.sel=sel))
 }

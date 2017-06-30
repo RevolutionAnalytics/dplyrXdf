@@ -8,5 +8,5 @@
 #' @importFrom rlang lang_modify modify splice
 #' @importFrom rlang lang_tail lang_args syms
 #' @importFrom magrittr %>%
-#' @importFrom dplyr union
+#' @import dplyr
 NULL

@@ -5,7 +5,7 @@ callExecBy <- function(.data, .func, ...)
     composite <- isCompositeXdf(.data)
     funcParams <- list(...)
     funcParams <- rlang::modify(funcParams, .func=.func,
-        .composite=composite, .tblDir=get_dplyrxdf_dir(), .tblFunc=tbl_xdf)
+        .composite=composite, .tblDir=get_dplyrxdf_dir())
 
     cc <- rxGetComputeContext()
     on.exit(rxSetComputeContext(cc))
@@ -24,5 +24,5 @@ callSplit <- function(.data, .func, ...)
     on.exit(deleteIfTbl(xdflst))
 
     rxExec(.func, .data=rxElemArg(xdflst), ...,
-        .composite=composite, .tblDir=get_dplyrxdf_dir(), .tblFunc=tbl_xdf)
+        .composite=composite, .tblDir=get_dplyrxdf_dir())
 }
