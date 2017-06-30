@@ -53,15 +53,3 @@ deleteSplitOutputs <- function(fname, grps)
         unlink(file.path(dname, existingFiles))
     }
 }
-
-
-callSplit <- function(.data, .func, ...)
-{
-    composite <- isCompositeXdf(.data)
-    xdflst <- splitGroups(.data)
-    on.exit(deleteIfTbl(xdflst))
-
-    rxExec(.func, .data=rxElemArg(xdflst), ...,
-        .composite=composite, .tblDir=get_dplyrxdf_dir(), .tblFunc=tbl_xdf)
-}
-
