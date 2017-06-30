@@ -26,6 +26,7 @@ test_that("arrange works",
 
 test_that("distinct works",
 {
+    expect_true(verifyData(mtx %>% group_by(gear) %>% distinct(), "grouped_tbl_xdf"))
     expect_true(verifyData(mtx %>% group_by(gear) %>% distinct(cyl), "grouped_tbl_xdf"))
 })
 

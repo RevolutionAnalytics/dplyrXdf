@@ -61,6 +61,8 @@ test_that("arrange text works",
 
 test_that("distinct works",
 {
+    tbl <- mtx %>% distinct()
+    expect_true(verifyData(tbl, "tbl_xdf"))
     tbl <- mtx %>% distinct(cyl, gear)
     expect_true(verifyData(tbl, "tbl_xdf"))
     tbl <- mtx %>% distinct(!!xs)

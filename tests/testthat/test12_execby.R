@@ -21,6 +21,8 @@ test_that("set useExecBy works",
 
 test_that("distinct works",
 {
+    tbl <- mtx %>% group_by(gear) %>% distinct()
+    expect_true(verifyData(tbl, "grouped_tbl_xdf"))
     tbl <- mtx %>% group_by(gear) %>% distinct(cyl)
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
     tbl <- mtx %>% group_by(gear) %>% distinct(!!xs)

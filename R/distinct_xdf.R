@@ -33,7 +33,7 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_x
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
 
-    dots <- rlang::quos(...)
+    args <- rlang::quos(...)
     grps <- group_vars(.data)
 
     # workaround to keep rxExec from complaining about missing arg
@@ -41,100 +41,50 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_x
         NULL
     else rlang::enexpr(.rxArgs)
 
-    outlst <- if(.dxOptions$useExecBy)
-        distinctExecBy(.data, dots, .keep_all, .rxArgs, grps)
-    else
-    {
-        xdflst <- splitGroups(.data)
-        on.exit(deleteIfTbl(xdflst))
-        outlst <- createSplitOutput(xdflst, .outFile)
+    callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
 
-        rxExec(distinctBase, data=rxElemArg(xdflst), dots, .keep_all, rxElemArg(outlst), .rxArgs, grps,
-            execObjects=c("distinctBase2", "doExtraArgs", "deleteIfTbl", "deleteTbl", ".dxOptions"),
-            packagesToLoad="dplyr")
-    }
-    combineGroups(outlst, .outFile, grps)
+    callFunc(.data, distinctBase, vars=args, keep_all=.keep_all, output=NULL, rxArgs=.rxArgs, grps=grps) %>%
+        combineGroups(.outFile, grps)
 }
 
 
-distinctBase <- function(data, vars, keep_all, output, rxArgs, grps=NULL)
+distinctBase <- function(.data, vars, keep_all, output, rxArgs, grps=NULL, ...)
 {
-    data <- distinctBase2(data, vars, keep_all, grps)
-    arglst <- doExtraArgs(list(data), data, rxArgs, output)
+    require(dplyr)
+    varNames <- select_vars(names(.data), !!!vars)
 
-    if(missing(output) || inherits(output, "RxXdfData") || !missing(rxArgs))
-        rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
-    else data
-}
-
-
-# need to define separate function for transform because missing arguments to distinctBase will break rxDataStep
-distinctBase2 <- function(data, vars, keep_all, grps=NULL)
-{
-    data <- rxDataStep(data, transformFunc=function(varlst)
+    .data <- rxDataStep(.data, transformFunc=function(varlst)
         {
-            varlst <- data.frame(varlst)
-            df <- distinct(varlst, !!!.vars, .keep_all=.keep_all)
-            if(length(.grps) > 0 && !keep_all)
-                df <- cbind(varlst[1, .grps], df)
             if(!.rxIsTestChunk)
+            {
+                varlst <- dplyr::as_data_frame(varlst)
+                df <- dplyr::distinct(varlst, !!!.vars, .keep_all=.keep_all)
+                if(length(.grps) > 0 && !keep_all)
+                    df <- cbind(varlst[1, .grps], df)
                 .out <<- c(.out, list(df))
+            }
             NULL
         },
         transformObjects=list(.vars=vars, .keep_all=keep_all, .grps=grps, .out=list()),
-        transformPackages="dplyr",
         returnTransformObjects=TRUE)$.out %>%
         bind_rows %>%
         distinct
+    # put grouping columns back on, if not already there
     if(length(grps) > 0 && !keep_all)
     {
-        ngrps <- length(grps)
-        names(data)[ngrps] <- grps
+        grpsToDrop <- grps %in% varNames
+        grpsToKeep <- which(!grpsToDrop)
+        names(.data)[grpsToKeep] <- grps[grpsToKeep]
+        if(any(grpsToDrop))
+            .data <- .data[-which(grpsToDrop)]
     }
-    data
+
+    if(missing(output) || inherits(output, "RxXdfData") || !missing(rxArgs))
+    {
+        # explicit namespace reference to allow for parallel/execBy backends
+        arglst <- dplyrXdf:::doExtraArgs(list(.data), .data, rxArgs, output)
+        .data <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+    }
+    .data
 }
-
-
-distinctExecBy <- function(data, vars, keep_all, rxArgs, grps=NULL)
-{
-    cc <- rxGetComputeContext()
-    on.exit(rxSetComputeContext(cc))
-
-    dflst <- execByResult(rxExecBy(data, grps, function(keys, data, keep_all)
-        {
-            require(dplyr)
-            data <- rxDataStep(data, transformFunc=function(varlst)
-                {
-                    varlst <- data.frame(varlst)
-                    df <- distinct(varlst, !!!.vars, .keep_all=.keep_all)
-                    if(length(.grps) > 0 && !keep_all)
-                        df <- cbind(varlst[1, .grps], df)
-                    if(!.rxIsTestChunk)
-                        .out <<- c(.out, list(df))
-                    NULL
-                },
-                transformObjects=list(.vars=vars, .keep_all=keep_all, .grps=grps, .out=list()),
-                transformPackages="dplyr",
-                returnTransformObjects=TRUE)$.out %>%
-                bind_rows %>%
-                distinct
-            if(length(grps) > 0 && !keep_all)
-            {
-                ngrps <- length(grps)
-                names(data)[ngrps] <- grps
-            }
-            data
-        },
-        list(keep_all=keep_all)))
-
-    # run rxDataStep if rxArgs specified
-    if(!is.null(rxArgs))
-        lapply(dflst, function(df)
-        {
-            arglst <- doExtraArgs(list(df), df, rxArgs, NULL)
-            rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
-        })
-    else dflst
-}
-
 

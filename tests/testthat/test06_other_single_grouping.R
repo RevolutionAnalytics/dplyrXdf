@@ -73,6 +73,8 @@ test_that("arrange text works",
 
 test_that("distinct works",
 {
+    tbl <- mtx %>% group_by(gear) %>% distinct()
+    expect_true(verifyData(tbl, "grouped_tbl_xdf"))
     tbl <- mtx %>% group_by(gear) %>% distinct(cyl)
     expect_true(verifyData(tbl, "grouped_tbl_xdf"))
     tbl <- mtx %>% group_by(gear) %>% distinct(!!xs)

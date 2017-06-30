@@ -165,7 +165,7 @@ do_xdf.grouped_tbl_xdf <- function(.data, ...)
 }
 
 
-# copy functionality of dplyr:::do_.data.frame, except dots must be named
+# copy functionality of dplyr:::do
 doXdfBase <- function(.data, exprs, grps=NULL, named, ...)
 {
     datlst <- rlang::env(.=.data, .data=.data)
