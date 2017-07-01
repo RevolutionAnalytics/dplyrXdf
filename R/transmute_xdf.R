@@ -54,7 +54,7 @@ transmute.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxAr
     callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
 
     callFunc(.data, transmutateGrouped, arglst=arglst) %>% 
-        combineGroups(outlst, .outFile, grps)
+        combineGroups(.outFile, grps)
 }
 
 

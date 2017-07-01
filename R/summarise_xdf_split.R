@@ -18,7 +18,7 @@ smryRxSummaryWithGroupvars <- function(data, grps, stats, exprs, rxArgs=NULL, ..
 {
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     smry <- dplyrXdf:::smryRxSummary(data, NULL, stats, exprs, rxArgs)
-    cbind(gvars, smry, stringsAsFactors=FALSE)
+    cbind(gvars, smry)
 }
 
 
@@ -52,7 +52,7 @@ smryDplyrWithGroupvars <- function(data, grps, exprs, rxArgs=NULL, ...)
     smry <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL) %>%
         summarise(!!!exprs)
         
-    cbind(gvars, smry, stringsAsFactors=FALSE)
+    cbind(gvars, smry)
 }
 
 

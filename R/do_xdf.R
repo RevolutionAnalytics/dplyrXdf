@@ -81,9 +81,10 @@ doGrouped <- function(.data, exprs, grps, ...)
 {
     .data <- rxDataStep(.data, maxRowsByCols=NULL)
     out <- dplyr::do(.data, !!!exprs)
+    print(out)
     if(length(grps) > 0)
     {
-        grps <- .data[1, grps, drop=FALSE]
+        grps <- suppressWarnings(.data[1, grps, drop=FALSE])
         cbind(grps, out)
     }
     else out

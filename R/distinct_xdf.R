@@ -60,7 +60,7 @@ distinctBase <- function(.data, vars, keep_all, output, rxArgs, grps=NULL, ...)
                 varlst <- dplyr::as_data_frame(varlst)
                 df <- dplyr::distinct(varlst, !!!.vars, .keep_all=.keep_all)
                 if(length(.grps) > 0 && !keep_all)
-                    df <- cbind(varlst[1, .grps], df)
+                    df <- suppressWarnings(cbind(varlst[1, .grps, drop=FALSE], df))
                 .out <<- c(.out, list(df))
             }
             NULL
@@ -74,7 +74,7 @@ distinctBase <- function(.data, vars, keep_all, output, rxArgs, grps=NULL, ...)
     {
         grpsToDrop <- grps %in% varNames
         grpsToKeep <- which(!grpsToDrop)
-        names(.data)[grpsToKeep] <- grps[grpsToKeep]
+#        names(.data)[grpsToKeep] <- grps[grpsToKeep]
         if(any(grpsToDrop))
             .data <- .data[-which(grpsToDrop)]
     }
