@@ -81,11 +81,10 @@ doGrouped <- function(.data, exprs, grps, ...)
 {
     .data <- rxDataStep(.data, maxRowsByCols=NULL)
     out <- dplyr::do(.data, !!!exprs)
-    print(out)
     if(length(grps) > 0)
     {
-        grps <- suppressWarnings(.data[1, grps, drop=FALSE])
-        cbind(grps, out)
+        grps <- .data[1, grps, drop=FALSE]
+        suppressWarnings(cbind(grps, out))  # shut cbind up about row names
     }
     else out
 }

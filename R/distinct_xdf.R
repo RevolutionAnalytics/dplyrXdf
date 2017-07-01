@@ -60,24 +60,15 @@ distinctBase <- function(.data, vars, keep_all, output, rxArgs, grps=NULL, ...)
                 varlst <- dplyr::as_data_frame(varlst)
                 df <- dplyr::distinct(varlst, !!!.vars, .keep_all=.keep_all)
                 if(length(.grps) > 0 && !keep_all)
-                    df <- suppressWarnings(cbind(varlst[1, .grps, drop=FALSE], df))
+                    df <- suppressWarnings(cbind(varlst[1, .grps, drop=FALSE], df))  # shut cbind up about row names
                 .out <<- c(.out, list(df))
             }
             NULL
         },
         transformObjects=list(.vars=vars, .keep_all=keep_all, .grps=grps, .out=list()),
         returnTransformObjects=TRUE)$.out %>%
-        bind_rows %>%
+        bind_rows %>%  # bind_rows removes duplicate column names
         distinct
-    # put grouping columns back on, if not already there
-    if(length(grps) > 0 && !keep_all)
-    {
-        grpsToDrop <- grps %in% varNames
-        grpsToKeep <- which(!grpsToDrop)
-#        names(.data)[grpsToKeep] <- grps[grpsToKeep]
-        if(any(grpsToDrop))
-            .data <- .data[-which(grpsToDrop)]
-    }
 
     if(missing(output) || inherits(output, "RxXdfData") || !missing(rxArgs))
     {
