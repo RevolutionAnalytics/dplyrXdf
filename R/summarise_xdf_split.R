@@ -17,7 +17,7 @@ smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
 smryRxSummaryWithGroupvars <- function(data, grps, stats, exprs, rxArgs=NULL, ...)
 {
     gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
-    smry <- dplyrXdf:::smryRxSummary(data, NULL, stats, exprs, rxArgs)
+    smry <- smryRxSummary(data, NULL, stats, exprs, rxArgs)
     cbind(gvars, smry)
 }
 

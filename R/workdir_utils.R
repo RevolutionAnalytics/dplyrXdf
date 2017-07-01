@@ -68,9 +68,9 @@ clean_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
     if(inherits(fileSystem, "RxNativeFileSystem"))
     {
         path <- get_dplyrxdf_dir("native")
-        #files <- dir(path, pattern="\\.xdf$", full.names=TRUE, ignore.case=.Platform$OS.type == "windows")
+        files <- dir(path, full.names=TRUE)
         # use unlink to allow for the possibility of composite xdfs
-        unlink(path, recursive=TRUE)
+        unlink(files, recursive=TRUE)
     }
     else if(inherits(fileSystem, "RxHdfsFileSystem"))
     {
