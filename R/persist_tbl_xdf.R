@@ -4,6 +4,7 @@
 #' @param outFile Character string giving the name of the output xdf file
 #' @param overwrite If the outfile already exists, should it be overwritten?
 #' @param move Should the tbl file be moved or copied?
+#' @param composite Create a composite Xdf or normal? The default is to create the same type of file as the input.
 #' @param ... Other arguments to \code{\link[RevoScaleR]{rxDataStep}}
 #'
 #' @details
@@ -26,15 +27,32 @@ persist <- function(.data, ...)
 
 #' @rdname persist
 #' @export
-persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=FALSE, ...)
+persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=FALSE, composite=NULL, ...)
 {
+    if(is.null(composite))
+        composite <- isCompositeXdf(.data)
     # use OS move/copy command if on the local filesystem
     if(inherits(rxGetFileSystem(.data), "RxNativeFileSystem"))
     {
-        if(move)
-            file.rename(.data@file, outFile)
-        else file.copy(.data@file, outFile, overwrite=overwrite)
-        RxXdfData(outFile)
+        compositeIn <- isCompositeXdf(.data)
+        inFile <- validateXdfFile(.data@file, compositeIn)
+        outFile <- validateXdfFile(outFile, composite)
+
+        if(compositeIn == composite)
+        {
+            if(move)
+                file.rename(inFile, outFile)
+            else file.copy(inFile, outFile, overwrite=overwrite, recursive=TRUE)
+        }
+        else
+        {
+            # save as desired type
+            out <- RxXdfData(outFile, createCompositeSet=composite)
+            rxDataStep(.data, out, rowsPerRead=.dxOptions$rowsPerRead)
+            if(move)
+                unlink(inFile, recursive=TRUE)
+        }
+        RxXdfData(outFile, createCompositeSet=composite)
     }
     else  # do it the long way otherwise
     {
