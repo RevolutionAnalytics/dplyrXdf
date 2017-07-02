@@ -18,6 +18,10 @@
 #' @export
 rename.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
+    # renaming broken on MRS <= 9.1
+    if(isCompositeXdf(.data) && packageVersion("RevoScaleR") <= package_version("9.1.0"))
+        stop("renaming not supported for composite Xdf files", call.=FALSE)
+
     dots <- rlang::quos(..., .named=TRUE)
 
     grps <- group_vars(.data)
