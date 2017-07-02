@@ -72,6 +72,8 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     # rxFactors won't preserve class of output object, unlike rxDataStep
     if(missing(.outFile))
         output <- as(output, "tbl_xdf")
+    if(inherits(output, "RxXdfData"))
+        output@createCompositeSet <- isCompositeXdf(output)
     simpleRegroup(output, grps)
 }
 
