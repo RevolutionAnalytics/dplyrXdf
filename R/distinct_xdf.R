@@ -15,9 +15,12 @@
 distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.data), .rxArgs)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
-    dots <- rlang::quos(...)
+    args <- rlang::quos(...)
+    .rxArgs <- if(missing(.rxArgs))
+        NULL
+    else rlang::enexpr(.rxArgs)
 
-    distinctBase(.data, dots, .keep_all, .outFile, rlang::enexpr(.rxArgs))
+    distinctBase(.data, args, .keep_all, .outFile, rlang::enexpr(.rxArgs))
 }
 
 
@@ -32,14 +35,12 @@ distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.d
 distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.data), .rxArgs)
 {
     stopIfHdfs(.data, "distinct not supported on HDFS")
-
     args <- rlang::quos(...)
-    grps <- group_vars(.data)
-
-    # workaround to keep rxExec from complaining about missing arg
     .rxArgs <- if(missing(.rxArgs))
         NULL
     else rlang::enexpr(.rxArgs)
+
+    grps <- group_vars(.data)
 
     callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
 
@@ -53,6 +54,7 @@ distinctBase <- function(.data, vars, keep_all, output, rxArgs, grps=NULL, ...)
     require(dplyr)
     varNames <- select_vars(names(.data), !!!vars)
 
+    composite <- isCompositeXdf(.data)
     .data <- rxDataStep(.data, transformFunc=function(varlst)
         {
             if(!.rxIsTestChunk)
@@ -70,10 +72,10 @@ distinctBase <- function(.data, vars, keep_all, output, rxArgs, grps=NULL, ...)
         bind_rows %>%  # bind_rows removes duplicate column names
         distinct
 
-    if(missing(output) || inherits(output, "RxXdfData") || !missing(rxArgs))
+    if(is.character(output) || inherits(output, "RxXdfData") || !is.null(rxArgs))
     {
         # explicit namespace reference to allow for parallel/execBy backends
-        arglst <- dplyrXdf:::doExtraArgs(list(.data), .data, rxArgs, output)
+        arglst <- dplyrXdf:::doExtraArgs(list(.data), .data, rxArgs, output, composite)
         .data <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
     }
     .data

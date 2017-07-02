@@ -28,7 +28,7 @@
 #' @name rxArgs
 NULL
 
-doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
+doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, composite=isCompositeXdf(.data))
 {
     arglst <- rlang::modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)
     if(rlang::is_lang(.rxArgs))
@@ -42,7 +42,6 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
             arglst$outFile <- .outFile
         else if(is.character(.outFile))
         {
-            composite <- isCompositeXdf(.data)
             .outFile <- validateXdfFile(.outFile, composite)
             arglst$outFile <- RxXdfData(.outFile, createCompositeSet=composite)
         }
