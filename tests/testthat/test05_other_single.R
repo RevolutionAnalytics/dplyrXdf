@@ -97,7 +97,6 @@ test_that("output to data frame works",
     expect_true(verifyData(tbl, "data.frame"))
     tbl <- mtx %>% rename(mpg2=mpg, .outFile=NULL)
     expect_true(verifyData(tbl, "data.frame") && names(tbl)[1] == "mpg2")
-
 })
 
 test_that("output to xdf works",

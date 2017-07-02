@@ -63,7 +63,7 @@ summarise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs, .
         smryRxCube, smryRxSummary, smryRxSummary2, smryRxSplitDplyr, smryRxSplit)
     smry <- smryFunc(.data, grps, stats, exprs, .rxArgs)
 
-    output <- makeSmryOutput(smry, .data, .outFile)
+    output <- makeSmryOutput(smry, .outFile, isCompositeXdf(.data))
 
     # strip off one level of grouping
     simpleRegroup(output, grps[-length(grps)])
@@ -155,14 +155,17 @@ invars <- function(exprs)
 }
 
 
-makeSmryOutput <- function(smry, .data, .outFile)
+makeSmryOutput <- function(smry, .outFile, composite)
 {
     if(is.data.frame(smry))
     {
         if(inherits(.outFile, "tbl_xdf"))
-            rxDataStep(smry, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
-        else if(is.character(.outFile))
             rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+        else if(is.character(.outFile))
+        {
+            .outFile <- RxXdfData(.outFile, createCompositeSet=composite)
+            rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+        }
         else smry
     }
     else  # xdf output from summary worker
@@ -174,7 +177,7 @@ makeSmryOutput <- function(smry, .data, .outFile)
         else if(is.character(.outFile))
         {
             file.rename(smry@file, .outFile)
-            RxXdfData(.outFile)
+            RxXdfData(.outFile, createCompositeSet=isCompositeXdf(smry))
         }
         else as.data.frame(smry)
     }
