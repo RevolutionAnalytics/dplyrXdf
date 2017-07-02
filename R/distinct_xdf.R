@@ -56,21 +56,21 @@ distinctBase <- function(.data, vars, keep_all, output, rxArgs, grps=NULL, ...)
 
     composite <- isCompositeXdf(.data)
     .data <- rxDataStep(.data, transformFunc=function(varlst)
+    {
+        if(!.rxIsTestChunk)
         {
-            if(!.rxIsTestChunk)
-            {
-                varlst <- dplyr::as_data_frame(varlst)
-                df <- dplyr::distinct(varlst, !!!.vars, .keep_all=.keep_all)
-                if(length(.grps) > 0 && !keep_all)
-                    df <- suppressWarnings(cbind(varlst[1, .grps, drop=FALSE], df))  # shut cbind up about row names
-                .out <<- c(.out, list(df))
-            }
-            NULL
-        },
+            varlst <- as.data.frame(varlst, stringsAsFactors=FALSE)
+            df <- dplyr::distinct(varlst, !!!.vars, .keep_all=.keep_all)
+            if(length(.grps) > 0 && !keep_all)
+                df <- suppressWarnings(cbind(varlst[1, .grps, drop=FALSE], df))  # shut cbind up about row names
+            .out <<- c(.out, list(df))
+        }
+        NULL
+    },
         transformObjects=list(.vars=vars, .keep_all=keep_all, .grps=grps, .out=list()),
         returnTransformObjects=TRUE)$.out %>%
-        bind_rows %>%  # bind_rows removes duplicate column names
-        distinct
+    bind_rows %>%  # bind_rows removes duplicate column names
+    distinct
 
     if(is.character(output) || inherits(output, "RxXdfData") || !is.null(rxArgs))
     {

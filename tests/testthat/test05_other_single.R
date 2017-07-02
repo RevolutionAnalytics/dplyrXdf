@@ -86,17 +86,17 @@ test_that("rename works",
 test_that("output to data frame works",
 {
     tbl <- mtx %>% factorise(cyl, gear, .outFile=NULL)
-    expect_true(verifyData(tbl, "data.frame") && varTypes(tbl)["cyl"] == "factor")
+    expect_true(is.data.frame(tbl) && varTypes(tbl)["cyl"] == "factor")
     expect_warning(tbl <- mtcars %>% factorise(cyl, gear, .outFile=NULL))
-    expect_true(verifyData(tbl, "data.frame") && varTypes(tbl)["cyl"] == "factor")
+    expect_true(is.data.frame(tbl) && varTypes(tbl)["cyl"] == "factor")
     tbl <- mtt %>% factorise(cyl, gear, .outFile=NULL)
-    expect_true(verifyData(tbl, "data.frame") && varTypes(tbl)["cyl"] == "factor")
+    expect_true(is.data.frame(tbl) && varTypes(tbl)["cyl"] == "factor")
     tbl <- mtt %>% arrange(cyl, gear, .outFile=NULL)
-    expect_true(verifyData(tbl, "data.frame"))
+    expect_true(is.data.frame(tbl))
     tbl <- mtx %>% distinct(cyl, gear, .outFile=NULL)
-    expect_true(verifyData(tbl, "data.frame"))
+    expect_true(is.data.frame(tbl))
     tbl <- mtx %>% rename(mpg2=mpg, .outFile=NULL)
-    expect_true(verifyData(tbl, "data.frame") && names(tbl)[1] == "mpg2")
+    expect_true(is.data.frame(tbl) && names(tbl)[1] == "mpg2")
 })
 
 test_that("output to xdf works",
