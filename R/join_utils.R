@@ -21,7 +21,7 @@ alignVars <- function(x, y, by, yOrig)
         if(returnFunction)
         {
             xFunc <- function(varlst) {}
-            body(xFunc) <- call("within", quote(data.frame(varlst)), exprblock)
+            body(xFunc) <- call("within", quote(data.frame(varlst, stringsAsFactors=FALSE)), exprblock)
             xFunc
         }
         else call("within", quote(data.frame(y)), exprblock)
