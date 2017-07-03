@@ -28,7 +28,7 @@
 #' @name rxArgs
 NULL
 
-doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, composite=isCompositeXdf(.data))
+doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
 {
     arglst <- rlang::modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)
     if(rlang::is_lang(.rxArgs))
@@ -36,6 +36,7 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile, composite=isCompositeX
 
     if(!inherits(.outFile, "tbl_xdf"))
     {
+        composite <- isCompositeXdf(.data)
         if(is.null(.outFile))
             arglst["maxRowsByCols"] <- list(NULL)
         else if(inherits(.outFile, "RxXdfData"))

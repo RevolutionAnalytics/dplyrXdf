@@ -40,22 +40,25 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_x
         NULL
     else rlang::enexpr(.rxArgs)
 
+    # must create explicit data source object if raw Xdf output specified, because callFunc will return df
+    if(is.character(.outFile))
+    {
+        composite <- isCompositeXdf(.data)
+        .outFile <- RxXdfData(validateXdfFile(.outFile, composite), createCompositeSet=composite)
+    }
     grps <- group_vars(.data)
 
     callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
 
-    callFunc(.data, distinctBase, vars=args, keep_all=.keep_all, output=NULL, rxArgs=.rxArgs, grps=grps) %>%
+    callFunc(.data, distinctBase, vars=args, keep_all=.keep_all, outFile=NULL, rxArgs=.rxArgs, grps=grps) %>%
         combineGroups(.outFile, grps)
 }
 
 
-distinctBase <- function(.data, vars, keep_all, output, rxArgs, grps=NULL, ...)
+distinctBase <- function(.data, vars, keep_all, outFile, rxArgs, grps=NULL, ...)
 {
     require(dplyr)
-    varNames <- select_vars(names(.data), !!!vars)
-
-    composite <- isCompositeXdf(.data)
-    .data <- rxDataStep(.data, transformFunc=function(varlst)
+    output <- rxDataStep(.data, transformFunc=function(varlst)
     {
         if(!.rxIsTestChunk)
         {
@@ -72,12 +75,12 @@ distinctBase <- function(.data, vars, keep_all, output, rxArgs, grps=NULL, ...)
     bind_rows %>%  # bind_rows removes duplicate column names
     distinct
 
-    if(is.character(output) || inherits(output, "RxXdfData") || !is.null(rxArgs))
+    if(is.character(outFile) || inherits(outFile, "RxXdfData") || !is.null(rxArgs))
     {
         # explicit namespace reference to allow for parallel/execBy backends
-        arglst <- dplyrXdf:::doExtraArgs(list(.data), .data, rxArgs, output, composite)
-        .data <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+        arglst <- dplyrXdf:::doExtraArgs(list(output), .data, rxArgs, outFile)
+        output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
     }
-    .data
+    output
 }
 
