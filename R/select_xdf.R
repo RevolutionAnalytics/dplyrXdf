@@ -19,7 +19,7 @@
 select.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     grps <- group_vars(.data)
-    vars <- c(grps, select_vars(names(.data), ...))
+    vars <- unique(c(grps, select_vars(names(.data), ...)))
     if(length(vars) == 0)
         stop("No variables selected", call.=FALSE)
 
