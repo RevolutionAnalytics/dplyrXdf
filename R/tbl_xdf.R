@@ -14,6 +14,13 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, create
         if(!createCompositeSet)
             file <- tempfile(tmpdir=tmpdir, fileext=".xdf")
         else file <- tempfile(tmpdir=tmpdir)
+
+        if(isHdfs(fileSystem))
+        {
+            file <- gsub("\\\\", "/", file) # backslash nonsense
+            if(!.dxOptions$hdfsWorkDirCreated)
+                make_dplyrxdf_dir(fileSystem)
+        }
     }
     else file <- validateXdfFile(file, createCompositeSet)
 

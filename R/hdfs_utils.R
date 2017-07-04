@@ -17,3 +17,9 @@ makeHdfsWorkDir <- function()
     .dxOptions$hdfsWorkDirCreated <- TRUE
     NULL
 }
+
+
+isHdfs <- function(fs)
+{
+    (fs == "hdfs") || inherits(fs, "RxHdfsFileSystem")
+}

@@ -14,12 +14,7 @@
 #' @export
 set_dplyrxdf_dir <- function(path, fileSystem=rxGetFileSystem())
 {
-    if(is.character(fileSystem))
-    {
-        if(fileSystem == "hdfs")
-            fileSystem <- RxHdfsFileSystem()
-        else fileSystem <- RxNativeFileSystem()
-    }
+    fileSystem <- validateFileSystem(fileSystem)
     if(inherits(fileSystem, "RxHdfsFileSystem"))
     {
         if(missing(path))
@@ -44,15 +39,35 @@ set_dplyrxdf_dir <- function(path, fileSystem=rxGetFileSystem())
 #' @export
 get_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
 {
-    if(is.character(fileSystem))
-    {
-        if(fileSystem == "hdfs")
-            fileSystem <- RxHdfsFileSystem()
-        else fileSystem <- RxNativeFileSystem()
-    }
-    if(inherits(fileSystem, "RxHdfsFileSystem"))
+    fileSystem <- validateFileSystem(fileSystem)
+    if(isHdfs(fileSystem))
         .dxOptions$hdfsWorkDir
     else .dxOptions$localWorkDir
+}
+
+
+make_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
+{
+    fileSystem <- validateFileSystem(fileSystem)
+    if(isHdfs(fileSystem))
+    {
+        path <- .dxOptions$hdfsWorkDir
+        if(!rxHadoopFileExists(path))
+            res <- rxHadoopMakeDir(path)
+        if(res)
+        {
+            .dxOptions$hdfsWorkDirCreated <- TRUE
+        }
+        else warning("unable to create HDFS working directory", call.=FALSE)
+        return(res)
+    }
+    else
+    {
+        path <- .dxOptions$localWorkDir
+        if(!dir.exists(path))
+            return(dir.create(path))
+    }
+    NULL
 }
 
 
@@ -87,4 +102,18 @@ clean_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
     }
     invisible(NULL)
 }
+
+
+validateFileSystem <- function(fs)
+{
+    if(!inherits(fs, "RxFileSystem"))
+    {
+        if(fs == "hdfs")
+            fs <- RxHdfsFileSystem()
+        else fs <- RxNativeFileSystem()
+    }
+    fs
+}
+
+
 
