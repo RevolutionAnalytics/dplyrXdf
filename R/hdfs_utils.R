@@ -1,28 +1,52 @@
 #' @export
-dir_hdfs <- function(path=NULL, full_path=FALSE, dirs_only=FALSE, ...)
+hdfs_dir <- function(path=NULL, full_path=FALSE, dirs_only=FALSE, recursive=FALSE, ...)
 {
     cc <- rxGetComputeContext()
-    if(!inherits(cc, "RxHadoopMR"))
-        stop("Must be in HadoopMR or Spark compute context")
-
-    user <- cc@sshUsername
     if(is.null(path))
+    {
+        user <- try(cc@sshUsername, silent=TRUE)
+        if(inherits(user, "try-error"))
+            user <- Sys.getenv("USER")  # Linux local CC
+        if(user == "")
+            user <- Sys.getenv("USERNAME")  # Windows local CC
         path <- file.path("/user", user, fsep="/")
+    }
 
-    output <- capture.output(res <- rxHadoopListFiles(path, ...))
-    if(!res)
-        stop("Unable to get directory listing")
+    arguments <- c("fs", "-ls", if(recursive) "-R", path)
 
-    # some people, when confronted with a problem, think "I know, I'll use regular expressions"
-    output <- sub('^.*\\[[^]]*\\][^"+]"([^"]*)".*$', '\\1', output)[-1]
+    # taken from rxHadoopListFiles
+    if(inherits(cc, c("RxLocalSeq", "RxLocalParallel", "RxForeachDoPar")))
+    {
+        result <- RevoScaleR:::executeCommand("hadoop", arguments)
+    }
+    else if(inherits(cc, "RxHadoopMR"))
+    {
+        result <- RevoScaleR:::executeOnHadoopCluster(cc, "hadoop", arguments)
+    }
+    else stop("listing Hadoop filesystem is not supported in the ", class(cc)[1], " compute context", call.=FALSE)
+
+    if(result$rc != 0)
+        stop(result$stderr)
+
+    output <- grep("Found \\d+ item", result$stdout, invert=TRUE, value=TRUE)
 
     if(dirs_only)
         output <- output[substr(output, 1, 1) == "d"]
     output <- gsub("^[^/]*(/.*)$", "\\1", output)
     if(!full_path)
         output <- basename(output)
-    message("Directory listing of ", path)
+    attr(output, "path") <- path
+    class(output) <- "dplyrXdf_hdfs_dir"
     output
+}
+
+
+print.dplyrXdf_hdfs_dir <- function(x, ...)
+{
+    path <- attr(x, "path")
+    cat("Directory listing of", path, "\n")
+    print.default(c(x), ...)
+    invisible(x)
 }
 
 
