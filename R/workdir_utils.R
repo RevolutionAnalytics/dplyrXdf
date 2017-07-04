@@ -18,7 +18,8 @@ set_dplyrxdf_dir <- function(path, fileSystem=rxGetFileSystem())
     if(inherits(fileSystem, "RxHdfsFileSystem"))
     {
         if(missing(path))
-            path <- gsub("\\", "/", tempfile(pattern="dxTmp", tmpdir="/tmp"), fixed=TRUE)
+            path <- "/tmp"
+        path <- gsub("\\", "/", tempfile(pattern="dxTmp", tmpdir=path), fixed=TRUE)
         .dxOptions$hdfsWorkDir <- path
         .dxOptions$hdfsWorkDirCreated <- FALSE
     }
@@ -52,14 +53,17 @@ make_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
     if(isHdfs(fileSystem))
     {
         path <- .dxOptions$hdfsWorkDir
-        if(!rxHadoopFileExists(path))
-            res <- rxHadoopMakeDir(path)
-        if(res)
+        if(!.dxOptions$hdfsWorkDirCreated)
         {
-            .dxOptions$hdfsWorkDirCreated <- TRUE
+            message("Creating HDFS working directory")
+            res <- rxHadoopMakeDir(path)
+
+            if(res)
+                .dxOptions$hdfsWorkDirCreated <- TRUE
+            else warning("unable to create HDFS working directory", call.=FALSE)
+
+            return(res)
         }
-        else warning("unable to create HDFS working directory", call.=FALSE)
-        return(res)
     }
     else
     {

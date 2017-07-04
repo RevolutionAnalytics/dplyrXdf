@@ -9,7 +9,7 @@
 persist(.data, ...)
 
 \method{persist}{tbl_xdf}(.data, outFile, overwrite = TRUE, move = FALSE,
-  ...)
+  composite = NULL, ...)
 
 \method{persist}{RxFileData}(.data, ...)
 }
@@ -23,6 +23,8 @@ persist(.data, ...)
 \item{overwrite}{If the outfile already exists, should it be overwritten?}
 
 \item{move}{Should the tbl file be moved or copied?}
+
+\item{composite}{Create a composite Xdf or normal? The default is to create the same type of file as the input.}
 }
 \value{
 An \code{RxXdfData} object pointing to the new xdf file.
