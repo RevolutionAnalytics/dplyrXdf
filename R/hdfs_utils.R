@@ -49,6 +49,55 @@ print.dplyrXdf_hdfs_dir <- function(x, ...)
     invisible(x)
 }
 
+#' @export
+copy_to.RxHadoopMR <- function(dest, df, name=deparse(substitute(df)), overwrite=FALSE, ...)
+{
+    if(inherits(df, "RxFileData") || is.data.frame(df))
+        src <- df
+    else if(is.character(name))
+        src <- name
+    rem <- isRemoteHdfsClient()
+    if(is.na(rem))
+        stop("not connected to HDFS filesystem")
+    else if(rem)
+        rxHadoopCopyFromClient(src, dest, ...)
+    else rxHadoopCopyFromLocal(src, dest, ...)
+}
+
+
+#' @export
+copy_to.RxHdfsFileSystem <- function(dest, df, name=deparse(substitute(df)), overwrite=FALSE, ...)
+{
+    if(inherits(df, "RxFileData") || is.data.frame(df))
+        src <- df
+    else if(is.character(name))
+        src <- name
+    rem <- isRemoteHdfsClient()
+    if(is.na(rem))
+        stop("not connected to HDFS filesystem")
+    else if(rem)
+        rxHadoopCopyFromClient(src, dest, ...)
+    else rxHadoopCopyFromLocal(src, dest, ...)
+}
+
+
+# TRUE -> connected to remote cluster
+# FALSE -> edge node
+# NA -> not connected to cluster
+isRemoteHdfsClient <- function()
+{
+    cc <- rxGetComputeContext()
+    onClusterNode <- try(cc@onClusterNode, silent=TRUE)
+    if(inherits(onClusterNode, "try-error"))
+    {
+        # assume if hadoop executable found, then this is an edge node
+        if(Sys.which("hadoop") == "")
+            return(NA)
+        else return(TRUE)
+    }
+    else !isTRUE(onClusterNode)
+}
+
 
 # not all xdf functionality currently supported on HDFS
 # rxSort, rxMerge, Pema, anything involving appends (which also means grouping)
