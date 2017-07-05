@@ -182,12 +182,123 @@
         return(retObj)
     }
 
-    environment(h) <- environment(rxGetInfo)
+    # patched version of rxCheckSupportForDataSource for MRS 9.1
+    sup <- function(computeContext, jobType, data, isOutData=FALSE)
+    {
+        if(is.null(data))
+        {
+            return(TRUE)
+        }
+        if(isOutData)
+        {
+            inout.datasource <- "output data source"
+        }
+        else
+            {
+            inout.datasource <- "input data source"
+        }
+        if(class(computeContext) == "RxHadoopMR")
+        {
+            if(inherits(data, "RxSparkData"))
+            {
+                msg <- paste(class(data), "is supported in RxSpark compute context only")
+                stop(msg, call.=FALSE)
+            }
+        }
+        else if(class(computeContext) == "RxSpark")
+        {
+            #if(class(data) == "character")
+            if(is.character(data))
+            {
+                stop(paste(data, "is considered as local file. Data source used in RxSpark compute context must be in hdfs file system."),
+                call.=FALSE)
+            }
+            #else if(class(data) %in% c("RxTextData", "RxXdfData",
+            #"RxParquetData", "RxOrcData"))
+            else if(inherits(data, c("RxTextData", "RxXdfData", "RxParquetData", "RxOrcData")))
+            {
+                if(data@fileSystem$fileSystemType != "hdfs")
+                {
+                    if(grepl("://", data@file))
+                    {
+                        message(class(data), "specifying a hdfs fileSystem is recommended")
+                    }
+                    else
+                    {
+                        msg <- paste(class(data), "as", inout.datasource,
+                    "in RxSpark compute context must be in hdfs file system")
+                        stop(msg, call.=FALSE)
+                    }
+                }
+                if(is(data, "RxXdfData") && isTRUE(isOutData) &&
+                    tolower(rxFileExtension(data@file)) == "xdf")
+                {
+                    msg <- paste(data@file, "has extension '.xdf', which is considered as single XDF and not supported in RxHadoopMR and RxSpark compute context")
+                    stop(msg, call.=FALSE)
+                }
+                if(is(data, "RxXdfData") && isTRUE(isOutData) &&
+                    is.logical(data@createCompositeSet) && data@createCompositeSet == FALSE)
+                {
+                    stop("The `createCompositeSet` argument cannot be set to FALSE in RxHadoopMR and RxSpark compute context.",
+                  call.=FALSE)
+                }
+                if(!is(data, "RxParquetData") && !is(data, "RxOrcData"))
+                {
+                    cc.nameNode <- computeContext@nameNode
+                    data.hostName <- data@fileSystem$hostName
+                    if(grepl("://", cc.nameNode) || grepl("://", data.hostName))
+                    {
+                        if(cc.nameNode != data.hostName)
+                        {
+                            msg <- paste(class(data), "data source and RxSpark compute context have different hdfs (default/azure blob/azure data lake). data source:",
+                                cc.nameNode, ", compute context:", data.hostName)
+                                stop(msg, call.=FALSE)
+                        }
+                    }
+                }
+            }
+            #else if(class(data) == "RxHiveData")
+            else if(inherits(data, "RxHiveData"))
+            {
+                if(isOutData && data@dfType == "hive")
+                {
+                    msg <- paste("Cannot use RxHiveData with query as",
+                  inout.datasource, ". Please use RxHiveData with table.")
+                    stop(msg, call.=FALSE)
+                }
+            }
+            else
+            {
+                msg <- paste(class(data), "as", inout.datasource,
+                "in RxSpark compute context is not supported")
+                stop(msg, call.=FALSE)
+            }
+            if(inherits(data, "RxSparkData") && identical(jobType, "hpc"))
+            {
+                stop("RxSparkData is not supported in HPC (rxExec) mode",
+                call.=FALSE)
+            }
+        }
+        else
+        {
+            if(inherits(data, "RxSparkData"))
+            {
+                msg <- paste(class(data), "is supported in RxSpark compute context only")
+                stop(msg, call.=FALSE)
+            }
+            return(TRUE)
+        }
+        TRUE
+    }
+
+    environment(h) <- environment(sup) <- environment(rxGetInfo)
 
     rxver <- packageVersion("RevoScaleR")
     suppressWarnings({
         if(rxver < package_version("9.0"))
             assignInNamespace("rxExecInDataHadoop", value=h, ns="RevoScaleR", pos="package:RevoScaleR")
+        if(rxver <= package_version("9.1"))
+            assignInNamespace("rxCheckSupportForDataSource", value=sup, ns="RevoScaleR", pos="package:RevoScaleR")
     })
     
     # turn progress reporting off

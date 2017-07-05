@@ -2,6 +2,10 @@
 
 callExecBy <- function(.data, .func, ...)
 {
+    rxver <- packageVersion("RevoScaleR")
+    if(rxver < package_version("9.1"))
+        stop("rxExecBy not available in this version of RevoScaleR", call.=FALSE)
+
     composite <- isCompositeXdf(.data)
     funcParams <- list(...)
     funcParams <- rlang::modify(funcParams, .func=.func,
@@ -25,4 +29,11 @@ callSplit <- function(.data, .func, ...)
 
     rxExec(.func, rxElemArg(xdflst), ...,
         .composite=composite, .tblDir=get_dplyrxdf_dir())
+}
+
+
+useExecBy <- function()
+{
+    cc <- rxGetComputeContext()
+    .dxOptions$useExecBy || inherits(cc, "RxHadoopMR")
 }
