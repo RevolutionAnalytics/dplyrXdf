@@ -3,11 +3,13 @@ copy_to.RxHadoopMR <- function(dest, df, name=NULL, overwrite=FALSE, force_compo
 {
     isRemoteHdfsClient()  # fail early if no HDFS found
 
-    if(inherits(df, "RxFileData"))
+    if(inherits(df, "RxXdfData"))
     {
         if(isHdfs(rxGetFileSystem(df)))
             stop("source is already in HDFS")
         src <- df
+        if(!is.null(name))
+            warning("renaming Xdf file on copy not yet supported")
     }
     else if(is.character(df))
         src <- RxXdfData(df)
@@ -20,16 +22,24 @@ copy_to.RxHadoopMR <- function(dest, df, name=NULL, overwrite=FALSE, force_compo
             if(inherits(df, "try-error"))
                 stop("unable to import source")
         }
+
         cc <- rxGetComputeContext()
         rxSetComputeContext("local")
-        src <- rxDataStep(df, tbl_xdf(fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE))
+
+        localName <- if(!is.null(name))
+            validateXdfFile(file.path(get_dplyrxdf_dir("native"), basename(name)), composite=TRUE)
+        else NULL
+
+        src <- rxDataStep(df, tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE))
+        print(src)
         rxSetComputeContext(cc)
     }
 
-    if(is.null(name))
-        name <- basename(src@file)
+    # ensure Xdf composite filenames are correct
+    name <- basename(src@file)
 
     hdfsCopyBase(src@file, name, overwrite=overwrite, ...)
+    RxXdfData(name, fileSystem=RxHdfsFileSystem())
 }
 
 
@@ -37,22 +47,7 @@ copy_to.RxHadoopMR <- function(dest, df, name=NULL, overwrite=FALSE, force_compo
 copy_to.RxHdfsFileSystem <- copy_to.RxHadoopMR
 
 
-## copies data sources to/from HDFS
-#' @export
-copy_to.RxFileData <- function(dest, df, name=deparse(substitute(df)), overwrite=FALSE, ...)
-{
-
-}
-
-
-#copy_to(hdfs, "/misc/mtcarsc") --> ./mtcarsc
-#copy_to(hdfs, xdf, "/foo/bar") --> /foo/bar/mtcarsc
-#RevoScaleR:::rxRemoteCopy(sp, "misc/mtcarsc", FALSE, "/tmp/mtcarsc", TRUE, extraSwitches="-r")
-#rxHadoopCopyFromLocal("/tmp/mtcarsc", "/user/sshuser")
-
-#mth <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=hd, createCompositeSet=TRUE)
-
-hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite=TRUE)
+hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite=FALSE, ...)
 {
     # based on rxHadoopCopyFromClient
     if(isRemoteHdfsClient())
@@ -63,6 +58,6 @@ hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite=TRUE)
         RevoScaleR:::rxRemoteCopy(rxGetComputeContext(), src, FALSE, nativeTarget, TRUE, extraSwitches)
         src <- nativeTarget
     }
-    rxHadoopCopyFromLocal(src, dest)
+    rxHadoopCopyFromLocal(src, dest, ...)
 }
 
