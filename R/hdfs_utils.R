@@ -16,8 +16,11 @@ hdfs_dir <- function(path=".", full_path=FALSE, dirs_only=FALSE, recursive=FALSE
 
     if(dirs_only)
         output <- output[substr(output, 1, 1) == "d"]
-    output <- gsub("^[^/]*(/.*)$", "\\1", output)
-    if(!full_path)
+
+    #output <- gsub("^[^/]*(/.*)$", "\\1", output)
+    output <- substr(output, regexpr("[^ ]+$", z), nchar(output))
+
+    if(!full_path && !recursive)
         output <- basename(output)
     attr(output, "path") <- path
     class(output) <- "dplyrXdf_hdfs_dir"
