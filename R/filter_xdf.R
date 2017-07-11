@@ -33,6 +33,6 @@ filter.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+    output <- callRx("rxDataStep", arglst)
     simpleRegroup(output, grps)
 }

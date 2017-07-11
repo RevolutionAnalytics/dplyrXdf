@@ -37,7 +37,7 @@ mutate.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+    callRx("rxDataStep", arglst)
 }
 
 
@@ -75,5 +75,5 @@ transmutateGrouped <- function(.data, arglst, .composite, .tblDir)
     # explicit namespace reference to allow for parallel/execBy backends
     if(!is.null(arglst$outFile))
         arglst$outFile <- dplyrXdf:::tbl_xdf(.data, file=file, createCompositeSet=.composite)
-    rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+    callRx("rxDataStep", arglst)
 }

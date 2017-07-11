@@ -20,6 +20,7 @@ BugReports: https://github.com/RevolutionAnalytics/dplyrXdf/issues
 LazyData: true
 Collate:     '00rxArgs.R'
     'arrange_xdf.R'
+    'callRx.R'
     'combine_groups.R'
     'copy_to_hdfs.R'
     'crbind.R'

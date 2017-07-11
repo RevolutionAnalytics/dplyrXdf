@@ -23,7 +23,7 @@ transmute.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     arglst <- setTransmuteVars(arglst, names(.data))
 
     on.exit(deleteIfTbl(.data))
-    rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+    callRx("rxDataStep", arglst)
 }
 
 

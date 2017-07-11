@@ -37,7 +37,7 @@ subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile=tbl_xdf(
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+    output <- callRx("rxDataStep", arglst)
     simpleRegroup(output, grps)
 }
 
