@@ -1,7 +1,10 @@
 #' @export
-copy_to.RxHadoopMR <- function(dest, df, name=NULL, overwrite=FALSE, force_composite=FALSE, ...)
+copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, overwrite=FALSE, force_composite=FALSE, ...)
 {
     isRemoteHdfsClient()  # fail early if no HDFS found
+
+    if(is.character(df))
+        src <- RxXdfData(df)
 
     if(inherits(df, "RxXdfData"))
     {
@@ -11,9 +14,7 @@ copy_to.RxHadoopMR <- function(dest, df, name=NULL, overwrite=FALSE, force_compo
         if(!is.null(name))
             warning("renaming Xdf file on copy not yet supported")
     }
-    else if(is.character(df))
-        src <- RxXdfData(df)
-    else # write to a file, then copy the file
+    else # if not an Xdf, create an Xdf
     {
         if(!is.data.frame(df) && !inherits(df, "RxDataSource"))
         {
@@ -23,15 +24,30 @@ copy_to.RxHadoopMR <- function(dest, df, name=NULL, overwrite=FALSE, force_compo
                 stop("unable to import source")
         }
 
+        localName <- if(!is.null(name))
+            file.path(get_dplyrxdf_dir("native"), basename(name))
+        else file.path(get_dplyrxdf_dir("native"), deparse(substitute(df)))
+
         cc <- rxGetComputeContext()
         rxSetComputeContext("local")
+        src <- rxDataStep(df,
+            tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
+            rowsPerRead=.dxOptions$rowsPerRead)
+        rxSetComputeContext(cc)
+    }
 
-        localName <- if(!is.null(name))
-            validateXdfFile(file.path(get_dplyrxdf_dir("native"), basename(name)), composite=TRUE)
-        else NULL
+    if(force_composite && !isCompositeXdf(src))
+    {
+        # create a composite copy of non-composite src
+        # this happens on client if remote
+        message("Creating composite copy of non-composite Xdf ", src@file)
 
-        src <- rxDataStep(df, tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE))
-        print(src)
+        cc <- rxGetComputeContext()
+        rxSetComputeContext("local")
+        localName <- file.path(get_dplyrxdf_dir("native"), basename(src@file))
+        src <- rxDataStep(src,
+            tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
+            rowsPerRead=.dxOptions$rowsPerRead)
         rxSetComputeContext(cc)
     }
 
@@ -39,15 +55,11 @@ copy_to.RxHadoopMR <- function(dest, df, name=NULL, overwrite=FALSE, force_compo
     name <- basename(src@file)
 
     hdfsCopyBase(src@file, name, overwrite=overwrite, ...)
-    RxXdfData(name, fileSystem=RxHdfsFileSystem())
+    RxXdfData(name, fileSystem=dest)
 }
 
 
-#' @export
-copy_to.RxHdfsFileSystem <- copy_to.RxHadoopMR
-
-
-hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite=FALSE, ...)
+hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite, ...)
 {
     # based on rxHadoopCopyFromClient
     if(isRemoteHdfsClient())
@@ -58,6 +70,7 @@ hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite=FALSE, ...)
         RevoScaleR:::rxRemoteCopy(rxGetComputeContext(), src, FALSE, nativeTarget, TRUE, extraSwitches)
         src <- nativeTarget
     }
+
     rxHadoopCopyFromLocal(src, dest, ...)
 }
 
