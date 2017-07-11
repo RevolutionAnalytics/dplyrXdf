@@ -79,7 +79,7 @@ distinctBase <- function(.data, vars, keep_all, outFile, rxArgs, grps=NULL, ...)
     {
         # explicit namespace reference to allow for parallel/execBy backends
         arglst <- dplyrXdf:::doExtraArgs(list(output), .data, rxArgs, outFile)
-        output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+        output <- callRx("rxDataStep", arglst)
     }
     output
 }

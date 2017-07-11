@@ -46,7 +46,7 @@ rename.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
         arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
         oldData <- .data
-        .data <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+        .data <- callRx("rxDataStep", arglst)
         on.exit(deleteIfTbl(oldData))
     }
 

@@ -38,7 +38,7 @@ arrange.RxXdfData <- function(.data, ..., .by_group=FALSE, .outFile=tbl_xdf(.dat
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
-    output <- rlang::invoke("rxSort", arglst, .env=parent.frame(), .bury=NULL)
+    output <- callRx("rxSort", arglst)
     simpleRegroup(output, grps)
 }
 

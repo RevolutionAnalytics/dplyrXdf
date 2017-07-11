@@ -66,7 +66,7 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     arglst$rowsPerRead <- NULL
 
     # rxFactors is noisy when given already-existing factors; shut it up
-    output <- suppressWarnings(rlang::invoke("rxFactors", arglst, .env=parent.frame(), .bury=NULL))
+    output <- suppressWarnings(callRx("rxFactors", arglst))
     on.exit(deleteIfTbl(.data))
 
     # rxFactors won't preserve class of output object, unlike rxDataStep
@@ -97,7 +97,7 @@ factorise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 
     arglst <- list(.data, colInfo=colInfo)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
-    rlang::invoke("rxImport", arglst, .env=parent.frame(), .bury=NULL)
+    callRx("rxImport", arglst)
 }
 
 
