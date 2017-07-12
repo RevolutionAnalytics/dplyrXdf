@@ -46,7 +46,7 @@ do.RxFileData <- function(.data, ...)
 #' @export
 do.grouped_tbl_xdf <- function(.data, ...)
 {
-    stopIfHdfs(.data, "do on grouped data not supported on HDFS")
+    #stopIfHdfs(.data, "do on grouped data not supported on HDFS")
 
     args <- rlang::quos(...)
     if(".rxArgs" %in% names(args))
@@ -63,7 +63,7 @@ do.grouped_tbl_xdf <- function(.data, ...)
     named <- checkNamedArgs(args)
     grps <- group_vars(.data)
 
-    callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
+    callFunc <- if(useExecBy(.data)) callExecBy else callSplit
 
     df <- callFunc(.data, doGrouped, exprs=args, grps=grps) %>%
         bind_rows
@@ -79,7 +79,7 @@ do.grouped_tbl_xdf <- function(.data, ...)
 
 doGrouped <- function(.data, exprs, grps, ...)
 {
-    .data <- rxDataStep(.data, maxRowsByCols=NULL)
+    .data <- as.data.frame(.data)
     out <- dplyr::do(.data, !!!exprs)
     if(length(grps) > 0)
     {
@@ -134,7 +134,7 @@ do_xdf.RxFileData <- function(.data, ...)
 #' @export
 do_xdf.grouped_tbl_xdf <- function(.data, ...)
 {
-    stopIfHdfs(.data, "do_xdf on grouped data not supported on HDFS")
+    #stopIfHdfs(.data, "do_xdf on grouped data not supported on HDFS")
 
     args <- rlang::quos(...)
     if(".rxArgs" %in% names(args))
@@ -151,7 +151,7 @@ do_xdf.grouped_tbl_xdf <- function(.data, ...)
     named <- checkNamedArgs(args)
     grps <- group_vars(.data)
 
-    callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
+    callFunc <- if(useExecBy(.data)) callExecBy else callSplit
 
     df <- callFunc(.data, doXdfBase, exprs=args, grps=grps, named=named) %>%
         bind_rows
@@ -168,6 +168,8 @@ do_xdf.grouped_tbl_xdf <- function(.data, ...)
 # copy functionality of dplyr:::do
 doXdfBase <- function(.data, exprs, grps=NULL, named, ...)
 {
+    .data <- unTbl(.data)
+
     datlst <- rlang::env(.=.data, .data=.data)
     if(named)
     {

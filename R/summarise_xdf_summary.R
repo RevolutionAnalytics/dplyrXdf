@@ -70,6 +70,8 @@ smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
         x
     }
 
+    data <- unTbl(data) # workaround HDFS/tbl incompatibility
+
     if(length(grps) > 0)
     {
         fm <- reformulate(paste(invars, cl$fmRhs, sep=":"))

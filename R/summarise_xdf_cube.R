@@ -27,6 +27,8 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     cl <- buildSmryFormulaRhs(data, grps,
         quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE)), rxArgs, anyN)
 
+    data <- unTbl(data) # workaround HDFS/tbl incompatibility
+
     # single call to rxCube if only 1 summary statistic type, otherwise multiple calls
     if(length(unique(stats)) == 1)
     {

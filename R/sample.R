@@ -62,7 +62,7 @@ sampleGroupedXdf <- function(.data, size, replace=FALSE, weight=NULL, frac)
     if(!is.null(weight))
         warning("weighted sampling not supported for Xdf files")
 
-    callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
+    callFunc <- if(useExecBy(.data)) callExecBy else callSplit
 
     callFunc(.data, sampleBase, size, frac)
 }
@@ -82,6 +82,8 @@ sampleBase <- function(.data, size, frac, .composite=isCompositeXdf(.data), .tbl
     file <- tempfile(tmpdir=.tblDir)
     # explicit namespace reference to allow for parallel/execBy backends
     output <- dplyrXdf:::tbl_xdf(.data, file=file, createCompositeSet=.composite)
-    rxDataStep(.data, output, rowSelection=(.rxStartRow + seq_len(.rxNumRows) - 1) %in% .sel,
+
+    rxDataStep(.data, unTbl(output), rowSelection=(.rxStartRow + seq_len(.rxNumRows) - 1) %in% .sel,
         transformObjects=list(.sel=sel))
+    output
 }

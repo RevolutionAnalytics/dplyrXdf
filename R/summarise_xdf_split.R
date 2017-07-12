@@ -7,7 +7,7 @@ smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(length(grps) == 0)
         return(smryRxSummary(data, grps, stats, exprs, rxArgs))
 
-    callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
+    callFunc <- if(useExecBy(data)) callExecBy else callSplit
 
     out <- callFunc(data, smryRxSummaryWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs) %>%
         combineGroups(tbl_xdf(data), NULL)
@@ -16,7 +16,7 @@ smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
 
 smryRxSummaryWithGroupvars <- function(data, grps, stats, exprs, rxArgs=NULL, ...)
 {
-    gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
+    gvars <- rxDataStep(unTbl(data), varsToKeep=grps, numRows=1)
     smry <- smryRxSummary(data, NULL, stats, exprs, rxArgs)
     cbind(gvars, smry)
 }
@@ -31,11 +31,11 @@ smryRxSplitDplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
         arglst <- list(data, maxRowsByCols=NULL)
         if(!is.null(rxArgs))
             arglst <- rlang::modify(arglst, !!!rxArgs)
-        return(rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL) %>%
+        return(callRx("rxDataStep", arglst) %>%
             summarise(!!!exprs))
     }
 
-    callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
+    callFunc <- if(useExecBy(data)) callExecBy else callSplit
 
     callFunc(data, smryDplyrWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs) %>%
         combineGroups(tbl_xdf(data), NULL)
@@ -44,12 +44,12 @@ smryRxSplitDplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
 
 smryDplyrWithGroupvars <- function(data, grps, exprs, rxArgs=NULL, ...)
 {
-    gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
+    gvars <- rxDataStep(unTbl(data), varsToKeep=grps, numRows=1)
     arglst <- list(data, maxRowsByCols=NULL)
 
     if(!is.null(rxArgs))
         arglst <- rlang::modify(arglst, !!!rxArgs)
-    smry <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL) %>%
+    smry <- callRx("rxDataStep", arglst) %>%
         summarise(!!!exprs)
         
     cbind(gvars, smry)

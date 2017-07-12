@@ -16,7 +16,7 @@ smryRxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
     on.exit(deleteIfTbl(data))
 
     # put grouping variable on to dataset
-    output <- rxDataStep(data, tbl_xdf(data), transformFunc=function(varlst) {
+    output <- rxDataStep(data, unTbl(tbl_xdf(data)), transformFunc=function(varlst) {
         varlst[[".group."]] <- .factor(varlst, .levs)
         varlst
     }, transformObjects=list(.levs=levs, .factor=makeGroupVar), transformVars=grps, overwrite=TRUE)

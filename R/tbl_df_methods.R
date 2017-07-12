@@ -19,14 +19,14 @@ NULL
 #' @export
 as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
 {
-    rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
+    rxDataStep(unTbl(x), outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
 }
 
 #' @rdname as.data.frame
 #' @export
 collect.RxFileData <- function(x, maxRowsByCols=NULL, ...)
 {
-    rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
+    rxDataStep(unTbl(x), outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
 }
 
 #' @rdname as.data.frame
@@ -38,7 +38,7 @@ compute.RxFileData <- collect.RxFileData
 #' @export
 "$.RxFileData" <- function(x, name)
 {
-    rxDataStep(x, outFile=NULL, varsToKeep=name, maxRowsByCols=NULL)[[1]]
+    rxDataStep(unTbl(x), outFile=NULL, varsToKeep=name, maxRowsByCols=NULL)[[1]]
 }
 
 
@@ -89,7 +89,8 @@ compute.RxFileData <- collect.RxFileData
     varsToKeep <- if(is.logical(name) || is.numeric(name))
         nams[name]
     else as.character(name)
-    rxDataStep(x, outFile=NULL, varsToKeep=varsToKeep, maxRowsByCols=maxRowsByCols, ...)[[1]]
+
+    rxDataStep(unTbl(x), outFile=NULL, varsToKeep=varsToKeep, maxRowsByCols=maxRowsByCols, ...)[[1]]
 }
 
 

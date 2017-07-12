@@ -72,3 +72,16 @@ isHdfs <- function(fs)
 {
     inherits(fs, "RxHdfsFileSystem") || (fs == "hdfs")
 }
+
+
+getHdfsUserDir <- function(fs)
+{
+    # fail early if no HDFS found
+    remote <- isRemoteHdfsClient()
+
+    user <- if(remote)
+        rxGetComputeContext()@sshUsername
+    else Sys.info()["user"]
+
+    paste0("/user/", user)
+}

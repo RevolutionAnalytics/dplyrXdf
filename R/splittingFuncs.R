@@ -14,7 +14,8 @@ callExecBy <- function(.data, .func, ...)
     cc <- rxGetComputeContext()
     on.exit(rxSetComputeContext(cc))
 
-    rxExecBy(.data, group_vars(.data), function(keys, data, .func, ...)
+    # call unTbl to handle HDFS/tbl incompatibility
+    rxExecBy(unTbl(.data), group_vars(.data), function(keys, data, .func, ...)
         .func(data, ...),
         funcParams) %>%
         execByResult
@@ -32,8 +33,10 @@ callSplit <- function(.data, .func, ...)
 }
 
 
-useExecBy <- function()
+useExecBy <- function(.data)
 {
+    fs <- rxGetFileSystem(.data)
     cc <- rxGetComputeContext()
-    .dxOptions$useExecBy || inherits(cc, "RxHadoopMR")
+    # must use rxExecBy if data is on HDFS, or compute context is distributed
+    .dxOptions$useExecBy || inherits(fs, "RxHdfsFileSystem") || inherits(cc, "RxHadoopMR")
 }

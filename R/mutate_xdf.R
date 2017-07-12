@@ -61,7 +61,7 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     arglst <- list(.data, transforms=transforms)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-    callFunc <- if(.dxOptions$useExecBy) callExecBy else callSplit
+    callFunc <- if(useExecBy(.data)) callExecBy else callSplit
 
     callFunc(.data, transmutateGrouped, arglst=arglst) %>% 
         combineGroups(.outFile, grps)

@@ -61,7 +61,7 @@ summarise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs, .
 
     smryFunc <- switch(.method,
         smryRxCube, smryRxSummary, smryRxSummary2, smryRxSplitDplyr, smryRxSplit)
-    smry <- smryFunc(.data, grps, stats, exprs, .rxArgs)
+    smry <- smryFunc(unTbl(.data), grps, stats, exprs, .rxArgs)
 
     output <- makeSmryOutput(smry, .outFile, isCompositeXdf(.data))
 
