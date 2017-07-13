@@ -65,14 +65,18 @@ distinctBase <- function(.data, vars, keep_all, outFile, rxArgs, grps=NULL, ...)
             varlst <- as.data.frame(varlst, stringsAsFactors=FALSE)
             df <- dplyr::distinct(varlst, !!!.vars, .keep_all=.keep_all)
             if(length(.grps) > 0 && !keep_all)
-                df <- suppressWarnings(cbind(varlst[1, .grps, drop=FALSE], df))  # shut cbind up about row names
+            {
+                dfnames <- names(df)
+                # use cbind instead of bind_cols because it recycles rows; need to shut it up about row names
+                df <- suppressWarnings(cbind(varlst[1, .grps[!(.grps %in% dfnames)], drop=FALSE], df))
+            }
             .out <<- c(.out, list(df))
         }
         NULL
     },
         transformObjects=list(.vars=vars, .keep_all=keep_all, .grps=grps, .out=list()),
         returnTransformObjects=TRUE)$.out %>%
-    bind_rows %>%  # bind_rows removes duplicate column names
+    bind_rows %>%
     distinct
 
     if(is.character(outFile) || inherits(outFile, "RxXdfData") || !is.null(rxArgs))
