@@ -58,7 +58,7 @@ persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=FALSE, composit
     {
         if(move)
             on.exit(deleteIfTbl(.data))
-        rxDataStep(.data, outFile, overwrite=overwrite, ...)
+        rxDataStep(unTbl(.data), unTbl(outFile), overwrite=overwrite, ...)
     }
 }
 
