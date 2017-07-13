@@ -30,19 +30,63 @@ tbl_types <- function(x)
 }
 
 
+#' @rdname tbl_vars
+#' @export
+setMethod("names", c(x="tbl_xdf"), function(x)
+{
+    # deal with HDFS/tbl incompatibility: convert to raw RxXdfData, then convert back
+    callNextMethod(as(x, "RxXdfData"))
+})
+
+
+#' @rdname tbl_vars
+#' @export
+setMethod("names<-", c(x="tbl_xdf", value="character"), function(x, value)
+{
+    # deal with HDFS/tbl incompatibility: convert to raw RxXdfData, then convert back
+    cls <- class(x)
+    hasTbl <- cls@hasTblFile
+    x <- as(x, "RxXdfData")
+    names(x) <- value
+    x <- as(x, cls)
+    x@hasTblFile <- hasTbl
+    x
+})
+
+
+#' @rdname tbl_vars
+#' @export
+setMethod("names<-", c(x="grouped_tbl_xdf", value="character"), function(x, value)
+{
+    # deal with HDFS/tbl incompatibility: convert to raw RxXdfData, then convert back
+    cls <- class(x)
+    grps <- group_vars(x)
+    hasTbl <- x$hasTblFile
+    x <- as(x, "RxXdfData")
+    names(x) <- value
+    x <- as(x, cls)
+    x@groups <- grps
+    x@hasTblFile <- hasTbl
+    x
+})
+
+
 # assorted unexported functions
 varTypes <- function(x, vars=NULL)
 {
     if(!is.null(vars) && length(vars) == 0)  # handle no-variable input
         return(character(0))
-    sapply(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE), "[[", "varType")
+
+    # deal with HDFS/tbl incompatibility: convert to raw RxXdfData, then convert back
+    sapply(rxGetVarInfo(unTbl(x), varsToKeep=vars, computeInfo=FALSE), "[[", "varType")
 }
 
 
 # return list of factor levels (NULL if variable is not a factor)
 varLevels <- function(x, vars=NULL)
 {
-    sapply(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE), "[[", "levels", simplify=FALSE)
+    # deal with HDFS/tbl incompatibility: convert to raw RxXdfData, then convert back
+    sapply(rxGetVarInfo(unTbl(x), varsToKeep=vars, computeInfo=FALSE), "[[", "levels", simplify=FALSE)
 }
 
 
