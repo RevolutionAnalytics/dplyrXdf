@@ -1,5 +1,5 @@
 #' @export
-copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, overwrite=FALSE, force_composite=FALSE, ...)
+copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, overwrite=FALSE, force_composite=TRUE, ...)
 {
     isRemoteHdfsClient()  # fail early if no HDFS found
 
