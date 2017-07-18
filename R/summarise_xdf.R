@@ -63,7 +63,7 @@ summarise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs, .
         smryRxCube, smryRxSummary, smryRxSummary2, smryRxSplitDplyr, smryRxSplit)
     smry <- smryFunc(unTbl(.data), grps, stats, exprs, .rxArgs)
 
-    output <- makeSmryOutput(smry, .outFile, isCompositeXdf(.data))
+    output <- makeSmryOutput(smry, .outFile, .data)
 
     # strip off one level of grouping
     simpleRegroup(output, grps[-length(grps)])
@@ -155,20 +155,69 @@ invars <- function(exprs)
 }
 
 
-makeSmryOutput <- function(smry, .outFile, composite)
+makeSmryOutput <- function(smry, .outFile, .data)
+{
+    if(isHdfs(.data))
+        makeSmryOutputHdfs(smry, .outFile, .data)
+    else makeSmryOutputNative(smry, .outFile, .data)
+}
+
+
+makeSmryOutputHdfs <- function(smry, .outFile, .data)
+{
+    # summarise will create a data frame on client, whether edge node or remote
+    if(is.data.frame(smry))
+    {
+        # easy case: return data frame
+        if(is.null(.outFile))
+            return(smry)
+
+        returnTbl <- inherits(.outFile, "tbl_xdf")
+        if(isRemoteHdfsClient())
+        {
+            # if remote client, create local xdf then copy it
+            if(inherits(.outFile, "RxXdfData"))
+                .outFile <- .outFile@file
+
+            localXdf <- tbl_xdf(file=file.path(get_dplyrxdf_dir("native"), basename(.outFile)),
+                fileSystem=RxNativeFileSystem(),
+                createCompositeSet=isCompositeXdf(.data))
+
+            execOnHdfsClient(rxDataStep(smry, localXdf, rowsPerRead=.dxOptions$rowsPerRead))
+
+            output <- copy_to(rxGetFileSystem(.data), localXdf, dirname(.outFile))
+        }
+        else
+        {
+            # create xdf directly in HDFS
+            output <- rxDataStep(smry, unTbl(.outFile), rowsPerRead=.dxOptions$rowsPerRead)
+        }
+
+        if(returnTbl)
+            return(as(output, "tbl_xdf"))
+        else return(output)
+    }
+    else # xdf output from summary worker -- should never happen with data in HDFS
+    {
+        stop("cannot have xdf outputs from summary workers on HDFS", call.=FALSE)
+    }
+}
+
+
+makeSmryOutputNative <- function(smry, .outFile, .data)
 {
     if(is.data.frame(smry))
     {
-        if(inherits(.outFile, "tbl_xdf"))
+        if(inherits(.outFile, "RxXdfData"))
             rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         else if(is.character(.outFile))
         {
-            .outFile <- RxXdfData(.outFile, createCompositeSet=composite)
+            .outFile <- RxXdfData(.outFile, createCompositeSet=isCompositeXdf(.data), fileSystem=RxNativeFileSystem())
             rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         }
         else smry
     }
-    else  # xdf output from summary worker
+    else # xdf output from summary worker
     {
         if(inherits(.outFile, "tbl_xdf"))
         {

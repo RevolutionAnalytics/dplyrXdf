@@ -1,18 +1,16 @@
 #' @export
-copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, overwrite=FALSE, force_composite=TRUE, ...)
+copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force_composite=TRUE, ...)
 {
     isRemoteHdfsClient()  # fail early if no HDFS found
 
     if(is.character(df))
-        src <- RxXdfData(df)
+        df <- RxXdfData(df)
 
     if(inherits(df, "RxXdfData"))
     {
-        if(isHdfs(rxGetFileSystem(df)))
+        if(isHdfs(df))
             stop("source is already in HDFS")
-        src <- df
-        if(!is.null(name))
-            warning("renaming Xdf file on copy not yet supported")
+        localName <- df@file
     }
     else # if not an Xdf, create an Xdf
     {
@@ -28,49 +26,72 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, overwrite=FALSE, force
             file.path(get_dplyrxdf_dir("native"), basename(name))
         else file.path(get_dplyrxdf_dir("native"), deparse(substitute(df)))
 
-        cc <- rxGetComputeContext()
-        rxSetComputeContext("local")
-        src <- rxDataStep(df,
+        df <- execOnHdfsClient(rxDataStep(df,
             tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
-            rowsPerRead=.dxOptions$rowsPerRead)
-        rxSetComputeContext(cc)
+            rowsPerRead=.dxOptions$rowsPerRead))
     }
 
-    if(force_composite && !isCompositeXdf(src))
+    if(force_composite && !isCompositeXdf(df))
     {
         # create a composite copy of non-composite src
         # this happens on client if remote
-        message("Creating composite copy of non-composite Xdf ", src@file)
+        message("Creating composite copy of non-composite Xdf ", df@file)
 
-        cc <- rxGetComputeContext()
-        rxSetComputeContext("local")
-        localName <- file.path(get_dplyrxdf_dir("native"), basename(src@file))
-        src <- rxDataStep(src,
+        localName <- file.path(get_dplyrxdf_dir("native"), basename(df@file))
+        df <- execOnHdfsClient(rxDataStep(df,
             tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
-            rowsPerRead=.dxOptions$rowsPerRead)
-        rxSetComputeContext(cc)
+            rowsPerRead=.dxOptions$rowsPerRead))
     }
 
-    # ensure Xdf composite filenames are correct
-    name <- basename(src@file)
+    if(is.null(path))
+        path <- getHdfsUserDir()
 
-    hdfsCopyBase(src@file, name, overwrite=overwrite, ...)
-    RxXdfData(name, fileSystem=dest)
+    hdfsCopyBase(df@file, path, overwrite=overwrite, isDir=isCompositeXdf(df), ...)
+
+    RxXdfData(file.path(path, basename(df@file), fsep="/"), fileSystem=dest, createCompositeSet=isCompositeXdf(df))
 }
 
 
-hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite, ...)
+hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite, isDir, ...)
 {
     # based on rxHadoopCopyFromClient
     if(isRemoteHdfsClient())
     {
-        nativeTarget <- file.path(nativeTarget, basename(src), fsep="/")
-        isDir <- file.info(src)$isdir
+        ## need to add name for directory, but not for file
+        #rxRemoteCopy(cc, "file.xdf", FALSE, "/tmp", TRUE, extraSwitches="")
+        #rxRemoteCopy(cc, "dir", FALSE, "/tmp/dir", TRUE, extraSwitches="-r")
+
+        if(isDir)
+            nativeTarget <- file.path(nativeTarget, basename(src), fsep="/")
         extraSwitches <- if(isDir) "-r" else ""
-        RevoScaleR:::rxRemoteCopy(rxGetComputeContext(), src, FALSE, nativeTarget, TRUE, extraSwitches)
-        src <- nativeTarget
+
+        RevoScaleR:::rxRemoteCopy(rxGetComputeContext(), shQuote(src), FALSE, nativeTarget, TRUE, extraSwitches)
+
+        if(isDir)
+            src <- nativeTarget
+        else src <- file.path(nativeTarget, basename(src), fsep="/")
     }
 
-    rxHadoopCopyFromLocal(src, dest, ...)
+    if(isDir)
+        dest <- file.path(dest, basename(src), fsep="/")
+
+    # based on rxHadoopCopyFromLocal, with -f option for overwriting
+    cmd <- "fs -copyFromLocal"
+    if(overwrite)
+        cmd <- paste(cmd, "-f")
+    cmd <- paste(cmd, src, dest)
+
+    ret <- rxHadoopCommand(cmd, ...)
+    if(ret)
+    {
+        cmd <- paste0("sudo rm -rf ", src)
+        RevoScaleR:::rxRemoteCommand(rxGetComputeContext(), cmd)
+    }
+    ret
 }
+
+
+
+
+
 

@@ -63,14 +63,16 @@ isRemoteHdfsClient <- function(stopIfNotConnected=TRUE)
 # rxSort, rxMerge, Pema, anything involving appends (which also means grouping)
 stopIfHdfs <- function(.data, ...)
 {
-    if(isHdfs(rxGetFileSystem(.data)))
+    if(isHdfs(.data))
         stop(..., call.=FALSE)
 }
 
 
-isHdfs <- function(fs)
+isHdfs <- function(obj)
 {
-    inherits(fs, "RxHdfsFileSystem") || (fs == "hdfs")
+    inherits(obj, "RxHdfsFileSystem") ||
+        (inherits(obj, "RxFileData") && inherits(rxGetFileSystem(obj), "RxHdfsFileSystem")) ||
+        (is.character(obj) && tolower(obj) == "hdfs")
 }
 
 
@@ -85,3 +87,15 @@ getHdfsUserDir <- function(fs)
 
     paste0("/user/", user)
 }
+
+
+execOnHdfsClient <- function(expr)
+{
+    cc <- rxGetComputeContext()
+    on.exit(rxSetComputeContext(cc))
+    rxSetComputeContext("local")
+    eval(expr, parent.frame())
+}
+
+
+
