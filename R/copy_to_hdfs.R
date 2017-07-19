@@ -91,12 +91,6 @@ hdfsDownload <- function(src, dest, nativeTarget="/tmp", overwrite, isDir, ...)
 {
     localDest <- if(isRemoteHdfsClient()) nativeTarget else dest
 
-    ## need to add name for directory, but not for file
-    # src="file.xdf" -> dest="/tmp", extraSwitches=""
-    # src="dir" -> dest="/tmp/dir", extraSwitches="-r"
-    #if(isDir)
-        #localDest <- file.path(localDest, basename(src), fsep="/")
-
     cmd <- "fs -copyToLocal"
     if(!missing(overwrite))
         warning("overwrite option not supported for HDFS downloading")
