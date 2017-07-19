@@ -175,7 +175,7 @@ makeSmryOutputHdfs <- function(smry, .outFile, .data)
         returnTbl <- inherits(.outFile, "tbl_xdf")
         if(isRemoteHdfsClient())
         {
-            # if remote client, create local xdf then copy it
+            # if remote, create xdf on client then copy it
             if(inherits(.outFile, "RxXdfData"))
                 .outFile <- .outFile@file
 
@@ -190,6 +190,9 @@ makeSmryOutputHdfs <- function(smry, .outFile, .data)
         else
         {
             # create xdf directly in HDFS
+            if(is.character(.outFile))
+                .outFile <- RxXdfData(.outFile, fileSystem=rxGetFileSystem(.data), rowsPerRead=.dxOptions$rowsPerRead)
+
             output <- rxDataStep(smry, unTbl(.outFile), rowsPerRead=.dxOptions$rowsPerRead)
         }
 

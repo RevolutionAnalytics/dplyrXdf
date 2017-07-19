@@ -22,12 +22,8 @@ copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force
                 stop("unable to import source")
         }
 
-        localName <- if(!is.null(name))
-            file.path(get_dplyrxdf_dir("native"), basename(name))
-        else file.path(get_dplyrxdf_dir("native"), deparse(substitute(df)))
-
         df <- execOnHdfsClient(rxDataStep(df,
-            tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
+            tbl_xdf(fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
             rowsPerRead=.dxOptions$rowsPerRead))
     }
 
@@ -46,13 +42,13 @@ copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force
     if(is.null(path))
         path <- getHdfsUserDir()
 
-    hdfsCopyBase(df@file, path, overwrite=overwrite, isDir=isCompositeXdf(df), ...)
+    hdfsUpload(df@file, path, overwrite=overwrite, isDir=isCompositeXdf(df), ...)
 
     RxXdfData(file.path(path, basename(df@file), fsep="/"), fileSystem=dest, createCompositeSet=isCompositeXdf(df))
 }
 
 
-hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite, isDir, ...)
+hdfsUpload <- function(src, dest, nativeTarget="/tmp", overwrite, isDir, ...)
 {
     # based on rxHadoopCopyFromClient
     if(isRemoteHdfsClient())
@@ -91,7 +87,41 @@ hdfsCopyBase <- function(src, dest, nativeTarget="/tmp", overwrite, isDir, ...)
 }
 
 
+hdfsDownload <- function(src, dest, nativeTarget="/tmp", overwrite, isDir, ...)
+{
+    localDest <- if(isRemoteHdfsClient()) nativeTarget else dest
 
+    ## need to add name for directory, but not for file
+    # src="file.xdf" -> dest="/tmp", extraSwitches=""
+    # src="dir" -> dest="/tmp/dir", extraSwitches="-r"
+    #if(isDir)
+        #localDest <- file.path(localDest, basename(src), fsep="/")
 
+    cmd <- "fs -copyToLocal"
+    if(!missing(overwrite))
+        warning("overwrite option not supported for HDFS downloading")
+    cmd <- paste(cmd, src, localDest)
 
+    ret <- rxHadoopCommand(cmd, ...)
+
+    if(ret && isRemoteHdfsClient())
+    {
+        if(isDir)
+        {
+            localDest <- file.path(localDest, basename(src))
+            #dest <- file.path(dest, basename(src))
+            extraSwitches <- "-r"
+        }
+        else
+        {
+            localDest <- file.path(localDest, basename(src), fsep="/")
+            extraSwitches <- ""
+        }
+        RevoScaleR:::rxRemoteCopy(rxGetComputeContext(), localDest, TRUE, shQuote(dest), FALSE, extraSwitches)
+
+        cmd <- paste0("sudo rm -rf ", localDest)
+        RevoScaleR:::rxRemoteCommand(rxGetComputeContext(), cmd)
+    }
+    else ret
+}
 

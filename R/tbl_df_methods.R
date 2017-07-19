@@ -19,19 +19,59 @@ NULL
 #' @export
 as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
 {
-    rxDataStep(unTbl(x), outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
+    # calling rxDataStep on HDFS data from remote client is bog-slow, use direct download instead
+    if(isHdfs(x))
+        collect(x, maxRowsByCols=maxRowsByCols)
+    else execOnHdfsClient(rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...))
 }
+
 
 #' @rdname as.data.frame
 #' @export
-collect.RxFileData <- function(x, maxRowsByCols=NULL, ...)
+collect.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=TRUE, ...)
 {
-    rxDataStep(unTbl(x), outFile=NULL, maxRowsByCols=maxRowsByCols, ...)
+    if(is.null(as_data_frame))
+        as_data_frame <- !isHdfs(x)
+
+    if(isHdfs(x))
+    {
+        # copy from HDFS to native filesystem
+        composite <- isCompositeXdf(x)
+        file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
+        localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
+        hdfsDownload(x@file, localXdf@file, isDir=composite)
+    }
+    else localXdf <- x
+
+    if(as_data_frame)
+        as.data.frame(localXdf)
+    else localXdf
 }
 
+
+# collect and compute differ only in as_data_frame default value
 #' @rdname as.data.frame
 #' @export
-compute.RxFileData <- collect.RxFileData
+compute.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=NULL, ...)
+{
+    if(is.null(as_data_frame))
+        as_data_frame <- !isHdfs(x)
+
+    if(isHdfs(x))
+    {
+        # copy from HDFS to native filesystem
+        composite <- isCompositeXdf(x)
+        file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
+        localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
+        hdfsDownload(x@file, localXdf@file, isDir=composite)
+    }
+    else localXdf <- x
+
+    if(as_data_frame)
+        as.data.frame(localXdf)
+    else localXdf
+}
+
 
 #' @param name The name of a column to extract from a data source object
 #' @rdname as.data.frame

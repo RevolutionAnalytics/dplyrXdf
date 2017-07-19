@@ -92,8 +92,11 @@ getHdfsUserDir <- function(fs)
 execOnHdfsClient <- function(expr)
 {
     cc <- rxGetComputeContext()
-    on.exit(rxSetComputeContext(cc))
-    rxSetComputeContext("local")
+    if(inherits(cc, "RxDistributedHpa"))
+    {
+        on.exit(rxSetComputeContext(cc))
+        rxSetComputeContext("local")
+    }
     eval(expr, parent.frame())
 }
 
