@@ -29,7 +29,8 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     }
 
     cl <- buildSmryFormulaRhs(data, grps,
-        quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE)), rxArgs, anyN, gvarTypes=gvarTypes)
+        quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE, returnDataFrame=TRUE)),
+        rxArgs, anyN, gvarTypes=gvarTypes)
 
     data <- unTbl(data) # workaround HDFS/tbl incompatibility
 
@@ -38,7 +39,8 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     {
         fm <- formula(paste0("cbind(", paste0(invars, collapse=","), ") ~ ", cl$fmRhs))
         means <- stats[1] == "mean"
-        df <- data.frame(eval(cl$call))
+        df <- eval(cl$call)
+        class(df) <- "data.frame"
         df <- df[-ncol(df)]
     }
     else
@@ -46,7 +48,8 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
         df <- lapply(seq_along(stats), function(i) {
             means <- stats[i] == "mean"
             fm <- reformulate(cl$fmRhs, invars[[i]])
-            cube <- data.frame(eval(cl$call))
+            cube <- eval(cl$call)
+            class(cube) <- "data.frame"
             cube[-ncol(cube)]
         })
         byvars <- names(df[[1]])[1:cl$nRhs]

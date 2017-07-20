@@ -45,7 +45,7 @@ setMethod("names<-", c(x="tbl_xdf", value="character"), function(x, value)
 {
     # deal with HDFS/tbl incompatibility: convert to raw RxXdfData, then convert back
     cls <- class(x)
-    hasTbl <- cls@hasTblFile
+    hasTbl <- x@hasTblFile
     x <- as(x, "RxXdfData")
     names(x) <- value
     x <- as(x, cls)
