@@ -120,4 +120,4 @@ test_that("output to xdf works",
 })
 
 
-rxHadoopRemove("test16")
+rxHadoopRemoveDir("test16")

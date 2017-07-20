@@ -61,19 +61,35 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
         }, simplify=FALSE)
     )
 
+    if(isHdfs(.data) && length(vars$blankArgs) > 0)
+    {
+        message("Factor levels not given; scanning data to get levels")
+        levs <- getFactorLevels(.data, vars$blankArgs)
+        factorInfo <- hdfsFixFactorInfo(factorInfo, levs)
+    }
+
     arglst <- list(.data, factorInfo=factorInfo)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+
+    # rxFactors doesn't support rowsPerRead
     arglst$rowsPerRead <- NULL
+
+    # rxFactors breaks if relative path used in output data source object
+    if(inherits(arglst$outFile, "RxXdfData") && substr(arglst$outFile@file, 1, 1) != "/")
+        arglst$outFile@file <- file.path(getHdfsUserDir(), arglst$outFile@file, fsep="/")
+
+    # rxFactors won't write to a data frame directly; do it the hard way
+    if(is.null(.outFile))
+        arglst$outFile <- tbl_xdf(.data)
 
     # rxFactors is noisy when given already-existing factors; shut it up
     output <- suppressWarnings(callRx("rxFactors", arglst))
     on.exit(deleteIfTbl(.data))
 
-    # rxFactors won't preserve class of output object, unlike rxDataStep
-    if(missing(.outFile))
-        output <- as(output, "tbl_xdf")
-    if(inherits(output, "RxXdfData"))
-        output@createCompositeSet <- isCompositeXdf(output)
+    if(is.null(.outFile))
+        output <- as.data.frame(arglst$outFile)
+    else output <- arglst$outFile # rxFactors puts wrong filesystem in result, use data source object from call
+
     simpleRegroup(output, grps)
 }
 

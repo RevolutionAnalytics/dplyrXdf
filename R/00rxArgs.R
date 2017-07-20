@@ -44,7 +44,7 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
         else if(is.character(.outFile))
         {
             .outFile <- validateXdfFile(.outFile, composite)
-            arglst$outFile <- RxXdfData(.outFile, createCompositeSet=composite)
+            arglst$outFile <- RxXdfData(.outFile, fileSystem=rxGetFileSystem(.data), createCompositeSet=composite)
         }
         else
         {
