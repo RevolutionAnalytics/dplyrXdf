@@ -18,15 +18,20 @@ smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
     stopifnot(all(nchar(invars) > 0))
 
     # convert non-factor character cols into factors
-    isChar <- varTypes(data, grps) == "character"
+    gvarTypes <- varTypes(data, grps)
+    isChar <- gvarTypes == "character"
     if(any(isChar))
+    {
         data <- factorise(data, !!!rlang::syms(grps[isChar]))
+        gvarTypes[isChar] <- "factor"
+    }
 
     cl <- buildSmryFormulaRhs(data, grps,
         quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE)),
         rxArgs,
         anyN,
-        names(data)[1]) # rxSummary transform(n=1) fails if no other transforms present
+        names(data)[1], # rxSummary transform(n=1) fails if no other transforms present
+        gvarTypes=gvarTypes)
 
     findTable <- function(s)
     {

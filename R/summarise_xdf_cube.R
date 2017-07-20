@@ -20,12 +20,16 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     stopifnot(all(nchar(invars) > 0))
 
     # convert non-factor character cols into factors
-    isChar <- varTypes(data, grps) == "character"
+    gvarTypes <- varTypes(data, grps)
+    isChar <- gvarTypes == "character"
     if(any(isChar))
+    {
         data <- factorise(data, !!!rlang::syms(grps[isChar]))
+        gvarTypes[isChar] <- "factor"
+    }
 
     cl <- buildSmryFormulaRhs(data, grps,
-        quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE)), rxArgs, anyN)
+        quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE)), rxArgs, anyN, gvarTypes=gvarTypes)
 
     data <- unTbl(data) # workaround HDFS/tbl incompatibility
 

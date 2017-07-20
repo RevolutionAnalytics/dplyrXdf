@@ -1,4 +1,4 @@
-buildSmryFormulaRhs <- function(data, grps, call, rxArgs, addN=FALSE, proxyVar=FALSE)
+buildSmryFormulaRhs <- function(data, grps, call, rxArgs, addN=FALSE, proxyVar=FALSE, gvarTypes)
 {
     if(!is.null(rxArgs))
         call <- rlang::lang_modify(call, rlang::splice(rxArgs))
@@ -24,14 +24,14 @@ buildSmryFormulaRhs <- function(data, grps, call, rxArgs, addN=FALSE, proxyVar=F
     fmRhs <- if(nRhs > 0)
     {
         numeric_logical <- c("numeric", "integer", "logical", "Date", "POSIXct")
-        gvarTypes <- varTypes(data, grps)
 
         # smry_rxCube and smry_rxSummary methods should have converted all char columns to factor
         if(!all(gvarTypes %in% c("factor", numeric_logical)))
             stop("unexpected non-factor, non-numeric grouping variable in summarise", call.=FALSE)
 
         # using F() assumes that numeric columns are integers; do a check on this
-        if(any(gvarTypes %in% numeric_logical))
+        # don't check on HDFS for performance reasons
+        if(any(gvarTypes %in% numeric_logical) && !isHdfs(data))
             verifyNumericsAreIntegers(data, grps)
 
         rhsVars <- ifelse(gvarTypes %in% numeric_logical, paste0("F(", grps, ")"), grps)
