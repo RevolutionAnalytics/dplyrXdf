@@ -62,9 +62,7 @@ sampleGroupedXdf <- function(.data, size, replace=FALSE, weight=NULL, frac)
     if(!is.null(weight))
         warning("weighted sampling not supported for Xdf files")
 
-    callFunc <- if(useExecBy(.data)) callExecBy else callSplit
-
-    callFunc(.data, sampleBase, size, frac)
+    callGroupedExec(.data, sampleBase, size, frac)
 }
 
 

@@ -1,4 +1,15 @@
 # abstract out interfaces to data splitting backends for split-apply-combine strategy
+callGroupedExec <- function(.data, ...)
+{
+    fs <- rxGetFileSystem(.data)
+    cc <- rxGetComputeContext()
+
+    # must use rxExecBy if data is on HDFS, or compute context is distributed
+    if(.dxOptions$useExecBy || inherits(fs, "RxHdfsFileSystem") || inherits(cc, "RxHadoopMR"))
+        callExecBy(.data, ...)
+    else callSplit(.data, ...)
+}
+
 
 callExecBy <- function(.data, .func, ...)
 {
@@ -32,11 +43,3 @@ callSplit <- function(.data, .func, ...)
         .composite=composite, .tblDir=get_dplyrxdf_dir())
 }
 
-
-useExecBy <- function(.data)
-{
-    fs <- rxGetFileSystem(.data)
-    cc <- rxGetComputeContext()
-    # must use rxExecBy if data is on HDFS, or compute context is distributed
-    .dxOptions$useExecBy || inherits(fs, "RxHdfsFileSystem") || inherits(cc, "RxHadoopMR")
-}

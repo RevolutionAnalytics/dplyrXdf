@@ -63,9 +63,7 @@ do.grouped_tbl_xdf <- function(.data, ...)
     named <- checkNamedArgs(args)
     grps <- group_vars(.data)
 
-    callFunc <- if(useExecBy(.data)) callExecBy else callSplit
-
-    df <- callFunc(.data, doGrouped, exprs=args, grps=grps) %>%
+    df <- callGroupedExec(.data, doGrouped, exprs=args, grps=grps) %>%
         bind_rows
 
     # mimic grouping behaviour of do for data frames
@@ -102,7 +100,7 @@ do_xdf <- function(.data, ...)
 #' @export
 doXdf <- function(.data, ...)
 {
-    warning("doXdf is deprecated; use do_xdf instead", call.=FALSE)
+    .Deprecated("do_xdf", old="doXdf")
     UseMethod("do_xdf")
 }
 
@@ -151,9 +149,7 @@ do_xdf.grouped_tbl_xdf <- function(.data, ...)
     named <- checkNamedArgs(args)
     grps <- group_vars(.data)
 
-    callFunc <- if(useExecBy(.data)) callExecBy else callSplit
-
-    df <- callFunc(.data, doXdfBase, exprs=args, grps=grps, named=named) %>%
+    df <- callGroupedExec(.data, doXdfBase, exprs=args, grps=grps, named=named) %>%
         bind_rows
 
     # mimic grouping behaviour of do for data frames
@@ -202,7 +198,7 @@ checkNamedArgs <- function (args)
             call. = FALSE)
     }
     if (named == 0 && length(args) > 1) {
-        stop("Can only supply single unnamed argument to do()", 
+        stop("Can only supply single unnamed argument to do() and do_xdf()", 
             call. = FALSE)
     }
     named != 0

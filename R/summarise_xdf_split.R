@@ -7,9 +7,7 @@ smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(length(grps) == 0)
         return(smryRxSummary(data, grps, stats, exprs, rxArgs))
 
-    callFunc <- if(useExecBy(data)) callExecBy else callSplit
-
-    out <- callFunc(data, smryRxSummaryWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs) %>%
+    out <- callGroupedExec(data, smryRxSummaryWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs) %>%
         combineGroups(tbl_xdf(data), NULL)
 }
 
@@ -35,9 +33,7 @@ smryRxSplitDplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
             summarise(!!!exprs))
     }
 
-    callFunc <- if(useExecBy(data)) callExecBy else callSplit
-
-    callFunc(data, smryDplyrWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs) %>%
+    callGroupedExec(data, smryDplyrWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs) %>%
         combineGroups(tbl_xdf(data), NULL)
 }
 
