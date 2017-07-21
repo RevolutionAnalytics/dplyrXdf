@@ -77,16 +77,25 @@ varTypes <- function(x, vars=NULL)
     if(!is.null(vars) && length(vars) == 0)  # handle no-variable input
         return(character(0))
 
-    # deal with HDFS/tbl incompatibility: convert to raw RxXdfData, then convert back
-    sapply(rxGetVarInfo(unTbl(x), varsToKeep=vars, computeInfo=FALSE), "[[", "varType")
+    info <- if(is.data.frame(x))
+        execOnHdfsClient(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE))
+    else rxGetVarInfo(unTbl(x), varsToKeep=vars, computeInfo=FALSE)
+
+    sapply(info, "[[", "varType")
 }
 
 
 # return list of factor levels (NULL if variable is not a factor)
 varLevels <- function(x, vars=NULL)
 {
-    # deal with HDFS/tbl incompatibility: convert to raw RxXdfData, then convert back
-    sapply(rxGetVarInfo(unTbl(x), varsToKeep=vars, computeInfo=FALSE), "[[", "levels", simplify=FALSE)
+    if(!is.null(vars) && length(vars) == 0) # handle no-variable input
+        return(character(0))
+
+    info <- if(is.data.frame(x))
+        execOnHdfsClient(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE))
+    else rxGetVarInfo(unTbl(x), varsToKeep=vars, computeInfo=FALSE)
+
+    sapply(info, "[[", "levels", simplify=FALSE)
 }
 
 

@@ -60,17 +60,16 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
             else list(levels=levs)
         }, simplify=FALSE)
     )
-    #print(vars)
-    #print(factorInfo)
 
-    if(isHdfs(.data) && length(vars$blankArgs) > 0)
+    inputHd <- isHdfs(.data)
+
+    # rxFactors needs explicit factor levels in HDFS
+    if(inputHd && length(vars$blankArgs) > 0)
     {
         message("To improve efficiency with data in HDFS, specify factor levels in call to factorise")
         levs <- getFactorLevels(.data, vars$blankArgs)
         factorInfo <- hdfsFixFactorInfo(factorInfo, levs)
     }
-    #print(factorInfo)
-    #return(factorInfo)
 
     arglst <- list(.data, factorInfo=factorInfo)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
@@ -78,21 +77,24 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     # rxFactors doesn't support rowsPerRead
     arglst$rowsPerRead <- NULL
 
-    # rxFactors breaks if relative path used in output data source object
-    if(inherits(arglst$outFile, "RxXdfData") && substr(arglst$outFile@file, 1, 1) != "/")
-        arglst$outFile@file <- file.path(getHdfsUserDir(), arglst$outFile@file, fsep="/")
-
-    # rxFactors won't write to a data frame directly; do it the hard way
-    if(is.null(.outFile))
+    # rxFactors won't create a data frame directly from HDFS input; do it the hard way
+    outputDf <- is.null(.outFile)
+    if(inputHd && outputDf)
         arglst$outFile <- tbl_xdf(.data)
+
+    # rxFactors in HDFS breaks if relative path used in output data source object
+    if(inputHd && substr(arglst$outFile@file, 1, 1) != "/")
+        arglst$outFile@file <- file.path(getHdfsUserDir(), arglst$outFile@file, fsep="/")
 
     # rxFactors is noisy when given already-existing factors; shut it up
     output <- suppressWarnings(callRx("rxFactors", arglst))
     on.exit(deleteIfTbl(.data))
 
-    if(is.null(.outFile))
+    # rxFactors puts wrong class/filesystem in result; use data source object from call
+    if(!outputDf)
+        output <- arglst$outFile
+    else if(inputHd && outputDf)
         output <- as.data.frame(arglst$outFile)
-    else output <- arglst$outFile # rxFactors puts wrong filesystem in result, use data source object from call
 
     simpleRegroup(output, grps)
 }
