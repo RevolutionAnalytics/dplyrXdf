@@ -11,6 +11,12 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, create
     if(is.null(file))
     {
         tmpdir <- get_dplyrxdf_dir(fileSystem)
+        if(is.null(tmpdir))
+        {
+            set_dplyrxdf_dir(fileSystem=fileSystem)
+            tmpdir <- get_dplyrxdf_dir(fileSystem)
+        }
+
         if(!createCompositeSet)
             file <- tempfile(tmpdir=tmpdir, fileext=".xdf")
         else file <- tempfile(tmpdir=tmpdir)

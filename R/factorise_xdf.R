@@ -60,13 +60,17 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
             else list(levels=levs)
         }, simplify=FALSE)
     )
+    #print(vars)
+    #print(factorInfo)
 
     if(isHdfs(.data) && length(vars$blankArgs) > 0)
     {
-        message("Factor levels not given; scanning data to get levels")
+        message("To improve efficiency with data in HDFS, specify factor levels in call to factorise")
         levs <- getFactorLevels(.data, vars$blankArgs)
         factorInfo <- hdfsFixFactorInfo(factorInfo, levs)
     }
+    #print(factorInfo)
+    #return(factorInfo)
 
     arglst <- list(.data, factorInfo=factorInfo)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
@@ -185,4 +189,12 @@ environment(factoriseVars) <- .factoriseEnv
 environment(all_character) <- .factoriseEnv
 environment(all_integer) <- .factoriseEnv
 environment(all_numeric) <- .factoriseEnv
+
+
+hdfsFixFactorInfo <- function(factorInfo, levs)
+{
+    factorInfo[names(levs)] <- NULL
+    levs <- lapply(levs, function(x) list(levels=x))
+    c(factorInfo, levs)
+}
 

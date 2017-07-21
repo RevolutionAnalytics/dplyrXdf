@@ -11,7 +11,7 @@ smryRxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
     outvars <- names(exprs)
     invars <- invars(exprs)
 
-    levs <- getGroupLevels(data)
+    levs <- getFactorCombinations(data)
 
     on.exit(deleteIfTbl(data))
 
