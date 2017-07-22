@@ -3,7 +3,7 @@ getFactorLevels <- function(data, vars=group_vars(data))
     if(length(vars) == 0)
         return(NULL)
 
-    levs <- if(isHdfs(data))
+    levs <- if(in_hdfs(data))
     {
         # workaround crazy rxExecBy issue
         vars <- unname(vars)

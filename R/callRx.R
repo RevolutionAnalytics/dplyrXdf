@@ -17,7 +17,7 @@ callRx <- function(func="rxDataStep", arglst, asTbl=NULL)
 # remove tbl_xdf class if dealing with HDFS
 unTbl <- function(.data)
 {
-    if(inherits(.data, "tbl_xdf") && isHdfs(.data))
+    if(inherits(.data, "tbl_xdf") && in_hdfs(.data))
     {
         # as(*, "RxXdfData") doesn't set low-level attributes correctly:
         # xdfUuid, dfName, dfSource

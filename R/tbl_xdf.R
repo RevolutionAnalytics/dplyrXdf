@@ -21,7 +21,7 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, create
             file <- tempfile(tmpdir=tmpdir, fileext=".xdf")
         else file <- tempfile(tmpdir=tmpdir)
 
-        if(isHdfs(fileSystem))
+        if(in_hdfs(fileSystem))
         {
             file <- gsub("\\\\", "/", file) # backslash nonsense
             if(!.dxOptions$hdfsWorkDirCreated)

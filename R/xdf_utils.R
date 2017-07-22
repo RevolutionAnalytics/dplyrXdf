@@ -35,4 +35,3 @@ validateXdfFile <- function(filename, composite)
     }
     filename
 }
-

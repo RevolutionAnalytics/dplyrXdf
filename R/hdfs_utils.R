@@ -28,12 +28,21 @@ hdfs_dir <- function(path=".", full_path=FALSE, dirs_only=FALSE, recursive=FALSE
 }
 
 
+#' @export
 print.dplyrXdf_hdfs_dir <- function(x, ...)
 {
     path <- attr(x, "path")
     cat("Directory listing of", path, "\n")
     print.default(c(x), ...)
     invisible(x)
+}
+
+
+#' @export
+in_hdfs <- function(obj=NULL)
+{
+    fs <- rxGetFileSystem(obj)
+    inherits(fs, "RxHdfsFileSystem") || (is.character(obj) && tolower(obj) == "hdfs")
 }
 
 
@@ -63,16 +72,8 @@ isRemoteHdfsClient <- function(stopIfNotConnected=TRUE)
 # rxSort, rxMerge, Pema, anything involving appends (which also means grouping)
 stopIfHdfs <- function(.data, ...)
 {
-    if(isHdfs(.data))
+    if(in_hdfs(.data))
         stop(..., call.=FALSE)
-}
-
-
-isHdfs <- function(obj)
-{
-    inherits(obj, "RxHdfsFileSystem") ||
-        (inherits(obj, "RxFileData") && inherits(rxGetFileSystem(obj), "RxHdfsFileSystem")) ||
-        (is.character(obj) && tolower(obj) == "hdfs")
 }
 
 

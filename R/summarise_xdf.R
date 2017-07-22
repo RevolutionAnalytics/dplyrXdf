@@ -157,7 +157,7 @@ invars <- function(exprs)
 
 makeSmryOutput <- function(smry, .outFile, .data)
 {
-    if(isHdfs(.data))
+    if(in_hdfs(.data))
         makeSmryOutputHdfs(smry, .outFile, .data)
     else makeSmryOutputNative(smry, .outFile, .data)
 }

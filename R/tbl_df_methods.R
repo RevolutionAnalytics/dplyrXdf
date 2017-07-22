@@ -20,7 +20,7 @@ NULL
 as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
 {
     # calling rxDataStep on HDFS data from remote client is bog-slow, use direct download instead
-    if(isHdfs(x))
+    if(in_hdfs(x))
         collect(x, maxRowsByCols=maxRowsByCols)
     else execOnHdfsClient(rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...))
 }
@@ -31,9 +31,9 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
 collect.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=TRUE, ...)
 {
     if(is.null(as_data_frame))
-        as_data_frame <- !isHdfs(x)
+        as_data_frame <- !in_hdfs(x)
 
-    if(isHdfs(x))
+    if(in_hdfs(x))
     {
         # copy from HDFS to native filesystem
         composite <- isCompositeXdf(x)
@@ -55,9 +55,9 @@ collect.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=TRUE, ...)
 compute.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=NULL, ...)
 {
     if(is.null(as_data_frame))
-        as_data_frame <- !isHdfs(x)
+        as_data_frame <- !in_hdfs(x)
 
-    if(isHdfs(x))
+    if(in_hdfs(x))
     {
         # copy from HDFS to native filesystem
         composite <- isCompositeXdf(x)

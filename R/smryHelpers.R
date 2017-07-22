@@ -31,7 +31,7 @@ buildSmryFormulaRhs <- function(data, grps, call, rxArgs, addN=FALSE, proxyVar=F
 
         # using F() assumes that numeric columns are integers; do a check on this
         # don't check on HDFS for performance reasons
-        if(any(gvarTypes %in% numeric_logical) && !isHdfs(data))
+        if(any(gvarTypes %in% numeric_logical) && !in_hdfs(data))
             verifyNumericsAreIntegers(data, grps)
 
         rhsVars <- ifelse(gvarTypes %in% numeric_logical, paste0("F(", grps, ")"), grps)

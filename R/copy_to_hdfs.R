@@ -8,7 +8,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force
 
     if(inherits(df, "RxXdfData"))
     {
-        if(isHdfs(df))
+        if(in_hdfs(df))
             stop("source is already in HDFS")
         localName <- df@file
     }

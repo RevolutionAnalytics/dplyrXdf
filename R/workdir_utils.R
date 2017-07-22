@@ -41,7 +41,7 @@ set_dplyrxdf_dir <- function(path, fileSystem=rxGetFileSystem())
 get_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
 {
     fileSystem <- validateFileSystem(fileSystem)
-    if(isHdfs(fileSystem))
+    if(in_hdfs(fileSystem))
         .dxOptions$hdfsWorkDir
     else .dxOptions$localWorkDir
 }
@@ -50,7 +50,7 @@ get_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
 make_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
 {
     fileSystem <- validateFileSystem(fileSystem)
-    if(isHdfs(fileSystem))
+    if(in_hdfs(fileSystem))
     {
         path <- .dxOptions$hdfsWorkDir
         if(!.dxOptions$hdfsWorkDirCreated)
@@ -112,7 +112,7 @@ validateFileSystem <- function(fs)
 {
     if(!inherits(fs, "RxFileSystem"))
     {
-        if(fs == "hdfs")
+        if(tolower(fs) == "hdfs")
             fs <- RxHdfsFileSystem()
         else fs <- RxNativeFileSystem()
     }

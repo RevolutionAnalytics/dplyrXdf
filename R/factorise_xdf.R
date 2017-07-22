@@ -61,7 +61,7 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
         }, simplify=FALSE)
     )
 
-    inputHd <- isHdfs(.data)
+    inputHd <- in_hdfs(.data)
 
     # rxFactors needs explicit factor levels in HDFS
     if(inputHd && length(vars$blankArgs) > 0)
