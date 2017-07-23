@@ -104,23 +104,10 @@ deleteTbl <- function(xdf)
 {
     if(!is.list(xdf))
         xdf <- list(xdf)
-    lapply(xdf, function(xdf) {
-        filesystem <- rxGetFileSystem(xdf)
-        filename <- xdf@file
-        if(inherits(filesystem, "RxNativeFileSystem"))
-        {
-            if(!file.exists(filename))
-                warning("tbl file not found: ", filename)
-            # use unlink because file.remove can't handle directories on Windows
-            # (composite xdfs are directories)
-            unlink(filename, recursive=TRUE)
-        }
-        else if(inherits(filesystem, "RxHdfsFileSystem"))
-        {
-            # xdf files in HDFS are always composite
-            rxHadoopRemoveDir(filename, skipTrash=TRUE, intern=TRUE)
-        }
-        else stop("unknown file system, cannot remove file")
+    lapply(xdf, function(x)
+    {
+        if(inherits(x, "tbl_xdf") && isTRUE(data@hasTblFile))
+            deleteXdf(x)
     })
     NULL
 }

@@ -27,38 +27,26 @@ persist <- function(.data, ...)
 
 #' @rdname persist
 #' @export
-persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=FALSE, composite=NULL, ...)
+persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=TRUE, composite=NULL, ...)
 {
+    compositeIn <- isCompositeXdf(.data)
     if(is.null(composite))
-        composite <- isCompositeXdf(.data)
-    # use OS move/copy command if on the local filesystem
-    if(inherits(rxGetFileSystem(.data), "RxNativeFileSystem"))
-    {
-        compositeIn <- isCompositeXdf(.data)
-        inFile <- validateXdfFile(.data@file, compositeIn)
-        outFile <- validateXdfFile(outFile, composite)
+        composite <- compositeIn
+    outFile <- validateXdfFile(outFile, composite)
 
-        if(compositeIn == composite)
-        {
-            if(move)
-                file.rename(inFile, outFile)
-            else file.copy(inFile, outFile, overwrite=overwrite, recursive=TRUE)
-        }
-        else
-        {
-            # save as desired type
-            out <- RxXdfData(outFile, createCompositeSet=composite)
-            rxDataStep(.data, out, rowsPerRead=.dxOptions$rowsPerRead)
-            if(move)
-                unlink(inFile, recursive=TRUE)
-        }
-        RxXdfData(outFile, createCompositeSet=composite)
-    }
-    else  # do it the long way otherwise
+    if(compositeIn == composite)
     {
+        # direct copy/move using OS commands
+        copyOrMoveXdf(.data, outFile, overwrite=overwrite, move=move)
+    }
+    else
+    {
+        # save as desired type
+        out <- RxXdfData(outFile, createCompositeSet=composite)
+        rxDataStep(.data, out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite)
         if(move)
-            on.exit(deleteIfTbl(.data))
-        rxDataStep(unTbl(.data), unTbl(outFile), overwrite=overwrite, ...)
+            deleteXdf(.data)
+        out
     }
 }
 

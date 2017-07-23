@@ -57,72 +57,100 @@ modifyXdf <- function(xdf, file=xdf@file, varsToKeep=xdf@colNames, varsToDrop=NU
 # copy an Xdf file via OS commands; avoid rxDataStep
 copyXdf <- function(src, dest, overwrite=TRUE)
 {
-    copyOrMoveXdf(src, dest, overwrite, copy=TRUE)
+    copyOrMoveXdf(src, dest, overwrite, move=FALSE)
 }
 
 
 # move an Xdf file via OS commands; avoid rxDataStep
 moveXdf <- function(src, dest, overwrite=TRUE)
 {
-    copyOrMoveXdf(src, dest, overwrite, copy=FALSE)
+    copyOrMoveXdf(src, dest, overwrite, move=TRUE)
 }
 
 
-copyOrMoveXdf <- function(src, dest, overwrite=TRUE, copy)
+copyOrMoveXdf <- function(src, dest, overwrite=TRUE, move)
 {
-    if(!is.character(dest) && inherits(dest, "RxFileData"))
+    if(inherits(dest, "RxFileData"))
         dest <- dest@file
 
     composite <- isCompositeXdf(src)
     if(in_hdfs(src))
     {
-        if(!composite)
+        if(composite)
+        {
+            renameAfterCopy <- !hdfs_dir_exists(dest)
+            if(renameAfterCopy)
+            {
+                destName <- validateXdfFile(basename(dest), composite)
+                dest <- dirname(dest)
+            }
+        }
+        else
         {
             # test that directory exists
-            cmd <- paste0("fs -test -de '", dest, "'")
+            cmd <- paste0("fs -test -d '", dest, "'")
             if(rxHadoopCommand(cmd))
                 dest <- file.path(dest, basename(src@file), fsep="/")
             dest <- validateXdfFile(dest, composite)
         }
-
-        ret <- if(copy)
-            rxHadoopCopy(src@file, dest)
-        else rxHadoopMove(src@file, dest)
+ 
+        ret <- if(move)
+            rxHadoopMove(src@file, dest)
+        else rxHadoopCopy(src@file, dest)
 
         if(ret)
         {
             if(composite)
+            {
                 dest <- file.path(dest, basename(src@file), fsep="/")
-            modifyXdf(src, file=file.path(dest, basename(src@file), fsep="/"))
+                if(renameAfterCopy)
+                    modifyXdf(src, file=dest) %>% renameXdf(destName)
+                else modifyXdf(src, file=dest)
+            }
+            else modifyXdf(src, file=dest)
         }
         else
         {
-            msg <- sprintf("unable to %s to HDFS path %s", if(copy) "copy" else "move", path)
+            msg <- sprintf("unable to %s to HDFS path %s", if(move) "move" else "copy", path)
             stop(msg, call.=FALSE)
         }
     }
     else
     {
-        if(!composite)
+        if(composite)
+        {
+            renameAfterCopy <- !dir.exists(dest)
+            if(renameAfterCopy)
+            {
+                destName <- validateXdfFile(basename(dest), composite)
+                dest <- dirname(dest)
+            }
+        }
+        else
         {
             if(dir.exists(dest))
                 dest <- file.path(dest, basename(src@file))
             dest <- validateXdfFile(dest, composite)
         }
 
-        ret <- if(copy)
-            file.copy(src@file, dest, overwrite=overwrite, recursive=composite)
-        else file.rename(src@file, dest)
+        ret <- if(move)
+            file.rename(src@file, dest)
+        else file.copy(src@file, dest, overwrite=overwrite, recursive=composite)
 
         if(ret)
         {
             if(composite)
+            {
                 dest <- file.path(dest, basename(src@file))
-            modifyXdf(src, file=dest)
+                if(renameAfterCopy)
+                    modifyXdf(src, file=dest) %>% renameXdf(destName)
+                else modifyXdf(src, file=dest)
+            }
+            else modifyXdf(src, file=dest)
         }
         else
         {
-            msg <- sprintf("unable to %s to path %s", if(copy) "copy" else "move", path)
+            msg <- sprintf("unable to %s to path %s", if(move) "move" else "copy", dest)
             stop(msg, call.=FALSE)
         }
     }
@@ -143,7 +171,7 @@ renameXdf <- function(src, newFile)
         {
             # rename all files in data and metadata subdirs
             pat <- sprintf("^%s", basename(src@file))
-            dataFiles <- hdfs_dir(newPath, full.names=TRUE, recursive=TRUE)
+            dataFiles <- hdfs_dir(newPath, full_path=TRUE, recursive=TRUE)
             dataDirs <- dirname(dataFiles)
             newDataFiles <- file.path(dataDirs, sub(pat, newFile, basename(dataFiles)))
             mapply(rxHadoopMove, dataFiles, newDataFiles)
@@ -164,5 +192,17 @@ renameXdf <- function(src, newFile)
         }
     }
     modifyXdf(src, file=newPath)
+}
+
+
+deleteXdf <- function(xdf)
+{
+    if(in_hdfs(xdf))
+    {
+        if(isCompositeXdf(xdf))
+            rxHadoopRemoveDir(xdf@file)
+        else rxHadoopRemove(xdf@file)
+    }
+    else unlink(xdf@file, recursive=TRUE)
 }
 

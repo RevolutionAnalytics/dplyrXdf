@@ -1,8 +1,8 @@
 #' @export
-hdfs_dir <- function(path=".", full_path=FALSE, dirs_only=FALSE, recursive=FALSE, ...)
+hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursive=FALSE, dirs_only=FALSE)
 {
     cc <- rxGetComputeContext()
-    arguments <- c("fs", "-ls", if(recursive) "-R", path)
+    arguments <- c("fs", "-ls", if(recursive) "-R", ..., path)
 
     # modified from rxHadoopListFiles
     result <- if(isRemoteHdfsClient())
@@ -14,7 +14,12 @@ hdfs_dir <- function(path=".", full_path=FALSE, dirs_only=FALSE, recursive=FALSE
 
     output <- grep("Found \\d+ item", result$stdout, invert=TRUE, value=TRUE)
 
-    if(dirs_only)
+    if(!recursive)
+        include_dirs <- TRUE
+
+    if(!include_dirs)
+        output <- output[substr(output, 1, 1) != "d"]
+    else if(dirs_only)
         output <- output[substr(output, 1, 1) == "d"]
 
     #output <- gsub("^[^/]*(/.*)$", "\\1", output)
@@ -25,6 +30,14 @@ hdfs_dir <- function(path=".", full_path=FALSE, dirs_only=FALSE, recursive=FALSE
     attr(output, "path") <- path
     class(output) <- "dplyrXdf_hdfs_dir"
     output
+}
+
+
+#' @export
+hdfs_dir_exists <- function(path)
+{
+    out <- suppressWarnings(try(hdfs_dir(path, "-d", dirs_only=TRUE), silent=TRUE))
+    !inherits(out, "try-error") && length(out) > 0 && out == path
 }
 
 
