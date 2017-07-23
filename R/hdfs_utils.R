@@ -56,13 +56,14 @@ isRemoteHdfsClient <- function(stopIfNotConnected=TRUE)
     if(inherits(onClusterNode, "try-error"))
     {
         # assume if hadoop executable found, then this is an edge node
-        if(Sys.which("hadoop") == "")
+        if(file.exists(rxGetOption("mrsHadoopPath")))
+            return(TRUE)
+        else
         {
             if(stopIfNotConnected)
                 stop("not connected to HDFS filesystem", call.=FALSE)
             return(NA)
         }
-        else return(TRUE)
     }
     else !isTRUE(onClusterNode)
 }
