@@ -1,12 +1,22 @@
 #' @exportClass tbl_xdf
-#' @export tbl_xdf
-tbl_xdf <- setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical"))
+setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical"))
+
+setMethod("initialize", "tbl_xdf", function(.Object, ...) {
+    .Object <- callNextMethod()
+    .Object@hasTblFile <- TRUE
+    .Object
+})
 
 
-setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, createCompositeSet=NULL, ...) {
-    fileSystem <- rxGetFileSystem(xdf)
+#' @export
+tbl_xdf <- function(xdf=NULL, file=NULL, createCompositeSet=NULL, fileSystem=rxGetFileSystem(xdf), ...)
+{
     if(is.null(createCompositeSet))
-        createCompositeSet <- isCompositeXdf(xdf)
+    {
+        createCompositeSet <- if(inherits(xdf, "RxXdfData"))
+            isCompositeXdf(xdf)
+        else in_hdfs(fileSystem) # default to TRUE on HDFS, if xdf not supplied
+    }
 
     if(is.null(file))
     {
@@ -30,13 +40,18 @@ setMethod("initialize", "tbl_xdf", function(.Object, xdf=NULL, file=NULL, create
     }
     else file <- validateXdfFile(file, createCompositeSet)
 
-    arglst <- rlang::modify(list(.Object, file=file, fileSystem=fileSystem, createCompositeSet=createCompositeSet),
-        !!!list(...))
-    .Object <- rlang::invoke("callNextMethod", arglst, .env=parent.frame(), .bury=NULL)
+    # call RxXdfData() directly or indirectly to create xdf object
+    # this is NOT the class constructor so cannot use callNextMethod()
+    xdf <- if(!inherits(xdf, "RxXdfData"))
+        RxXdfData(file=file, fileSystem=fileSystem, createCompositeSet=createCompositeSet, ...)
+    else modifyXdf(xdf, file=file, fileSystem=fileSystem, createCompositeSet=createCompositeSet, ...)
+
+    xdf <- as(xdf, "tbl_xdf")
+
     # hasTblFile should really be isDeletable; misnomer is for back-compatibility
-    .Object@hasTblFile <- !file.exists(.Object@file)
-    .Object
-})
+    xdf@hasTblFile <- !file.exists(xdf@file)
+    xdf
+}
 
 
 setMethod("coerce", list(from="RxFileData", to="tbl_xdf"), function(from, to, strict=TRUE) {
