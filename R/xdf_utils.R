@@ -55,14 +55,14 @@ modifyXdf <- function(xdf, file=xdf@file, varsToKeep=xdf@colNames, varsToDrop=NU
 
 
 # copy an Xdf file via OS commands; avoid rxDataStep
-copyXdf <- function(src, dest, overwrite=FALSE)
+copyXdf <- function(src, dest, overwrite=TRUE)
 {
     copyOrMoveXdf(src, dest, overwrite, copy=TRUE)
 }
 
 
 # move an Xdf file via OS commands; avoid rxDataStep
-moveXdf <- function(src, dest, overwrite=FALSE)
+moveXdf <- function(src, dest, overwrite=TRUE)
 {
     copyOrMoveXdf(src, dest, overwrite, copy=FALSE)
 }
@@ -74,9 +74,7 @@ copyOrMoveXdf <- function(src, dest, overwrite=TRUE, copy)
         dest <- dest@file
 
     composite <- isCompositeXdf(src)
-    fs <- rxGetFileSystem(src)
-
-    if(in_hdfs(fs))
+    if(in_hdfs(src))
     {
         if(!composite)
         {
@@ -130,4 +128,41 @@ copyOrMoveXdf <- function(src, dest, overwrite=TRUE, copy)
     }
 }
 
+
+renameXdf <- function(src, newFile)
+{
+    if(basename(newFile) != newFile)
+        stop("to move an Xdf file to a new location, use moveXdf", call.=FALSE)
+
+    composite <- isCompositeXdf(src)
+    if(in_hdfs(src))
+    {
+        newPath <- file.path(dirname(src@file), newFile, fsep="/")
+        rxHadoopMove(src@file, newPath)
+        if(composite)
+        {
+            # rename all files in data and metadata subdirs
+            pat <- sprintf("^%s", basename(src@file))
+            dataFiles <- hdfs_dir(newPath, full.names=TRUE, recursive=TRUE)
+            dataDirs <- dirname(dataFiles)
+            newDataFiles <- file.path(dataDirs, sub(pat, newFile, basename(dataFiles)))
+            mapply(rxHadoopMove, dataFiles, newDataFiles)
+        }
+    }
+    else
+    {
+        newPath <- file.path(dirname(src@file), newFile)
+        file.rename(src@file, newPath)
+        if(composite)
+        {
+            # rename all files in data and metadata subdirs
+            pat <- sprintf("^%s", basename(src@file))
+            dataFiles <- dir(newPath, pattern=pat, full.names=TRUE, recursive=TRUE)
+            dataDirs <- dirname(dataFiles)
+            newDataFiles <- file.path(dataDirs, sub(pat, newFile, basename(dataFiles)))
+            file.rename(dataFiles, newDataFiles)
+        }
+    }
+    modifyXdf(src, file=newPath)
+}
 
