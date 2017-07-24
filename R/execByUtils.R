@@ -6,8 +6,12 @@ execByCheck <- function(execLst)
 }
 
 
-execByResult <- function(execLst)
+execByResult <- function(...)
 {
+    cc <- rxGetComputeContext()
+    on.exit(rxSetComputeContext(cc))
+
+    execLst <- rxExecBy(...)
     execByCheck(execLst)
     lapply(execLst, "[[", "result")
 }

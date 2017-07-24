@@ -22,14 +22,9 @@ callExecBy <- function(.data, .func, ...)
     funcParams <- rlang::modify(funcParams, .func=.func,
         .composite=composite, .tblDir=get_dplyrxdf_dir())
 
-    cc <- rxGetComputeContext()
-    on.exit(rxSetComputeContext(cc))
-
     # call unTbl to handle HDFS/tbl incompatibility
-    rxExecBy(unTbl(.data), group_vars(.data), function(keys, data, .func, ...)
-        .func(data, ...),
-        funcParams) %>%
-        execByResult
+    execByResult(unTbl(.data), group_vars(.data), function(keys, data, .func, ...)
+        .func(data, ...), funcParams)
 }
 
 

@@ -8,7 +8,7 @@
 \usage{
 persist(.data, ...)
 
-\method{persist}{tbl_xdf}(.data, outFile, overwrite = TRUE, move = FALSE,
+\method{persist}{tbl_xdf}(.data, outFile, overwrite = TRUE, move = TRUE,
   composite = NULL, ...)
 
 \method{persist}{RxFileData}(.data, ...)

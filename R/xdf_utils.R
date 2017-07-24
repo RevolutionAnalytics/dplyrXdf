@@ -55,14 +55,16 @@ modifyXdf <- function(xdf, file=xdf@file, varsToKeep=xdf@colNames, varsToDrop=NU
 
 
 # copy an Xdf file via OS commands; avoid rxDataStep
-copyXdf <- function(src, dest, overwrite=TRUE)
+#' @export
+copy_xdf <- function(src, dest, overwrite=TRUE)
 {
     copyOrMoveXdf(src, dest, overwrite, move=FALSE)
 }
 
 
 # move an Xdf file via OS commands; avoid rxDataStep
-moveXdf <- function(src, dest, overwrite=TRUE)
+#' @export
+move_xdf <- function(src, dest, overwrite=TRUE)
 {
     copyOrMoveXdf(src, dest, overwrite, move=TRUE)
 }
@@ -104,7 +106,7 @@ copyOrMoveXdf <- function(src, dest, overwrite=TRUE, move)
             {
                 dest <- file.path(dest, basename(src@file), fsep="/")
                 if(renameAfterCopy)
-                    modifyXdf(src, file=dest) %>% renameXdf(destName)
+                    modifyXdf(src, file=dest) %>% rename_xdf(destName)
                 else modifyXdf(src, file=dest)
             }
             else modifyXdf(src, file=dest)
@@ -143,7 +145,7 @@ copyOrMoveXdf <- function(src, dest, overwrite=TRUE, move)
             {
                 dest <- file.path(dest, basename(src@file))
                 if(renameAfterCopy)
-                    modifyXdf(src, file=dest) %>% renameXdf(destName)
+                    modifyXdf(src, file=dest) %>% rename_xdf(destName)
                 else modifyXdf(src, file=dest)
             }
             else modifyXdf(src, file=dest)
@@ -157,10 +159,11 @@ copyOrMoveXdf <- function(src, dest, overwrite=TRUE, move)
 }
 
 
-renameXdf <- function(src, newFile)
+#' @export
+rename_xdf <- function(src, newFile)
 {
     if(basename(newFile) != newFile)
-        stop("to move an Xdf file to a new location, use moveXdf", call.=FALSE)
+        stop("to move an Xdf file to a new location, use move_xdf", call.=FALSE)
 
     composite <- isCompositeXdf(src)
     if(in_hdfs(src))
@@ -195,7 +198,8 @@ renameXdf <- function(src, newFile)
 }
 
 
-deleteXdf <- function(xdf)
+#' @export
+delete_xdf <- function(xdf)
 {
     if(in_hdfs(xdf))
     {

@@ -104,11 +104,7 @@ deleteTbl <- function(xdf)
 {
     if(!is.list(xdf))
         xdf <- list(xdf)
-    lapply(xdf, function(x)
-    {
-        if(inherits(x, "tbl_xdf") && isTRUE(data@hasTblFile))
-            deleteXdf(x)
-    })
+    lapply(xdf, delete_xdf)
     NULL
 }
 

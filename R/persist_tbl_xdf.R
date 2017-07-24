@@ -43,10 +43,9 @@ persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=TRUE, composite
     {
         # save as desired type
         out <- RxXdfData(outFile, createCompositeSet=composite)
-        rxDataStep(.data, out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite)
         if(move)
-            deleteXdf(.data)
-        out
+            on.exit(delete_xdf(.data))
+        rxDataStep(.data, out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite)
     }
 }
 

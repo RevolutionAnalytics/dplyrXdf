@@ -9,14 +9,11 @@ getFactorLevels <- function(data, vars=group_vars(data))
         vars <- unname(vars)
 
         # keep only the variables we need
-        tmpSrc <- RxXdfData(data@file, fileSystem=data@fileSystem, createCompositeSet=data@createCompositeSet,
-            varsToKeep=vars)
+        tmpSrc <- modifyXdf(data, varsToKeep=vars)
         message("Scanning data to get levels")
 
         # use rxExecBy on HDFS: only for the keys, not the data
-        cc <- rxGetComputeContext()
-        on.exit(rxSetComputeContext(cc))
-        keys <- lapply(rxExecBy(tmpSrc, vars, function(keys, data) 0), "[[", "keys")
+        keys <- execByResult(tmpSrc, vars, function(keys, data) keys)
 
         lapply(seq_along(vars), function(i)
             unique(sapply(keys, function(k) k[[i]])))
@@ -39,19 +36,33 @@ getFactorLevels <- function(data, vars=group_vars(data))
 
 getFactorCombinations <- function(data, vars=group_vars(data))
 {
-    stopIfHdfs("getFactorCombinations not supported on HDFS") # should never trip this
-
     if(length(vars) == 0)
         return(NULL)
 
-    levdf <- as.data.frame(sapply(vars, function(xi) logical(0), simplify=FALSE))
-
-    # read grouping variables by block, return unique row combinations
-    levs <- rxDataStep(data, varsToKeep=vars, transformFunc=function(varlst)
+    levs <- if(in_hdfs(data))
     {
-        .levdf <<- dplyr::distinct(rbind(.levdf, as.data.frame(varlst)))
-        NULL
-    }, transformObjects=list(.levdf=levdf), transformPackages="dplyr", returnTransformObjects=TRUE)[[1]]
+        vars <- unname(vars)
+        tmpSrc <- modifyXdf(data, varsToKeep=vars)
+
+        # split by 1 factor only to reduce no. of files created
+        execByResult(tmpSrc, vars[1], function(keys, data, vars)
+        {
+            data <- rxDataStep(data, varsToKeep=vars, maxRowsByCols=NULL)
+            dplyr::distinct(data)
+        }, list(vars=vars)) %>% bind_rows
+
+    }
+    else
+    {
+        levdf <- as.data.frame(sapply(vars, function(xi) logical(0), simplify=FALSE))
+
+        # read grouping variables by block, return unique row combinations
+        rxDataStep(data, varsToKeep=vars, transformFunc=function(varlst)
+        {
+            .levdf <<- dplyr::distinct(rbind(.levdf, as.data.frame(varlst)))
+            NULL
+        }, transformObjects=list(.levdf=levdf), transformPackages="dplyr", returnTransformObjects=TRUE)[[1]]
+    }
 
     levs <- do.call(paste, c(levs, sep="_&&_"))
     levs
