@@ -20,10 +20,12 @@ callExecBy <- function(.data, .func, ...)
     composite <- isCompositeXdf(.data)
     funcParams <- list(...)
     funcParams <- rlang::modify(funcParams, .func=.func,
-        .composite=composite, .tblDir=get_dplyrxdf_dir())
+        .composite=composite, .tblDir=get_dplyrxdf_dir(rxGetFileSystem(.data)))
 
-    # call unTbl to handle HDFS/tbl incompatibility
-    execByResult(unTbl(.data), group_vars(.data), function(keys, data, .func, ...)
+    vars <- group_vars(.data)
+    .data <- unTbl(.data)
+
+    execByResult(.data, vars, function(keys, data, .func, ...)
         .func(data, ...), funcParams)
 }
 

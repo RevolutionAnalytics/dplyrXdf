@@ -68,7 +68,7 @@ test_that("grouped summarise works",
     expect_true(verifyCompositeData(tbl, "tbl_xdf"))
 })
 
-test_that("ungrouped do works",
+test_that("grouped do works",
 {
     tbl <- mtc %>% group_by(gear) %>% do(m=lm(mpg ~ cyl, data=.), w=lm(wt ~ cyl, data=.))
     expect_true(is.data.frame(tbl))

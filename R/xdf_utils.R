@@ -45,7 +45,7 @@ modifyXdf <- function(xdf, file=xdf@file, varsToKeep=xdf@colNames, varsToDrop=NU
     if(is.null(createCompositeSet))
         createCompositeSet <- isCompositeXdf(xdf)
     file <- validateXdfFile(file, createCompositeSet)
-    if(varsToKeep == "")
+    if(identical(varsToKeep, ""))
         varsToKeep <- NULL
 
     RxXdfData(file=file, varsToKeep=varsToKeep, varsToDrop=varsToDrop,

@@ -1,9 +1,11 @@
 #' @exportClass tbl_xdf
 setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical"))
 
+
+# do not call this directly: will not initialise all fields
 setMethod("initialize", "tbl_xdf", function(.Object, ...) {
     .Object <- callNextMethod()
-    .Object@hasTblFile <- TRUE
+    .Object@hasTblFile <- !file.exists(.Object@file)
     .Object
 })
 

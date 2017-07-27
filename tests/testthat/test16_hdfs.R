@@ -2,8 +2,7 @@ context("HDFS functionality")
 
 # set the compute context manually
 
-cc <- rxGetComputeContext()
-skip_if_not(inherits(cc, "RxHadoopMR"), message="not in distributed compute context")
+skip_if_not(!is.na(isRemoteHdfsClient(FALSE)), message="not in distributed compute context")
 
 mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=hd, createCompositeSet=TRUE)
 

@@ -49,8 +49,8 @@ getFactorCombinations <- function(data, vars=group_vars(data))
         {
             data <- rxDataStep(data, varsToKeep=vars, maxRowsByCols=NULL)
             dplyr::distinct(data)
-        }, list(vars=vars)) %>% bind_rows
-
+        }, list(vars=vars)) %>%
+            bind_rows
     }
     else
     {
