@@ -1,7 +1,7 @@
 getFactorLevels <- function(data, vars=group_vars(data))
 {
     if(length(vars) == 0)
-        return(NULL)
+        stop("no grouping variables supplied")
 
     levs <- if(in_hdfs(data))
     {
@@ -37,7 +37,7 @@ getFactorLevels <- function(data, vars=group_vars(data))
 getFactorCombinations <- function(data, vars=group_vars(data))
 {
     if(length(vars) == 0)
-        return(NULL)
+        stop("no grouping variables supplied")
 
     levs <- if(in_hdfs(data))
     {

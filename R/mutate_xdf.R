@@ -61,8 +61,8 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     arglst <- list(.data, transforms=transforms)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-    callGroupedExec(.data, transmutateGrouped, arglst=arglst) %>% 
-        combineGroups(.outFile, grps)
+    callGroupedExec(.data, .outFile, transmutateGrouped, arglst=arglst) %>%
+        simpleRegroup(grps)
 }
 
 

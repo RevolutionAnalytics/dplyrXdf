@@ -32,6 +32,8 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
         quote(rxCube(fm, data, means=means, useSparseCube=TRUE, removeZeroCounts=TRUE, returnDataFrame=TRUE)),
         rxArgs, anyN, gvarTypes=gvarTypes)
 
+    oldData <- data
+    on.exit(deleteIfTbl(oldData))
     data <- unTbl(data) # workaround HDFS/tbl incompatibility
 
     # single call to rxCube if only 1 summary statistic type, otherwise multiple calls
@@ -63,7 +65,6 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     # reassign classes to outputs (for Date and POSIXct objects; work around glitch in rxCube, rxSummary)
     df <- setSmryClasses(df[outvars], data, invars, outvars)
 
-    on.exit(deleteIfTbl(data))
     data.frame(gvars, df, stringsAsFactors=FALSE)
 }
 

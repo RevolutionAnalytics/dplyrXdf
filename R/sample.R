@@ -41,7 +41,7 @@ sample_n.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .e
 {
     grps <- group_vars(tbl)
     sampleGroupedXdf(tbl, size, replace, weight, FALSE) %>%
-        combineGroups(tbl_xdf(tbl), grps)
+        simpleRegroup(grps)
 }
 
 
@@ -51,7 +51,7 @@ sample_frac.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL,
 {
     grps <- group_vars(tbl)
     sampleGroupedXdf(tbl, size, replace, weight, TRUE) %>%
-        combineGroups(tbl_xdf(tbl), grps)
+        simpleRegroup(grps)
 }
 
 
@@ -62,7 +62,7 @@ sampleGroupedXdf <- function(.data, size, replace=FALSE, weight=NULL, frac)
     if(!is.null(weight))
         warning("weighted sampling not supported for Xdf files")
 
-    callGroupedExec(.data, sampleBase, size, frac)
+    callGroupedExec(.data, tbl_xdf(.data), sampleBase, size, frac)
 }
 
 

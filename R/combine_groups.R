@@ -8,11 +8,21 @@ combineGroups <- function(datlst, output, grps)
     {
         out <- bind_rows(datlst)
         if(!is.null(output))
-            out <- rxDataStep(out, output, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+        {
+            if(in_hdfs(output) && inherits(rxGetComputeContext(), "RxHadoopMR"))
+            {
+                # create output locally, then copy it
+                localFile <- file.path(get_dplyrxdf_dir(RxNativeFileSystem()), basename(output@file))
+                localXdf <- execOnHdfsClient(rxDataStep(out, localFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE))
+
+                out <- copy_to(rxGetFileSystem(output), localXdf, path=dirname(output))
+            }
+            else out <- rxDataStep(out, output, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+        }
     }
     else out <- do.call(rbind.RxXdfData, rlang::modify(datlst, .outFile=output))
 
-    simpleRegroup(out, grps)
+    out
 }
 
 

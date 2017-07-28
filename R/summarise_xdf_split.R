@@ -7,14 +7,14 @@ smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(length(grps) == 0)
         return(smryRxSummary(data, grps, stats, exprs, rxArgs))
 
-    out <- callGroupedExec(data, smryRxSummaryWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs) %>%
-        combineGroups(tbl_xdf(data), NULL)
+    callGroupedExec(data, NULL, smryRxSummaryWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs,
+        distribFuncList=list(buildSmryFormulaRhs=buildSmryFormulaRhs, setSmryClasses=setSmryClasses))
 }
 
 
 smryRxSummaryWithGroupvars <- function(data, grps, stats, exprs, rxArgs=NULL, ...)
 {
-    gvars <- rxDataStep(unTbl(data), varsToKeep=grps, numRows=1)
+    gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     smry <- smryRxSummary(data, NULL, stats, exprs, rxArgs)
     cbind(gvars, smry)
 }
@@ -33,20 +33,19 @@ smryRxSplitDplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
             summarise(!!!exprs))
     }
 
-    callGroupedExec(data, smryDplyrWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs) %>%
-        combineGroups(tbl_xdf(data), NULL)
+    callGroupedExec(data, NULL, smryDplyrWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs)
 }
 
 
 smryDplyrWithGroupvars <- function(data, grps, exprs, rxArgs=NULL, ...)
 {
-    gvars <- rxDataStep(unTbl(data), varsToKeep=grps, numRows=1)
+    gvars <- rxDataStep(data, varsToKeep=grps, numRows=1)
     arglst <- list(data, maxRowsByCols=NULL)
 
     if(!is.null(rxArgs))
         arglst <- rlang::modify(arglst, !!!rxArgs)
-    smry <- callRx("rxDataStep", arglst) %>%
-        summarise(!!!exprs)
+
+    smry <- dplyr::summarise(do.call("rxDataStep", arglst), !!!exprs)
         
     cbind(gvars, smry)
 }

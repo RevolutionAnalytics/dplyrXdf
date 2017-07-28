@@ -2,10 +2,15 @@
 NULL
 
 
-smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
+smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs,
+    distribFuncList=list(buildSmryFormulaRhs=buildSmryFormulaRhs, setSmryClasses=setSmryClasses))
 {
     outvars <- names(exprs)
     invars <- invars(exprs)
+
+    # manually copy helper fns to deal with distributed CC's
+    buildSmryFormulaRhs <- distribFuncList$buildSmryFormulaRhs
+    setSmryClasses <- distribFuncList$setSmryClasses
 
     # workaround for glitch in observation count with rxSummary, rxCube; also makes counting easier
     anyN <- any(stats == "n")
@@ -75,6 +80,8 @@ smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
         x
     }
 
+    oldData <- data
+    on.exit(deleteIfTbl(oldData))
     data <- unTbl(data) # workaround HDFS/tbl incompatibility
 
     if(length(grps) > 0)
@@ -112,7 +119,6 @@ smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
     # reassign classes to outputs (for Date and POSIXct objects; work around glitch in rxCube, rxSummary)
     df <- setSmryClasses(df[outvars], data, invars, outvars)
 
-    on.exit(deleteIfTbl(data))
     if(length(grps) > 0)
         data.frame(gvars, df, stringsAsFactors=FALSE)
     else data.frame(df)

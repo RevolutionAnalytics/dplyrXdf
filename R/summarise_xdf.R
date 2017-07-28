@@ -55,13 +55,9 @@ summarise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs, .
     # 5- split into multiple xdfs, rxSummary on each, rbind xdfs together: stats in rxSummary supported (slowest, most scalable)
     .method <- selectSmryMethod(stats, .method, grps)
 
-    ## only summarise methods 1-2 work with HDFS
-    #if(.method > 2)
-        #stopIfHdfs(sprintf("chosen summarise method not (%d) supported on HDFS", .method))
-
     smryFunc <- switch(.method,
         smryRxCube, smryRxSummary, smryRxSummary2, smryRxSplitDplyr, smryRxSplit)
-    smry <- smryFunc(unTbl(.data), grps, stats, exprs, .rxArgs)
+    smry <- smryFunc(.data, grps, stats, exprs, .rxArgs)
 
     output <- makeSmryOutput(smry, .outFile, .data)
 
@@ -138,7 +134,7 @@ rebuildGroupVars <- function(x, grps, data)
         else if(type %in% c("factor", "ordered") && !identical(levels(x), varInfo$levels))
             x <- factor(x, levels=varInfo$levels, ordered=(type == "ordered"))
         x
-    }, x, rxGetVarInfo(data, varsToKeep=grps), SIMPLIFY=FALSE)
+    }, x, rxGetVarInfo(unTbl(data), varsToKeep=grps), SIMPLIFY=FALSE)
 
     names(x) <- grps
     x

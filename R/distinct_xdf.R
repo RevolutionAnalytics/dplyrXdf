@@ -48,8 +48,9 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_x
     }
     grps <- group_vars(.data)
 
-    callGroupedExec(.data, distinctBase, vars=args, keep_all=.keep_all, outFile=NULL, rxArgs=.rxArgs, grps=grps) %>%
-        combineGroups(.outFile, grps)
+    callGroupedExec(.data, .outFile, distinctBase,
+        vars=args, keep_all=.keep_all, outFile=NULL, rxArgs=.rxArgs, grps=grps) %>%
+        simpleRegroup(grps)
 }
 
 

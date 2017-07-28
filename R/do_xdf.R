@@ -63,8 +63,7 @@ do.grouped_tbl_xdf <- function(.data, ...)
     named <- checkNamedArgs(args)
     grps <- group_vars(.data)
 
-    df <- callGroupedExec(.data, doGrouped, exprs=args, grps=grps) %>%
-        bind_rows
+    df <- callGroupedExec(.data, NULL, doGrouped, exprs=args, grps=grps)
 
     # mimic grouping behaviour of do for data frames
     if(length(grps) == 0)
@@ -149,8 +148,7 @@ do_xdf.grouped_tbl_xdf <- function(.data, ...)
     named <- checkNamedArgs(args)
     grps <- group_vars(.data)
 
-    df <- callGroupedExec(.data, doXdfBase, exprs=args, grps=grps, named=named) %>%
-        bind_rows
+    df <- callGroupedExec(.data, NULL, doXdfBase, exprs=args, grps=grps, named=named)
 
     # mimic grouping behaviour of do for data frames
     if(length(grps) == 0)
