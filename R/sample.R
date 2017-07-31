@@ -13,12 +13,7 @@
 #' @export
 sample_n.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {
-    if(replace)
-        warning("sampling with replacement not supported for Xdf files")
-    if(!is.null(weight))
-        warning("weighted sampling not supported for Xdf files")
-
-    sampleBase(tbl, size, FALSE)
+    sampleUngrouped(tbl, size, replace, weight, FALSE)
 }
 
 
@@ -26,12 +21,7 @@ sample_n.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NUL
 #' @export
 sample_frac.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {
-    if(replace)
-        warning("sampling with replacement not supported for Xdf files")
-    if(!is.null(weight))
-        warning("weighted sampling not supported for Xdf files")
-
-    sampleBase(tbl, size, TRUE)
+    sampleUngrouped(tbl, size, replace, weight, TRUE)
 }
 
 
@@ -40,7 +30,7 @@ sample_frac.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=
 sample_n.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {
     grps <- group_vars(tbl)
-    sampleGroupedXdf(tbl, size, replace, weight, FALSE) %>%
+    sampleGrouped(tbl, size, replace, weight, FALSE) %>%
         simpleRegroup(grps)
 }
 
@@ -50,12 +40,12 @@ sample_n.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .e
 sample_frac.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)
 {
     grps <- group_vars(tbl)
-    sampleGroupedXdf(tbl, size, replace, weight, TRUE) %>%
+    sampleGrouped(tbl, size, replace, weight, TRUE) %>%
         simpleRegroup(grps)
 }
 
 
-sampleGroupedXdf <- function(.data, size, replace=FALSE, weight=NULL, frac)
+sampleGrouped <- function(.data, size, replace=FALSE, weight=NULL, frac)
 {
     stopIfHdfs(.data, "grouped sampling not supported for data in HDFS")
     if(replace)
@@ -64,6 +54,21 @@ sampleGroupedXdf <- function(.data, size, replace=FALSE, weight=NULL, frac)
         warning("weighted sampling not supported for Xdf files")
 
     callGroupedExec(.data, tbl_xdf(.data), sampleBase, size, frac)
+}
+
+
+sampleUngrouped <- function(.data, size, replace=FALSE, weight=NULL, frac)
+{
+    stopIfHdfs(.data, "sampling not supported for data in HDFS")
+    if(replace)
+        warning("sampling with replacement not supported for Xdf files")
+    if(!is.null(weight))
+        warning("weighted sampling not supported for Xdf files")
+
+    .tblDir <- get_dplyrxdf_dir()
+    .composite <- isCompositeXdf(.data)
+    environment(sampleBase) <- environment()
+    sampleBase(.data, size, frac)
 }
 
 
@@ -77,13 +82,6 @@ sampleBase <- function(.data, size, frac)
     if(size < 1)
         stop("sample size must be at least 1")
     sel <- sample.int(n, size=size)
-
-    # explicit namespace reference to allow for parallel/execBy backends: requires dplyrXdf to be installed on nodes
-    # set options if not passed in as captures from higher-order funcs
-    if(!exists(".tblDir", where=2, inherits=FALSE))
-        .tblDir <- dplyrXdf:::get_dplyrxdf_dir()
-    if(!exists(".composite", where=2, inherits=FALSE))
-        .composite <- dplyrXdf:::isCompositeXdf(.data)
 
     file <- tempfile(tmpdir=.tblDir)
     output <- dplyrXdf:::tbl_xdf(.data, file=file, createCompositeSet=.composite)
