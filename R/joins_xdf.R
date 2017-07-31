@@ -22,9 +22,7 @@ NULL
 #' @rdname join
 #' @export
 left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
-{    
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
+{
     by <- commonBy(by, x, y)
     mergeBase(x, y, by, copy, "left", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
 }
@@ -34,8 +32,6 @@ left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y")
 #' @export
 right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
     by <- commonBy(by, x, y)
     mergeBase(x, y, by, copy, "right", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
 }
@@ -45,8 +41,6 @@ right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"
 #' @export
 inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
     by <- commonBy(by, x, y)
     mergeBase(x, y, by, copy, "inner", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
 }
@@ -56,8 +50,6 @@ inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"
 #' @export
 full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
     by <- commonBy(by, x, y)
     mergeBase(x, y, by, copy, "full", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
 }
@@ -67,8 +59,8 @@ full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y")
 #' @export
 semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile=tbl_xdf(x), .rxArgs, ...)
 {
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
+    stopIfHdfs(x, "semi_join not supported on HDFS")
+    stopIfHdfs(y, "semi_join not supported on HDFS")
 
     # no native semi-join functionality in ScaleR, so do it by hand
     by <- commonBy(by, x, y)
@@ -87,8 +79,8 @@ semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile=tbl_xdf(x),
 #' @export
 anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile=tbl_xdf(x), .rxArgs, ...)
 {
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
+    stopIfHdfs(x, "anti_join not supported on HDFS")
+    stopIfHdfs(y, "anti_join not supported on HDFS")
 
     # no native anti-join functionality in ScaleR, so do it by hand
     by <- commonBy(by, x, y)

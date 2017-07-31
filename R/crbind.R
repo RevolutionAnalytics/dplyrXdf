@@ -94,7 +94,7 @@ rbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
     {
         arglst$append <- if(i == 1) "none" else "rows"
         arglst$inData <- lst[[i]]
-        output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+        output <- callRx("rxDataStep", arglst)
     }
 
     if(dfOutput)

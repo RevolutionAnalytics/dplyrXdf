@@ -2,15 +2,10 @@
 NULL
 
 
-smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs,
-    distribFuncList=list(buildSmryFormulaRhs=buildSmryFormulaRhs, setSmryClasses=setSmryClasses))
+smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     outvars <- names(exprs)
     invars <- invars(exprs)
-
-    # manually copy helper fns to deal with distributed CC's
-    buildSmryFormulaRhs <- distribFuncList$buildSmryFormulaRhs
-    setSmryClasses <- distribFuncList$setSmryClasses
 
     # workaround for glitch in observation count with rxSummary, rxCube; also makes counting easier
     anyN <- any(stats == "n")
@@ -23,13 +18,17 @@ smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs,
     stopifnot(all(nchar(invars) > 0))
 
     # convert non-factor character cols into factors
-    gvarTypes <- varTypes(data, grps)
-    isChar <- gvarTypes == "character"
-    if(any(isChar))
+    if(!is.null(grps))
     {
-        data <- factorise(data, !!!rlang::syms(grps[isChar]))
-        gvarTypes[isChar] <- "factor"
+        gvarTypes <- varTypes(data, grps)
+        isChar <- gvarTypes == "character"
+        if(any(isChar))
+        {
+            data <- factorise(data, !!!rlang::syms(grps[isChar]))
+            gvarTypes[isChar] <- "factor"
+        }
     }
+    else gvarTypes <- NULL
 
     cl <- buildSmryFormulaRhs(data, grps,
         quote(rxSummary(fm, data, summaryStats=uniqueStat, useSparseCube=TRUE, removeZeroCounts=TRUE)),

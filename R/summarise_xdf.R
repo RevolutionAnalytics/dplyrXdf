@@ -109,48 +109,6 @@ selectSmryMethod <- function(stats, method=NULL, groups=NULL)
 }
 
 
-# reconstruct grouping variables
-rebuildGroupVars <- function(x, grps, data)
-{
-    if(length(x) == 1 && names(x) == ".group." && !identical(grps, ".group."))
-    {
-        x <- do.call(rbind, strsplit(as.character(x[[1]]), "_&&_", fixed=TRUE))
-        x <- data.frame(x, stringsAsFactors=FALSE)
-    }
-
-    x <- mapply(function(x, varInfo) {
-        type <- varInfo$varType
-        if(type == "logical")
-            x <- as.numeric(levels(x)[x]) == 1
-        else if(type %in% c("integer", "numeric"))
-            x <- as(as.character(x), type)
-        else if(type %in% c("Date", "POSIXct"))
-        {
-            # underlying code in as.Date.numeric, as.POSIXct.numeric just adds an offset
-            # TODO: verify time zones handled properly
-            x <- as.numeric(as.character(x))
-            class(x) <- type
-        }
-        else if(type %in% c("factor", "ordered") && !identical(levels(x), varInfo$levels))
-            x <- factor(x, levels=varInfo$levels, ordered=(type == "ordered"))
-        x
-    }, x, rxGetVarInfo(unTbl(data), varsToKeep=grps), SIMPLIFY=FALSE)
-
-    names(x) <- grps
-    x
-}
-
-
-invars <- function(exprs)
-{
-    sapply(exprs, function(e) {
-        if(length(e) > 1)
-            as.character(e[[2]])
-        else ""
-    })
-}
-
-
 makeSmryOutput <- function(smry, .outFile, .data)
 {
     if(in_hdfs(.data))
@@ -178,10 +136,10 @@ makeSmryOutputHdfs <- function(smry, .outFile, .data)
             localXdf <- tbl_xdf(file=file.path(get_dplyrxdf_dir("native"), basename(.outFile)),
                 fileSystem=RxNativeFileSystem(),
                 createCompositeSet=isCompositeXdf(.data))
-
+            on.exit(deleteIfTbl(localXdf))
             execOnHdfsClient(rxDataStep(smry, localXdf, rowsPerRead=.dxOptions$rowsPerRead))
 
-            output <- copy_to(rxGetFileSystem(.data), localXdf, dirname(.outFile))
+            output <- copy_to(rxGetFileSystem(.data), localXdf, dirname(.outFile), overwrite=TRUE)
         }
         else
         {
@@ -189,14 +147,14 @@ makeSmryOutputHdfs <- function(smry, .outFile, .data)
             if(is.character(.outFile))
                 .outFile <- RxXdfData(.outFile, fileSystem=rxGetFileSystem(.data), rowsPerRead=.dxOptions$rowsPerRead)
 
-            output <- rxDataStep(smry, unTbl(.outFile), rowsPerRead=.dxOptions$rowsPerRead)
+            output <- rxDataStep(smry, unTbl(.outFile), rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         }
 
         if(returnTbl)
             return(as(output, "tbl_xdf"))
         else return(output)
     }
-    else # xdf output from summary worker -- should never happen with data in HDFS
+    else # xdf output from summary worker -- should never happen
     {
         stop("cannot have xdf outputs from summary workers on HDFS", call.=FALSE)
     }
@@ -216,8 +174,9 @@ makeSmryOutputNative <- function(smry, .outFile, .data)
         }
         else smry
     }
-    else # xdf output from summary worker
+    else # xdf output from summary worker -- should never happen
     {
+        warning("unexpected xdf output from summary worker")
         if(inherits(.outFile, "tbl_xdf"))
         {
             as(smry, "tbl_xdf")

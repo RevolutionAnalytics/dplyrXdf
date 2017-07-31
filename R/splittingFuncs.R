@@ -3,7 +3,7 @@ callGroupedExec <- function(.data, .output, ...)
 {
     gvars <- group_vars(.data)
     if(length(gvars) == 0)
-        stop("no groups defined for splitting")
+        stop("no groups defined")
 
     fs <- rxGetFileSystem(.data)
     cc <- rxGetComputeContext()
@@ -19,31 +19,50 @@ callGroupedExec <- function(.data, .output, ...)
 }
 
 
-callExecBy <- function(.data, .func, ...)
+callExecBy <- function(.data, .func, ..., .captures=list())
 {
     rxver <- packageVersion("RevoScaleR")
     if(rxver < package_version("9.1"))
         stop("rxExecBy not available in this version of RevoScaleR")
 
-    composite <- isCompositeXdf(.data)
-    funcParams <- rlang::modify(list(...), .func=.func,
-        .composite=composite, .tblDir=get_dplyrxdf_dir(rxGetFileSystem(.data)))
+    .captures$.composite <- isCompositeXdf(.data)
+    .captures$.tblDir <- get_dplyrxdf_dir(rxGetFileSystem(.data))
 
-    execByResult(unTbl(.data), group_vars(.data), function(keys, data, .func, ...)
-        .func(data, ...), funcParams)
+    enclosFunc <- function(keys, data, .func, ..., .captures)
+    {
+        e <- new.env(parent=globalenv())
+        lapply(names(.captures), function(nm) assign(nm, .captures[[nm]], e))
+        attach(e)
+        on.exit(detach())
+        .func(data, ...)
+    }
+
+    funcParams <- list(.func=.func, ..., .captures=.captures)
+    execByResult(unTbl(.data), group_vars(.data), enclosFunc, funcParams)
 }
 
 
-callSplit <- function(.data, .func, ...)
+callSplit <- function(.data, .func, ..., .captures=list())
 {
     if(in_hdfs(.data))
         stop("cannot use manual splitting for data in HDFS")
 
-    composite <- isCompositeXdf(.data)
-    xdflst <- splitGroups(.data)
-    on.exit(deleteIfTbl(xdflst))
+    .captures$.composite <- isCompositeXdf(.data)
+    .captures$.tblDir <- get_dplyrxdf_dir(rxGetFileSystem(.data))
 
-    rxExec(.func, rxElemArg(xdflst), ...,
-        .composite=composite, .tblDir=get_dplyrxdf_dir())
+    # rxExec execObjects doesn't work with non-function objects (?)
+    enclosFunc <- function(data, .func, ..., .captures)
+    {
+        e <- new.env(parent=globalenv())
+        lapply(names(.captures), function(nm) assign(nm, .captures[[nm]], e))
+        attach(e)
+        on.exit(detach())
+        .func(data, ...)
+    }
+
+    xdflst <- splitGroups(.data)
+    on.exit(lapply(xdflst, delete_xdf))
+
+    rxExec(enclosFunc, rxElemArg(xdflst), .func, ..., .captures=.captures)
 }
 

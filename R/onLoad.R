@@ -334,7 +334,10 @@
 {
     # remove the HDFS working directory, if we are still connected
     if(e$hdfsWorkDirCreated && !is.na(isRemoteHdfsClient(stopIfNotConnected=FALSE)))
+    {
+        message("Removing HDFS working directory")
         rxHadoopRemoveDir(e$hdfsWorkDir, skipTrash=TRUE, intern=TRUE)
+    }
 
     # remove local working directory
     if(tempdir() != .dxOptions$localWorkDir)

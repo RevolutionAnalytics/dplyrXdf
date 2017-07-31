@@ -7,8 +7,18 @@ smryRxSplit <- function(data, grps=NULL, stats, exprs, rxArgs)
     if(length(grps) == 0)
         return(smryRxSummary(data, grps, stats, exprs, rxArgs))
 
+    # long capture list is for Hadoop/Spark: allow execution independently of package
     callGroupedExec(data, NULL, smryRxSummaryWithGroupvars, grps=grps, stats=stats, exprs=exprs, rxArgs=rxArgs,
-        distribFuncList=list(buildSmryFormulaRhs=buildSmryFormulaRhs, setSmryClasses=setSmryClasses))
+        .captures=list(
+            smryRxSummary=smryRxSummary,
+            invars=invars,
+            deleteIfTbl=deleteIfTbl,
+            delete_xdf=delete_xdf,
+            unTbl=unTbl,
+            varTypes=varTypes,
+            buildSmryFormulaRhs=buildSmryFormulaRhs,
+            setSmryClasses=setSmryClasses
+        ))
 }
 
 

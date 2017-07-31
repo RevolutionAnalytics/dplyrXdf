@@ -115,8 +115,8 @@ deleteIfTbl <- function(data)
     # sanity check if passed a data frame
     if(is.data.frame(data))
         return(NULL)
-    if((inherits(data, "tbl_xdf") && isTRUE(data@hasTblFile)) || is.list(data))
-        deleteTbl(data)
+    if((inherits(data, "tbl_xdf") && isTRUE(data@hasTblFile)))
+        delete_xdf(data)
     NULL
 }
 

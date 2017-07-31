@@ -43,7 +43,7 @@ tbl_xdf <- function(xdf=NULL, file=NULL, createCompositeSet=NULL, fileSystem=rxG
     else file <- validateXdfFile(file, createCompositeSet)
 
     # call RxXdfData() directly or indirectly to create xdf object
-    # this is NOT the class constructor so cannot use callNextMethod()
+    # this is NOT the S4 class constructor so cannot use callNextMethod()
     xdf <- if(!inherits(xdf, "RxXdfData"))
         RxXdfData(file=file, fileSystem=fileSystem, createCompositeSet=createCompositeSet, ...)
     else modifyXdf(xdf, file=file, fileSystem=fileSystem, createCompositeSet=createCompositeSet, ...)

@@ -113,7 +113,7 @@ copyOrMoveXdf <- function(src, dest, overwrite=TRUE, move)
         }
         else
         {
-            msg <- sprintf("unable to %s to HDFS path %s", if(move) "move" else "copy", path)
+            msg <- sprintf("unable to %s to HDFS path %s", if(move) "move" else "copy", dest)
             stop(msg, call.=FALSE)
         }
     }
@@ -207,6 +207,7 @@ delete_xdf <- function(xdf)
             rxHadoopRemoveDir(xdf@file)
         else rxHadoopRemove(xdf@file)
     }
-    else unlink(xdf@file, recursive=TRUE)
+    else if(inherits(xdf, "RxXdfData"))
+        unlink(xdf@file, recursive=TRUE)
 }
 

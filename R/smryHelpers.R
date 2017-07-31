@@ -43,6 +43,50 @@ buildSmryFormulaRhs <- function(data, grps, call, rxArgs, addN=FALSE, proxyVar=F
 }
 
 
+invars <- function(exprs)
+{
+    sapply(exprs, function(e)
+    {
+        if(length(e) > 1)
+            as.character(e[[2]])
+        else ""
+        })
+}
+
+
+# reconstruct grouping variables
+rebuildGroupVars <- function(x, grps, data)
+{
+    if(length(x) == 1 && names(x) == ".group." && !identical(grps, ".group."))
+    {
+        x <- do.call(rbind, strsplit(as.character(x[[1]]), "_&&_", fixed=TRUE))
+        x <- data.frame(x, stringsAsFactors=FALSE)
+    }
+
+    x <- mapply(function(x, varInfo)
+    {
+        type <- varInfo$varType
+        if(type == "logical")
+            x <- as.numeric(levels(x)[x]) == 1
+        else if(type %in% c("integer", "numeric"))
+            x <- as(as.character(x), type)
+        else if(type %in% c("Date", "POSIXct"))
+        {
+            # underlying code in as.Date.numeric, as.POSIXct.numeric just adds an offset
+            # TODO: verify time zones handled properly
+            x <- as.numeric(as.character(x))
+            class(x) <- type
+        }
+        else if(type %in% c("factor", "ordered") && !identical(levels(x), varInfo$levels))
+            x <- factor(x, levels=varInfo$levels, ordered=(type == "ordered"))
+        x
+    }, x, rxGetVarInfo(unTbl(data), varsToKeep=grps), SIMPLIFY=FALSE)
+
+    names(x) <- grps
+    x
+}
+
+
 setSmryClasses <- function(df, origdata, invars, outvars)
 {
     types <- varTypes(origdata)

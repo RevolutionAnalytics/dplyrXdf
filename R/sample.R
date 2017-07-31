@@ -57,6 +57,7 @@ sample_frac.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL,
 
 sampleGroupedXdf <- function(.data, size, replace=FALSE, weight=NULL, frac)
 {
+    stopIfHdfs(.data, "grouped sampling not supported for data in HDFS")
     if(replace)
         warning("sampling with replacement not supported for Xdf files")
     if(!is.null(weight))
@@ -66,7 +67,7 @@ sampleGroupedXdf <- function(.data, size, replace=FALSE, weight=NULL, frac)
 }
 
 
-sampleBase <- function(.data, size, frac, .composite=isCompositeXdf(.data), .tblDir=get_dplyrxdf_dir())
+sampleBase <- function(.data, size, frac)
 {
     n <- nrow(.data)
     if(frac)
@@ -77,11 +78,17 @@ sampleBase <- function(.data, size, frac, .composite=isCompositeXdf(.data), .tbl
         stop("sample size must be at least 1")
     sel <- sample.int(n, size=size)
 
+    # explicit namespace reference to allow for parallel/execBy backends: requires dplyrXdf to be installed on nodes
+    # set options if not passed in as captures from higher-order funcs
+    if(!exists(".tblDir", where=2, inherits=FALSE))
+        .tblDir <- dplyrXdf:::get_dplyrxdf_dir()
+    if(!exists(".composite", where=2, inherits=FALSE))
+        .composite <- dplyrXdf:::isCompositeXdf(.data)
+
     file <- tempfile(tmpdir=.tblDir)
-    # explicit namespace reference to allow for parallel/execBy backends
     output <- dplyrXdf:::tbl_xdf(.data, file=file, createCompositeSet=.composite)
 
-    rxDataStep(.data, unTbl(output), rowSelection=(.rxStartRow + seq_len(.rxNumRows) - 1) %in% .sel,
+    rxDataStep(.data, output, rowSelection=(.rxStartRow + seq_len(.rxNumRows) - 1) %in% .sel,
         transformObjects=list(.sel=sel))
     output
 }

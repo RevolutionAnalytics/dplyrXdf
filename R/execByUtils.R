@@ -1,8 +1,11 @@
 execByCheck <- function(execLst)
 {
-    allOk <- all(sapply(execLst, function(x) x$status[[1]] == "OK"))
-    if(!allOk)
-        stop("Bad result from rxExecBy")
+    ok <- sapply(execLst, function(x) x$status[[1]] == "OK")
+    if(!all(ok))
+    {
+        errs <- sapply(execLst[!ok], function(x) x$status[[2]])
+        stop("Bad result from rxExecBy: ", errs[1])
+    }
 }
 
 

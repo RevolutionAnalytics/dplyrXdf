@@ -197,9 +197,6 @@ commonBy <- function (by = NULL, x, y)
 
 mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxArgs, suffix=c(".x", ".y"))
 {
-    stopIfHdfs(x, "merging not supported on HDFS")
-    stopIfHdfs(y, "merging not supported on HDFS")
-
     # copy not used by dplyrXdf at the moment
     if(copy)
         warning("copy argument not currently used")
@@ -227,6 +224,6 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
     arglst <- doExtraArgs(arglst, x, .rxArgs, .outFile)
     arglst$rowsPerRead <- NULL # not used by rxMerge
 
-    output <- rlang::invoke("rxMerge", arglst, .env=parent.frame(), .bury=NULL)
+    output <- callRx("rxMerge", arglst)
     simpleRegroup(output, grps)
 }
