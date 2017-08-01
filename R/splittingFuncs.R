@@ -30,8 +30,7 @@ callExecBy <- function(.data, .func, ..., .captures=list())
 
     enclosFunc <- function(keys, data, .func, ..., .captures)
     {
-        e <- new.env(parent=globalenv())
-        lapply(names(.captures), function(nm) assign(nm, .captures[[nm]], e))
+        e <- list2env(.captures)
         attach(e)
         on.exit(detach())
         .func(data, ...)
@@ -53,8 +52,7 @@ callSplit <- function(.data, .func, ..., .captures=list())
     # rxExec execObjects doesn't work with object names starting with .
     enclosFunc <- function(data, .func, ..., .captures)
     {
-        e <- new.env(parent=globalenv())
-        lapply(names(.captures), function(nm) assign(nm, .captures[[nm]], e))
+        e <- list2env(.captures)
         attach(e)
         on.exit(detach())
         .func(data, ...)
