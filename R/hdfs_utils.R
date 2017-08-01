@@ -104,6 +104,16 @@ getHdfsUserDir <- function(fs)
 }
 
 
+normalizeHdfsPath <- function(path)
+{
+    userDir <- getHdfsUserDir()
+    dir <- dirname(path)
+    if(dir == ".")
+        file.path(userDir, basename(path), fsep="/")
+    else path
+}
+
+
 execOnHdfsClient <- function(expr)
 {
     cc <- rxGetComputeContext()

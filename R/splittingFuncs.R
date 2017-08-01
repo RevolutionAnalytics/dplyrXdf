@@ -50,7 +50,7 @@ callSplit <- function(.data, .func, ..., .captures=list())
     .captures$.composite <- isCompositeXdf(.data)
     .captures$.tblDir <- get_dplyrxdf_dir(rxGetFileSystem(.data))
 
-    # rxExec execObjects doesn't work with non-function objects (?)
+    # rxExec execObjects doesn't work with object names starting with .
     enclosFunc <- function(data, .func, ..., .captures)
     {
         e <- new.env(parent=globalenv())

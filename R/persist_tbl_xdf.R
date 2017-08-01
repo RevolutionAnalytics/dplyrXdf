@@ -37,7 +37,7 @@ persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=TRUE, composite
     if(compositeIn == composite)
     {
         # direct copy/move using OS commands
-        copyOrMoveXdf(.data, outFile, overwrite=overwrite, move=move)
+        copyOrMove(.data, outFile, overwrite=overwrite, move=move)
     }
     else
     {

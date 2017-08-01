@@ -5,7 +5,7 @@ setClass("tbl_xdf", contains="RxXdfData", slots=c(hasTblFile="logical"))
 # do not call this directly: will not initialise all fields
 setMethod("initialize", "tbl_xdf", function(.Object, ...) {
     .Object <- callNextMethod()
-    .Object@hasTblFile <- !file.exists(.Object@file)
+    .Object@hasTblFile <- FALSE
     .Object
 })
 
@@ -60,4 +60,5 @@ setMethod("coerce", list(from="RxFileData", to="tbl_xdf"), function(from, to, st
     out <- tbl_xdf(fileSystem=rxGetFileSystem(from))
     rxImport(from, out, rowsPerRead=.dxOptions$rowsPerRead)
 })
+
 

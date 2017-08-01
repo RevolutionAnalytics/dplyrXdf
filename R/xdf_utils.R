@@ -58,7 +58,7 @@ modifyXdf <- function(xdf, file=xdf@file, varsToKeep=xdf@colNames, varsToDrop=NU
 #' @export
 copy_xdf <- function(src, dest, overwrite=TRUE)
 {
-    copyOrMoveXdf(src, dest, overwrite, move=FALSE)
+    copyOrMove(src, dest, overwrite, move=FALSE)
 }
 
 
@@ -66,103 +66,16 @@ copy_xdf <- function(src, dest, overwrite=TRUE)
 #' @export
 move_xdf <- function(src, dest, overwrite=TRUE)
 {
-    copyOrMoveXdf(src, dest, overwrite, move=TRUE)
-}
-
-
-copyOrMoveXdf <- function(src, dest, overwrite=TRUE, move)
-{
-    if(inherits(dest, "RxFileData"))
-        dest <- dest@file
-
-    composite <- isCompositeXdf(src)
-    if(in_hdfs(src))
-    {
-        if(composite)
-        {
-            renameAfterCopy <- !hdfs_dir_exists(dest)
-            if(renameAfterCopy)
-            {
-                destName <- validateXdfFile(basename(dest), composite)
-                dest <- dirname(dest)
-            }
-        }
-        else
-        {
-            # test that directory exists
-            cmd <- paste0("fs -test -d '", dest, "'")
-            if(rxHadoopCommand(cmd))
-                dest <- file.path(dest, basename(src@file), fsep="/")
-            dest <- validateXdfFile(dest, composite)
-        }
- 
-        ret <- if(move)
-            rxHadoopMove(src@file, dest)
-        else rxHadoopCopy(src@file, dest)
-
-        if(ret)
-        {
-            if(composite)
-            {
-                dest <- file.path(dest, basename(src@file), fsep="/")
-                if(renameAfterCopy)
-                    modifyXdf(src, file=dest) %>% rename_xdf(destName)
-                else modifyXdf(src, file=dest)
-            }
-            else modifyXdf(src, file=dest)
-        }
-        else
-        {
-            msg <- sprintf("unable to %s to HDFS path %s", if(move) "move" else "copy", dest)
-            stop(msg, call.=FALSE)
-        }
-    }
-    else
-    {
-        if(composite)
-        {
-            renameAfterCopy <- !dir.exists(dest)
-            if(renameAfterCopy)
-            {
-                destName <- validateXdfFile(basename(dest), composite)
-                dest <- dirname(dest)
-            }
-        }
-        else
-        {
-            if(dir.exists(dest))
-                dest <- file.path(dest, basename(src@file))
-            dest <- validateXdfFile(dest, composite)
-        }
-
-        ret <- if(move)
-            file.rename(src@file, dest)
-        else file.copy(src@file, dest, overwrite=overwrite, recursive=composite)
-
-        if(ret)
-        {
-            if(composite)
-            {
-                dest <- file.path(dest, basename(src@file))
-                if(renameAfterCopy)
-                    modifyXdf(src, file=dest) %>% rename_xdf(destName)
-                else modifyXdf(src, file=dest)
-            }
-            else modifyXdf(src, file=dest)
-        }
-        else
-        {
-            msg <- sprintf("unable to %s to path %s", if(move) "move" else "copy", dest)
-            stop(msg, call.=FALSE)
-        }
-    }
+    copyOrMove(src, dest, overwrite, move=TRUE)
 }
 
 
 #' @export
 rename_xdf <- function(src, newFile)
 {
-    if(basename(newFile) != newFile)
+    if(dirname(newFile) == dirname(src@file))
+        newFile <- basename(newFile)
+    else if(basename(newFile) != newFile)
         stop("to move an Xdf file to a new location, use move_xdf", call.=FALSE)
 
     composite <- isCompositeXdf(src)
