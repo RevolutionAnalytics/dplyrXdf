@@ -82,6 +82,7 @@ test_that("copy and move work",
     unlink(dest2)
     tbl2 <- move_xdf(tbl, dest2)
     expect_true(verifyData(tbl2, "RxXdfData"))
+    expect_false(file.exists(tbl@file))
     expect_identical(.path(tbl2@file), dest2)
 
     # copy to different dir + rename
@@ -96,6 +97,7 @@ test_that("copy and move work",
     unlink(dest2)
     tbl2 <- move_xdf(mtx, dest2)
     expect_true(verifyData(tbl2, "RxXdfData"))
+    expect_false(file.exists(mtx@file))
     expect_identical(.path(tbl2@file), dest2)
 
     # recreate original file
@@ -137,6 +139,7 @@ test_that("copy and move work for composite",
     unlink(dest2, recursive=TRUE)
     tbl2 <- move_xdf(tbl, dest2)
     expect_true(verifyCompositeData(tbl2, "RxXdfData"))
+    expect_false(file.exists(tbl@file))
     expect_identical(.path(tbl2@file), dest2)
 
     # copy to different dir + rename
@@ -151,6 +154,7 @@ test_that("copy and move work for composite",
     unlink(dest2, recursive=TRUE)
     tbl2 <- move_xdf(mtc, dest2)
     expect_true(verifyCompositeData(tbl2, "RxXdfData"))
+    expect_false(file.exists(mtc@file))
     expect_identical(.path(tbl2@file), dest2)
 
     # recreate original file

@@ -94,9 +94,14 @@ copyOrMoveNative <- function(src, dest, overwrite, move, composite)
             {
                 # making an xdf at given dir
                 dest <- validateXdfFile(dest, composite)
-                dir.create(dest)
-                srcData <- list.dirs(src@file, recursive=FALSE)
-                ret <- all(file.copy(srcData, dest, recursive=TRUE))
+                ret <- if(move)
+                    moveDir(src@file, dest)
+                else
+                {
+                    dir.create(dest)
+                    srcData <- list.dirs(src@file, recursive=FALSE)
+                    all(file.copy(srcData, dest, recursive=TRUE))
+                }
             }
             else
             {
@@ -160,6 +165,5 @@ moveDir <- function(src, dest)
 
     if(ret)
         unlink(src, recursive=TRUE)
-    else stop("unable to move directory ", src)
     ret
 }
