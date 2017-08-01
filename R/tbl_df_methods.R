@@ -28,7 +28,7 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
 
 #' @rdname as.data.frame
 #' @export
-collect.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=TRUE, ...)
+collect.RxFileData <- function(x, as_data_frame=TRUE, ...)
 {
     if(is.null(as_data_frame))
         as_data_frame <- !in_hdfs(x)
@@ -44,7 +44,7 @@ collect.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=TRUE, ...)
     else localXdf <- x
 
     if(as_data_frame)
-        as.data.frame(localXdf)
+        as.data.frame(localXdf, ...)
     else localXdf
 }
 
@@ -52,7 +52,7 @@ collect.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=TRUE, ...)
 # collect and compute differ only in as_data_frame default value
 #' @rdname as.data.frame
 #' @export
-compute.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=NULL, ...)
+compute.RxFileData <- function(x, as_data_frame=NULL, ...)
 {
     if(is.null(as_data_frame))
         as_data_frame <- !in_hdfs(x)
@@ -68,7 +68,7 @@ compute.RxFileData <- function(x, maxRowsByCols=NULL, as_data_frame=NULL, ...)
     else localXdf <- x
 
     if(as_data_frame)
-        as.data.frame(localXdf)
+        as.data.frame(localXdf, ...)
     else localXdf
 }
 

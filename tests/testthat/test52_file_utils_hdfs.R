@@ -1,7 +1,16 @@
-context("Xdf file utilities")
-mtx <- rxDataStep(mtcars, "mtx.xdf", overwrite=TRUE)
-mtc <- RxXdfData("mtc", createCompositeSet=TRUE)
-rxDataStep(mtcars, mtc, overwrite=TRUE)
+context("Xdf file utilities in HDFS")
+
+# set the compute context manually
+
+skip_if_not(!is.na(isRemoteHdfsClient(FALSE)), message="not in distributed compute context")
+
+mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=hd, createCompositeSet=TRUE)
+
+
+verifyHdfsData <- function(xdf, expectedClass)
+{
+    isTRUE(xdf@createCompositeSet) && rxHadoopFileExists(xdf@file) && class(xdf) == expectedClass # test for exact class
+}
 
 verifyData <- function(xdf, expectedClass)
 {
@@ -18,8 +27,8 @@ verifyCompositeData <- function(xdf, expectedClass)
     normalizePath(path, mustWork=FALSE)
 }
 
-test2 <- tempfile()
-dir.create(test2)
+test2 <- tempfile(get_dplyrxdf_dir("hdfs"))
+rxHadoopMakeDir(test2)
 
 test_that("rename works",
 {
