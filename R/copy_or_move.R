@@ -60,9 +60,6 @@ copyOrMoveHdfs <- function(src, dest, overwrite, move, composite)
 
 copyOrMoveNative <- function(src, dest, overwrite, move, composite)
 {
-    .path <- function(p)
-    normalizePath(p, mustWork=FALSE)
-
     # why are directories so hard
     if(composite)
     {
@@ -71,7 +68,7 @@ copyOrMoveNative <- function(src, dest, overwrite, move, composite)
         srcFile <- basename(src@file)
         destFile <- basename(dest)
 
-        sameDir <- .path(srcDir) == .path(destDir)
+        sameDir <- normalizePath(srcDir, mustWork=FALSE) == normalizePath(destDir, mustWork=FALSE)
         sameFile <- srcFile == destFile
         if(sameDir && sameFile)
             stop("source and destination are the same", call.=FALSE)
@@ -95,14 +92,15 @@ copyOrMoveNative <- function(src, dest, overwrite, move, composite)
         {
             if(!underDest)
             {
-                # making an xdf underneath given dir (will have same name)
+                # making an xdf at given dir
+                dest <- validateXdfFile(dest, composite)
                 dir.create(dest)
                 srcData <- list.dirs(src@file, recursive=FALSE)
                 ret <- all(file.copy(srcData, dest, recursive=TRUE))
             }
             else
             {
-                # making an xdf at given dir
+                # making an xdf underneath given dir (will have same name)
                 ret <- if(move)
                     moveDir(src@file, file.path(dest, srcFile))
                 else file.copy(src@file, dest, overwrite=overwrite, recursive=composite)
@@ -117,14 +115,14 @@ copyOrMoveNative <- function(src, dest, overwrite, move, composite)
                 dataFiles <- dir(dest, pattern=pat, full.names=TRUE, recursive=TRUE)
                 dataDirs <- dirname(dataFiles)
                 newDataFiles <- file.path(dataDirs, sub(pat, destFile, basename(dataFiles)))
-                file.rename(dataFiles, newDataFiles)
+                ret <- all(file.rename(dataFiles, newDataFiles))
             }
             else dest <- file.path(dest, srcFile)
 
             out <- modifyXdf(src, file=dest)
         }
     }
-    else
+    else  # noncomposite = regular file
     {
         if(dir.exists(dest))
             dest <- file.path(dest, basename(src@file))
@@ -137,6 +135,7 @@ copyOrMoveNative <- function(src, dest, overwrite, move, composite)
         if(ret)
             out <- modifyXdf(src, file=dest)
     }
+
     if(!ret)
     {
         msg <- sprintf("unable to %s to path %s", if(move) "move" else "copy", dest)
