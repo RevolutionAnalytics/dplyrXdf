@@ -25,7 +25,7 @@ callExecBy <- function(.data, .func, ..., .captures=list())
     if(rxver < package_version("9.1"))
         stop("rxExecBy not available in this version of RevoScaleR")
 
-    .captures$.composite <- isCompositeXdf(.data)
+    .captures$.composite <- is_composite_xdf(.data)
     .captures$.tblDir <- get_dplyrxdf_dir(rxGetFileSystem(.data))
 
     enclosFunc <- function(keys, data, .func, ..., .captures)
@@ -46,7 +46,7 @@ callSplit <- function(.data, .func, ..., .captures=list())
     if(in_hdfs(.data))
         stop("cannot use manual splitting for data in HDFS")
 
-    .captures$.composite <- isCompositeXdf(.data)
+    .captures$.composite <- is_composite_xdf(.data)
     .captures$.tblDir <- get_dplyrxdf_dir(rxGetFileSystem(.data))
 
     # rxExec execObjects doesn't work with object names starting with .

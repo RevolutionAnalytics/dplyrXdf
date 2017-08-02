@@ -3,7 +3,7 @@ copyOrMove <- function(src, dest, overwrite=TRUE, move)
     if(inherits(dest, "RxFileData"))
         dest <- dest@file
 
-    composite <- isCompositeXdf(src)
+    composite <- is_composite_xdf(src)
 
     if(in_hdfs(src))
         copyOrMoveHdfs(src, dest, overwrite=overwrite, move=move, composite=composite)

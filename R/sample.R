@@ -66,7 +66,7 @@ sampleUngrouped <- function(.data, size, replace=FALSE, weight=NULL, frac)
         warning("weighted sampling not supported for Xdf files")
 
     .tblDir <- get_dplyrxdf_dir()
-    .composite <- isCompositeXdf(.data)
+    .composite <- is_composite_xdf(.data)
     environment(sampleBase) <- environment()
     sampleBase(.data, size, frac)
 }

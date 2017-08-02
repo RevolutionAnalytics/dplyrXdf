@@ -135,7 +135,7 @@ makeSmryOutputHdfs <- function(smry, .outFile, .data)
 
             localXdf <- tbl_xdf(file=file.path(get_dplyrxdf_dir("native"), basename(.outFile)),
                 fileSystem=RxNativeFileSystem(),
-                createCompositeSet=isCompositeXdf(.data))
+                createCompositeSet=is_composite_xdf(.data))
             on.exit(deleteIfTbl(localXdf))
             local_exec(rxDataStep(smry, localXdf, rowsPerRead=.dxOptions$rowsPerRead))
 
@@ -169,7 +169,7 @@ makeSmryOutputNative <- function(smry, .outFile, .data)
             rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         else if(is.character(.outFile))
         {
-            .outFile <- RxXdfData(.outFile, createCompositeSet=isCompositeXdf(.data), fileSystem=RxNativeFileSystem())
+            .outFile <- RxXdfData(.outFile, createCompositeSet=is_composite_xdf(.data), fileSystem=RxNativeFileSystem())
             rxDataStep(smry, .outFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         }
         else smry
@@ -184,7 +184,7 @@ makeSmryOutputNative <- function(smry, .outFile, .data)
         else if(is.character(.outFile))
         {
             file.rename(smry@file, .outFile)
-            RxXdfData(.outFile, createCompositeSet=isCompositeXdf(smry))
+            RxXdfData(.outFile, createCompositeSet=is_composite_xdf(smry))
         }
         else as.data.frame(smry)
     }

@@ -36,7 +36,7 @@ doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
 
     if(!inherits(.outFile, "tbl_xdf"))
     {
-        composite <- isCompositeXdf(.data)
+        composite <- is_composite_xdf(.data)
         if(is.null(.outFile))
             arglst["maxRowsByCols"] <- list(NULL)
         else if(inherits(.outFile, "RxXdfData"))

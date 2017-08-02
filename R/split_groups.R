@@ -8,7 +8,7 @@ splitGroups <- function(data, outXdf=data)
 
     fname <- tools::file_path_sans_ext(rxXdfFileName(outXdf))
     fname <- file.path(get_dplyrxdf_dir(), basename(fname))
-    composite <- isCompositeXdf(data)
+    composite <- is_composite_xdf(data)
 
     # if files exist that could interfere with splitting output, delete them
     # should never be necessary because base filename is a randomly generated tempfile

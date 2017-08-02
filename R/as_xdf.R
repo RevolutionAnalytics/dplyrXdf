@@ -25,7 +25,7 @@ as_xdf.RxXdfData <- function(.data, file=NULL, composite=NULL, overwrite=TRUE, .
     if(in_hdfs(.data) && !composite)
         stop("only composite Xdf files supported in HDFS")
 
-    compositeIn <- isCompositeXdf(.data)
+    compositeIn <- is_composite_xdf(.data)
     if(is.null(composite))
         composite <- compositeIn
 

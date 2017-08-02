@@ -29,7 +29,7 @@ persist <- function(.data, ...)
 #' @export
 persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=TRUE, composite=NULL, ...)
 {
-    compositeIn <- isCompositeXdf(.data)
+    compositeIn <- is_composite_xdf(.data)
     if(is.null(composite))
         composite <- compositeIn
 

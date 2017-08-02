@@ -16,7 +16,7 @@ tbl_xdf <- function(xdf=NULL, file=NULL, createCompositeSet=NULL, fileSystem=rxG
     if(is.null(createCompositeSet))
     {
         createCompositeSet <- if(inherits(xdf, "RxXdfData"))
-            isCompositeXdf(xdf)
+            is_composite_xdf(xdf)
         else in_hdfs(fileSystem) # default to TRUE on HDFS, if xdf not supplied
     }
 

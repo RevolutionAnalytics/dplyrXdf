@@ -36,7 +36,7 @@ collect.RxFileData <- function(x, as_data_frame=TRUE, ...)
     if(in_hdfs(x))
     {
         # copy from HDFS to native filesystem
-        composite <- isCompositeXdf(x)
+        composite <- is_composite_xdf(x)
         file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
         localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
         hdfsDownload(x@file, localXdf@file, isDir=composite)
@@ -60,7 +60,7 @@ compute.RxFileData <- function(x, as_data_frame=NULL, ...)
     if(in_hdfs(x))
     {
         # copy from HDFS to native filesystem
-        composite <- isCompositeXdf(x)
+        composite <- is_composite_xdf(x)
         file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
         localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
         hdfsDownload(x@file, localXdf@file, isDir=composite)
