@@ -125,7 +125,9 @@ hdfs_expunge <- function()
 in_hdfs <- function(obj=NULL)
 {
     fs <- rxGetFileSystem(obj)
-    inherits(fs, "RxHdfsFileSystem") || (is.character(obj) && tolower(obj) == "hdfs")
+    inherits(fs, "RxHdfsFileSystem") ||
+        inherits(obj, "RxSparkData") ||
+        (is.character(obj) && tolower(obj) == "hdfs")
 }
 
 
