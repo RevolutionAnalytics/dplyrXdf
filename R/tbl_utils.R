@@ -78,7 +78,7 @@ varTypes <- function(x, vars=NULL)
         return(character(0))
 
     info <- if(is.data.frame(x))
-        execOnHdfsClient(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE))
+        local_exec(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE))
     else rxGetVarInfo(unTbl(x), varsToKeep=vars, computeInfo=FALSE)
 
     sapply(info, "[[", "varType")
@@ -92,7 +92,7 @@ varLevels <- function(x, vars=NULL)
         return(character(0))
 
     info <- if(is.data.frame(x))
-        execOnHdfsClient(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE))
+        local_exec(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE))
     else rxGetVarInfo(unTbl(x), varsToKeep=vars, computeInfo=FALSE)
 
     sapply(info, "[[", "levels", simplify=FALSE)

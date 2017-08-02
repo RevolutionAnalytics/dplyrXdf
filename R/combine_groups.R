@@ -13,7 +13,7 @@ combineGroups <- function(datlst, output, grps)
             {
                 # create output locally, then copy it
                 localFile <- file.path(get_dplyrxdf_dir(RxNativeFileSystem()), basename(output@file))
-                localXdf <- execOnHdfsClient(rxDataStep(out, localFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE))
+                localXdf <- local_exec(rxDataStep(out, localFile, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE))
 
                 out <- copy_to(rxGetFileSystem(output), localXdf, path=dirname(output))
             }

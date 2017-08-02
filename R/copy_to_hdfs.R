@@ -22,7 +22,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force
                 stop("unable to import source")
         }
 
-        df <- execOnHdfsClient(rxDataStep(df,
+        df <- local_exec(rxDataStep(df,
             tbl_xdf(fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
             rowsPerRead=.dxOptions$rowsPerRead))
     }
@@ -34,9 +34,10 @@ copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force
         message("Creating composite copy of non-composite Xdf ", df@file)
 
         localName <- file.path(get_dplyrxdf_dir("native"), basename(df@file))
-        df <- execOnHdfsClient(rxDataStep(df,
-            tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
-            rowsPerRead=.dxOptions$rowsPerRead))
+        df <- local_exec(as_composite_xdf(df, file=localName))
+        #df <- local_exec(rxDataStep(df,
+            #tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
+            #rowsPerRead=.dxOptions$rowsPerRead))
     }
 
     if(is.null(path))

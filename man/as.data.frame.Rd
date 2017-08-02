@@ -15,11 +15,9 @@
 \method{as.data.frame}{RxFileData}(x, maxRowsByCols = NULL,
   row.names = NULL, optional = TRUE, ...)
 
-\method{collect}{RxFileData}(x, maxRowsByCols = NULL, as_data_frame = TRUE,
-  ...)
+\method{collect}{RxFileData}(x, as_data_frame = TRUE, ...)
 
-\method{compute}{RxFileData}(x, maxRowsByCols = NULL, as_data_frame = NULL,
-  ...)
+\method{compute}{RxFileData}(x, as_data_frame = NULL, ...)
 
 \method{$}{RxFileData}(x, name)
 

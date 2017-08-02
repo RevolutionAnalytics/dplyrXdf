@@ -1,4 +1,5 @@
 context("Xdf file utilities")
+
 mtx <- rxDataStep(mtcars, "mtx.xdf", overwrite=TRUE)
 mtc <- RxXdfData("mtc", createCompositeSet=TRUE)
 rxDataStep(mtcars, mtc, overwrite=TRUE)

@@ -137,7 +137,7 @@ makeSmryOutputHdfs <- function(smry, .outFile, .data)
                 fileSystem=RxNativeFileSystem(),
                 createCompositeSet=isCompositeXdf(.data))
             on.exit(deleteIfTbl(localXdf))
-            execOnHdfsClient(rxDataStep(smry, localXdf, rowsPerRead=.dxOptions$rowsPerRead))
+            local_exec(rxDataStep(smry, localXdf, rowsPerRead=.dxOptions$rowsPerRead))
 
             output <- copy_to(rxGetFileSystem(.data), localXdf, dirname(.outFile), overwrite=TRUE)
         }

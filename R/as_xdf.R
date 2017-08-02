@@ -78,6 +78,6 @@ as_xdf.default <- function(.data, file=NULL, composite=NULL, ...)
         file <- basename(tempfile())
     file <- validateXdfFile(file, composite)
 
-    out <- RxXdfData(file=file, fileSystem=rxGetFileSystem(), createCompositeSet=composite)
-    rxDataStep(.data, out, rowsPerRead=.dxOptions$rowsPerRead, ...)
+    out <- RxXdfData(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
+    local_exec(rxDataStep(.data, out, rowsPerRead=.dxOptions$rowsPerRead, ...))
 }

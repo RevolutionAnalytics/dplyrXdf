@@ -22,7 +22,7 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
     # calling rxDataStep on HDFS data from remote client is bog-slow, use direct download instead
     if(in_hdfs(x))
         collect(x, maxRowsByCols=maxRowsByCols)
-    else execOnHdfsClient(rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...))
+    else local_exec(rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...))
 }
 
 

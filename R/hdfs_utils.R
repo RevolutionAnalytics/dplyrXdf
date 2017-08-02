@@ -1,10 +1,12 @@
 #' @export
-hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursive=FALSE, dirs_only=FALSE)
+hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursive=FALSE,
+    dirs_only=FALSE, pattern=NULL, convert_backslashes=TRUE)
 {
-    cc <- rxGetComputeContext()
+    path <- convertBS(path, convert_backslashes)
     arguments <- c("fs", "-ls", if(recursive) "-R", ..., path)
 
     # modified from rxHadoopListFiles
+    cc <- rxGetComputeContext()
     result <- if(isRemoteHdfsClient())
         RevoScaleR:::executeOnHadoopCluster(cc, "hadoop", arguments)
     else RevoScaleR:::executeCommand("hadoop", arguments)
@@ -27,6 +29,9 @@ hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursi
 
     if(!full_path && !recursive)
         output <- basename(output)
+    if(!is.null(pattern))
+        output <- grep(pattern, output, value=TRUE)
+
     attr(output, "path") <- path
     class(output) <- "dplyrXdf_hdfs_dir"
     output
@@ -34,20 +39,85 @@ hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursi
 
 
 #' @export
-hdfs_dir_exists <- function(path)
+print.dplyrXdf_hdfs_dir <- function(x, ...)
 {
-    out <- suppressWarnings(try(hdfs_dir(path, "-d", dirs_only=TRUE), silent=TRUE))
-    !inherits(out, "try-error") && length(out) > 0 && out == path
+    path <- attr(x, "path")
+    if(substr(path, 1, 1) != "/")
+        message("HDFS user directory assumed to be ", getHdfsUserDir())
+    cat("Directory listing of", path, "\n")
+    print.default(c(x), ...)
+    invisible(x)
 }
 
 
 #' @export
-print.dplyrXdf_hdfs_dir <- function(x, ...)
+hdfs_dir_exists <- function(path, convert_backslashes=TRUE)
 {
-    path <- attr(x, "path")
-    cat("Directory listing of", path, "\n")
-    print.default(c(x), ...)
-    invisible(x)
+    path <- convertBS(path, convert_backslashes)
+    out <- suppressWarnings(try(hdfs_dir(path, "-d", dirs_only=TRUE), silent=TRUE))
+    !inherits(out, "try-error") && length(out) > 0 && out == basename(path)
+}
+
+
+# for symmetry with hdfs_dir_exists
+#' @export
+hdfs_file_exists <- function(path, convert_backslashes=TRUE)
+{
+    path <- convertBS(path, convert_backslashes)
+    rxHadoopFileExists(path)
+}
+
+
+#' @export
+hdfs_dir_create <- function(path, ..., convert_backslashes=TRUE)
+{
+    path <- convertBS(path, convert_backslashes)
+    rxHadoopMakeDir(path, ...)
+}
+
+
+#' @export
+hdfs_dir_remove <- function(path, ..., convert_backslashes=TRUE)
+{
+    path <- convertBS(path, convert_backslashes)
+    rxHadoopRemoveDir(path, ...)
+}
+
+
+#' @export
+hdfs_file_copy <- function(src, dest, ..., overwrite=TRUE, convert_backslashes=TRUE)
+{
+    src <- convertBS(src, convert_backslashes)
+    dest <- convertBS(dest, convert_backslashes)
+    if(length(src) > 1 && length(dest) > 1)
+        all(mapply(rxHadoopCopy, src, dest, MoreArgs=list(...)))
+    else rxHadoopCopy(src, dest, ...)
+}
+
+
+#' @export
+hdfs_file_remove <- function(path, ..., convert_backslashes=TRUE)
+{
+    path <- convertBS(path, convert_backslashes)
+    rxHadoopRemove(path, ...)
+}
+
+
+#' @export
+hdfs_file_move <- function(src, dest, ..., convert_backslashes=TRUE)
+{
+    src <- convertBS(src, convert_backslashes)
+    dest <- convertBS(dest, convert_backslashes)
+    if(length(src) > 1 && length(dest) > 1)
+        all(mapply(rxHadoopMove, src, dest, MoreArgs=list(...)))
+    else rxHadoopMove(src, dest, ...)
+}
+
+
+#' @export
+hdfs_expunge <- function()
+{
+    rxHadoopCommand("fs -expunge")
 }
 
 
@@ -56,6 +126,19 @@ in_hdfs <- function(obj=NULL)
 {
     fs <- rxGetFileSystem(obj)
     inherits(fs, "RxHdfsFileSystem") || (is.character(obj) && tolower(obj) == "hdfs")
+}
+
+
+#' @export
+local_exec <- function(expr, context="local")
+{
+    cc <- rxGetComputeContext()
+    if(inherits(cc, "RxDistributedHpa"))
+    {
+        on.exit(rxSetComputeContext(cc))
+        rxSetComputeContext(context)
+    }
+    eval(expr, parent.frame())
 }
 
 
@@ -107,23 +190,20 @@ getHdfsUserDir <- function(fs)
 normalizeHdfsPath <- function(path)
 {
     userDir <- getHdfsUserDir()
-    dir <- dirname(path)
-    if(dir == ".")
-        file.path(userDir, basename(path), fsep="/")
+    path <- gsub("/\\./", "/", convertBS(path, TRUE))
+    path <- sub("^\\./", "", path)
+    #dir <- dirname(path)
+    if(path == ".")
+        userDir
+    else if(substr(path, 1, 1) != "/")
+        file.path(userDir, path, fsep="/")
     else path
 }
 
 
-execOnHdfsClient <- function(expr)
+convertBS <- function(path, convert)
 {
-    cc <- rxGetComputeContext()
-    if(inherits(cc, "RxDistributedHpa"))
-    {
-        on.exit(rxSetComputeContext(cc))
-        rxSetComputeContext("local")
-    }
-    eval(expr, parent.frame())
+    if(convert)
+        gsub("\\\\", "/", path)
+    else path
 }
-
-
-

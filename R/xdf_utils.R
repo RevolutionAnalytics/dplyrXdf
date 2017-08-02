@@ -45,6 +45,9 @@ modifyXdf <- function(xdf, file=xdf@file, varsToKeep=xdf@colNames, varsToDrop=NU
     if(is.null(createCompositeSet))
         createCompositeSet <- isCompositeXdf(xdf)
     file <- validateXdfFile(file, createCompositeSet)
+    if(in_hdfs(xdf))
+        file <- gsub("\\\\", "/", file)  # rm backslash cruft
+
     if(identical(varsToKeep, ""))
         varsToKeep <- NULL
 

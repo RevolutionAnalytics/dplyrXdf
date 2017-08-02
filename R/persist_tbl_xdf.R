@@ -32,6 +32,14 @@ persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=TRUE, composite
     compositeIn <- isCompositeXdf(.data)
     if(is.null(composite))
         composite <- compositeIn
+
+    # only allow composite on HDFS
+    if(in_hdfs(.data) && !composite)
+    {
+        warning("only composite Xdf files supported in HDFS")
+        composite <- TRUE
+    }
+
     outFile <- validateXdfFile(outFile, composite)
 
     if(compositeIn == composite)
