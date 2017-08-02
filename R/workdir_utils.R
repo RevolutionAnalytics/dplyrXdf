@@ -99,9 +99,9 @@ clean_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
             (rxHadoopCommand(paste0("fs -test -e '", path, "'"), intern=FALSE) == 0)
         if(pathExists)
         {
-            files <- rxHadoopListFiles(path, intern=TRUE)
+            files <- hdfs_dir(path, full_path=TRUE)
             files <- substr(files, regexpr("\\s[[:alnum:][:punct:]]*$", files) + 1, nchar(files))
-            lapply(files, rxHadoopRemoveDir, skipTrash=TRUE, intern=TRUE)
+            rxHadoopRemoveDir(files, skipTrash=TRUE, intern=TRUE)
         }
     }
     invisible(NULL)

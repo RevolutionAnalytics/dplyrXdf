@@ -118,7 +118,7 @@ copyOrMoveNative <- function(src, dest, overwrite, move, composite)
         {
             # is it just a rename op?
             if(move)
-                return(rename_xdf(src, basename(dest)))
+                return(rename_xdf(src, destFile))
 
             # otherwise copy individual files/dirs within src
             dir.create(dest)

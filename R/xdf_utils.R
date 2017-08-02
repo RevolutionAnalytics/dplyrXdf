@@ -94,29 +94,6 @@ is_composite_xdf <- function(x)
 }
 
 
-isCompositeXdf <- function(data)
-{
-    if(!is_xdf(data))
-        return(FALSE)
-
-    cc <- data@createCompositeSet
-    if(!is.null(cc))
-        return(cc)
-
-    # check if this file refers to an existing directory
-    fs <- rxGetFileSystem(data)
-    file <- data@file
-    if(inherits(fs, "RxNativeFileSystem"))
-    {
-        return(dir.exists(file) && tools::file_ext(file) == "")
-    }
-    else
-    {
-        return(rxHadoopFileExists(file) && tools::file_ext(file) == "")
-    }
-}
-
-
 # ensure that composite xdf has no extension, normal xdf has extension
 validateXdfFile <- function(filename, composite)
 {

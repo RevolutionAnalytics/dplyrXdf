@@ -16,17 +16,6 @@ copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force
     {
         localName <- file.path(get_dplyrxdf_dir("native"), URLencode(deparse(substitute(df)), reserved=TRUE))
         df <- local_exec(as_composite_xdf(df, localName))
-        #if(!is.data.frame(df) && !inherits(df, "RxDataSource"))
-        #{
-            ## try converting to local data frame
-            #df <- try(as.data.frame(df))
-            #if(inherits(df, "try-error"))
-                #stop("unable to import source")
-        #}
-
-        #df <- local_exec(rxDataStep(df,
-            #tbl_xdf(fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
-            #rowsPerRead=.dxOptions$rowsPerRead))
     }
 
     if(force_composite && !is_composite_xdf(df))
@@ -37,9 +26,6 @@ copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force
 
         localName <- file.path(get_dplyrxdf_dir("native"), basename(df@file))
         df <- local_exec(as_composite_xdf(df, localName))
-        #df <- local_exec(rxDataStep(df,
-            #tbl_xdf(file=localName, fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE),
-            #rowsPerRead=.dxOptions$rowsPerRead))
     }
 
     if(is.null(path))
