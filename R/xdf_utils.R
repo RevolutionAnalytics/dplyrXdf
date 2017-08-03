@@ -65,7 +65,7 @@ rename_xdf <- function(src, dest)
         {
             # rename all files in data and metadata subdirs
             pat <- sprintf("^%s", basename(src@file))
-            dataFiles <- dir(destPath, pattern=pat, full.names=TRUE, recursive=TRUE)
+            dataFiles <- dir(destPath, full.names=TRUE, recursive=TRUE)
             dataDirs <- dirname(dataFiles)
             newDataFiles <- file.path(dataDirs, sub(pat, dest, basename(dataFiles)))
             file.rename(dataFiles, newDataFiles)
