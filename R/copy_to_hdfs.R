@@ -1,3 +1,25 @@
+#' Upload a dataset to HDFS
+#'
+#' @param dest The destination source: an object of class \code{\link{RxHdfsFileSystem}}.
+#' @param df A dataset: can be a filename, an Xdf data source object, another RevoScaleR data source, or anything that can be coerced to a data frame.
+#' @param path The HDFS directory in which to store the uploaded dataset. Defaults to the user's HDFS home directory.
+#' @param overwrite Whether to overwrite any existing file.
+#' @param force_composite: Whether to force the uploaded dataset to be a composite Xdf file. See details below.
+#' @param ... For \code{copy_to}, further arguments to \code{\link{rxHadoopCommand}}.
+#'
+#' @details
+#' This is the RevoScaleR HDFS method for the dplyr \code{\link[dplyr]{copy_to}} function, for uploading data to a remote database/src. The method should work with any RevoScaleR data source, or with any R object that can be converted into a data frame. If the data is not already in Xdf format, it is first imported into Xdf, and then uploaded.
+#'
+#' The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the uploading is a two-stage process: the data is first transferred to the native filesystem of the edge node, and then copied from the edge node into HDFS.
+#'
+#' @return
+#' An Xdf data source object pointing to the uploaded data.
+#'
+#' @seealso
+#' \code{\link{rxHadoopCopyFromClient}}, \code{\link{rxHadoopCopyFromLocal}},
+#' \code{\link{collect}} and \code{\link{compute}} for downloading data from HDFS
+#' @aliases copy_to
+#' @rdname copy_to
 #' @export
 copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force_composite=TRUE, ...)
 {
@@ -34,6 +56,16 @@ copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force
     hdfsUpload(df@file, path, overwrite=overwrite, isDir=is_composite_xdf(df), ...)
 
     RxXdfData(file.path(path, basename(df@file), fsep="/"), fileSystem=dest, createCompositeSet=is_composite_xdf(df))
+}
+
+
+#' @details
+#' The \code{copy_to_hdfs} function is a simple wrapper that avoids having to create an explicit filesystem object.
+#' @rdname copy_to
+#' @export
+copy_to_hdfs <- function(...)
+{
+    copy_to(RxHdfsFileSystem(), ...)
 }
 
 

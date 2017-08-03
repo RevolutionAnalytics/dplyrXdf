@@ -1,4 +1,23 @@
-# copy an Xdf file via OS commands; avoid rxDataStep
+#' Utility functions for working with Xdf files
+#'
+#' Copy, move, rename and delete an Xdf file.
+#'
+#' @param src For \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf}, an Xdf data source object (\emph{not} a filename).
+#' @param dest For \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf}, a character string giving the destination file. Note that for \code{rename_xdf}, this should only be a base name, not a full path.
+#' @param overwrite Logical; for \code{copy_xdf} and \code{move_xdf}, whether to overwrite any existing file.
+#'
+#' @details
+#' The \code{copy_xdf} function copies the Xdf file given by \code{src} to the location specified by \code{dest}, possibly renaming it as well; \code{move_xdf} moves the file. \code{rename_xdf} does a strict rename (the location of the file is unchanged, only its name). \code{delete_xdf} deletes the file given by \code{xdf}.
+#'
+#' These are utility functions for working with the files/directories where the data for an Xdf data source is stored. They make use of low-level OS functionality, so should be more efficient that running \code{rxDataStep}. They work with both standard and composite Xdf files, and with data stored both in the native filesystem and in HDFS.
+#'
+#' @return
+#' \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf} return an Xdf data source object pointing to the new file location. \code{delete_xdf} returns TRUE/FALSE depending on whether the delete operation succeeded.
+#'
+#' @seealso
+#' \code{\link{file.copy}}, \code{\link{file.rename}}, \code{\link{unlink}},
+#' \code{\link{rxHadoopCopy}}, \code{\link{rxHadoopMove}}, \code{\link{rxHadoopRemove}}, \code{\link{rxHadoopRemoveDir}}
+#' @rdname xdf_utils
 #' @export
 copy_xdf <- function(src, dest, overwrite=TRUE)
 {
@@ -6,7 +25,7 @@ copy_xdf <- function(src, dest, overwrite=TRUE)
 }
 
 
-# move an Xdf file via OS commands; avoid rxDataStep
+#' @rdname xdf_utils
 #' @export
 move_xdf <- function(src, dest, overwrite=TRUE)
 {
@@ -14,83 +33,62 @@ move_xdf <- function(src, dest, overwrite=TRUE)
 }
 
 
+#' @rdname xdf_utils
 #' @export
-rename_xdf <- function(src, newFile)
+rename_xdf <- function(src, dest)
 {
-    if(dirname(newFile) == dirname(src@file))
-        newFile <- basename(newFile)
-    else if(basename(newFile) != newFile)
+    if(dirname(dest) == dirname(src@file))
+        dest <- basename(dest)
+    else if(basename(dest) != dest)
         stop("to move an Xdf file to a new location, use move_xdf", call.=FALSE)
 
     composite <- is_composite_xdf(src)
     if(in_hdfs(src))
     {
-        newPath <- file.path(dirname(src@file), newFile, fsep="/")
-        rxHadoopMove(src@file, newPath)
+        destPath <- file.path(dirname(src@file), dest, fsep="/")
+        rxHadoopMove(src@file, destPath)
         if(composite)
         {
             # rename all files in data and metadata subdirs
             pat <- sprintf("^%s", basename(src@file))
-            dataFiles <- hdfs_dir(newPath, full_path=TRUE, recursive=TRUE)
+            dataFiles <- hdfs_dir(destPath, full_path=TRUE, recursive=TRUE)
             dataDirs <- dirname(dataFiles)
-            newDataFiles <- file.path(dataDirs, sub(pat, newFile, basename(dataFiles)))
+            newDataFiles <- file.path(dataDirs, sub(pat, dest, basename(dataFiles)))
             mapply(rxHadoopMove, dataFiles, newDataFiles)
         }
     }
     else
     {
-        newPath <- file.path(dirname(src@file), newFile)
-        file.rename(src@file, newPath)
+        destPath <- file.path(dirname(src@file), dest)
+        file.rename(src@file, destPath)
         if(composite)
         {
             # rename all files in data and metadata subdirs
             pat <- sprintf("^%s", basename(src@file))
-            dataFiles <- dir(newPath, pattern=pat, full.names=TRUE, recursive=TRUE)
+            dataFiles <- dir(destPath, pattern=pat, full.names=TRUE, recursive=TRUE)
             dataDirs <- dirname(dataFiles)
-            newDataFiles <- file.path(dataDirs, sub(pat, newFile, basename(dataFiles)))
+            newDataFiles <- file.path(dataDirs, sub(pat, dest, basename(dataFiles)))
             file.rename(dataFiles, newDataFiles)
         }
     }
-    modifyXdf(src, file=newPath)
+    modifyXdf(src, file=destPath)
 }
 
 
+#' @param xdf For \code{delete_xdf}, an Xdf data source object.
+#' @rdname xdf_utils
 #' @export
 delete_xdf <- function(xdf)
 {
+    if(!is_xdf(xdf))
+        stop("only for deleting Xdf files")
     if(in_hdfs(xdf))
     {
         if(is_composite_xdf(xdf))
             rxHadoopRemoveDir(xdf@file)
         else rxHadoopRemove(xdf@file)
     }
-    else if(inherits(xdf, "RxXdfData"))
-        unlink(xdf@file, recursive=TRUE)
-}
-
-
-#' @export
-is_xdf <- function(x)
-{
-    inherits(x, "RxXdfData")
-}
-
-
-#' @export
-is_composite_xdf <- function(x)
-{
-    if(!is_xdf(x))
-        return(FALSE)
-
-    composite <- x@createCompositeSet
-    if(!is.null(composite))
-        return(composite)
-
-    # check if this file refers to an existing directory
-    file <- x@file
-    if(in_hdfs(x))
-        return(tools::file_ext(file) == "" && hdfs_dir_exists(file))
-    else return(tools::file_ext(file) == "" && dir.exists(file))
+    else unlink(xdf@file, recursive=TRUE)
 }
 
 

@@ -10,11 +10,11 @@ NULL
 #' @details
 #' These are simple wrappers around \code{\link[RevoScaleR]{rxDataStep}}, with the check on the maximum table size turned off. You should ensure that you have enough memory for your data.
 #'
-#' \code{as.data.frame} converts a data source object (typically an xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
+#' \code{as.data.frame} converts a data source object (typically an Xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
 #'
 #' @seealso
 #' \code{\link[base]{as.data.frame}}, \code{\link[dplyr]{collect}}
-#' @aliases collect compute as.data.frame
+#' @aliases as.data.frame
 #' @rdname as.data.frame
 #' @export
 as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
@@ -26,13 +26,29 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
 }
 
 
-#' @rdname as.data.frame
+#' Download a dataset to the local machine
+#'
+#' @param x An Xdf data source object.
+#' @param as_data_frame Should the downloaded data be converted to a data frame, or left as an Xdf file?
+#'
+#' @details
+#' The \code{collect} and \code{compute} functions can be used for two purposes: to download a dataset stored in HDFS to the native filesystem; or to convert a dataset (whether stored in HDFS or not) to a data frame. If \code{x} is an Xdf data source in HDFS, the data is downloaded as a tbl_xdf in the dplyrXdf working directory.
+#'
+#' The functions differ only in the default value of the \code{as_data_frame} argument. By default \code{collect} will always output a data frame, while \code{compute} will only do so if the source data was \emph{not} downloaded from HDFS.
+#'
+#' The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the downloading is a two-stage process: the data is first transferred from HDFS to the native filesystem of the edge node, and then downloaded from the edge node to the client.
+#'
+#' @return
+#' If \code{as_data_frame} is FALSE, a data frame. Otherwise, a tbl_xdf data source.
+#'
+#' @seealso
+#' \code{\link[dplyr]{compute}} in package dplyr, \code{\link{copy_to}} for uploading to HDFS
+#'
+#' @aliases collect, compute
+#' @rdname compute
 #' @export
-collect.RxFileData <- function(x, as_data_frame=TRUE, ...)
+collect.RxXdfData <- function(x, as_data_frame=TRUE, ...)
 {
-    if(is.null(as_data_frame))
-        as_data_frame <- !in_hdfs(x)
-
     if(in_hdfs(x))
     {
         # copy from HDFS to native filesystem
@@ -49,14 +65,10 @@ collect.RxFileData <- function(x, as_data_frame=TRUE, ...)
 }
 
 
-# collect and compute differ only in as_data_frame default value
-#' @rdname as.data.frame
+#' @rdname compute
 #' @export
-compute.RxFileData <- function(x, as_data_frame=NULL, ...)
+compute.RxXdfData <- function(x, as_data_frame=!in_hdfs(x), ...)
 {
-    if(is.null(as_data_frame))
-        as_data_frame <- !in_hdfs(x)
-
     if(in_hdfs(x))
     {
         # copy from HDFS to native filesystem
