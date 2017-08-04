@@ -36,7 +36,7 @@ as_composite_xdf <- function(...)
 
 #' @rdname as_xdf
 #' @export
-as_standard_xdf <- function(.data, ...)
+as_standard_xdf <- function(...)
 {
     as_xdf(..., composite=FALSE)
 }
@@ -44,7 +44,7 @@ as_standard_xdf <- function(.data, ...)
 
 #' @rdname as_xdf
 #' @export
-as_xdf <- function(...)
+as_xdf <- function(.data, ...)
 {
     UseMethod("as_xdf")
 }
