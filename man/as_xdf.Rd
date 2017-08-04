@@ -16,7 +16,7 @@ as_composite_xdf(...)
 
 as_standard_xdf(.data, ...)
 
-as_xdf(.data, ...)
+as_xdf(...)
 
 \method{as_xdf}{RxXdfData}(.data, file = NULL, composite = NULL,
   overwrite = TRUE, ...)

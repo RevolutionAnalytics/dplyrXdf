@@ -30,7 +30,7 @@
 #' @export
 as_composite_xdf <- function(...)
 {
-    as_xdf(.data, ..., composite=TRUE)
+    as_xdf(..., composite=TRUE)
 }
 
 
@@ -38,13 +38,13 @@ as_composite_xdf <- function(...)
 #' @export
 as_standard_xdf <- function(.data, ...)
 {
-    as_xdf(.data, ..., composite=FALSE)
+    as_xdf(..., composite=FALSE)
 }
 
 
 #' @rdname as_xdf
 #' @export
-as_xdf <- function(.data, ...)
+as_xdf <- function(...)
 {
     UseMethod("as_xdf")
 }
@@ -108,7 +108,7 @@ as_xdf.RxDataSource <- function(.data, file=NULL, composite=NULL, overwrite=TRUE
         stop("only composite Xdf files supported in HDFS")
 
     if(is.null(file))
-        file <- basename(tempfile())
+        file <- URLencode(deparse(substitute(.data)))
     file <- validateXdfFile(file, composite)
 
     out <- RxXdfData(file=file, fileSystem=rxGetFileSystem(.data), createCompositeSet=composite)
@@ -127,7 +127,7 @@ as_xdf.default <- function(.data, file=NULL, composite=NULL, overwrite=TRUE, ...
         composite <- hdfsDetected
 
     if(is.null(file))
-        file <- basename(tempfile())
+        file <- URLencode(deparse(substitute(.data)))
     file <- validateXdfFile(file, composite)
 
     .data <- as.data.frame(.data)

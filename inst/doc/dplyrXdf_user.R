@@ -1,18 +1,29 @@
 ## ---- echo = FALSE, message = FALSE--------------------------------------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 options(dplyr.print_min = 5L, dplyr.print_max = 5L)
-library(dplyrXdf)
 
 ## ------------------------------------------------------------------------
-library(dplyrXdf)  # also loads dplyr
+library(dplyrXdf) # also loads dplyr
 library(nycflights13)
 
-# write the data as an xdf file
-flightsXdf <- rxDataStep(flights, "flights.xdf", overwrite=TRUE)
+flightsXdf <- as_xdf(flights)
+tbl_vars(flightsXdf)
 
 ## ------------------------------------------------------------------------
-flightsTbl <- tbl(flightsXdf)
-flightsTbl
+# create a RevoScaleR text data source pointing to a csv file
+write.csv(flights, "flights.csv", row.names=FALSE)
+flightsCsv <- RxTextData("flights.csv")
+
+flightsXdf2 <- as_xdf(flights, file="flights2.xdf")
+tbl_vars(flightsXdf2)
+
+## ---- echo=FALSE, message=FALSE, results="hide"--------------------------
+file.remove("flights.csv")
+delete_xdf(flightsXdf2)
+
+## ---- eval=FALSE---------------------------------------------------------
+#  txt <- RxTextData("path/to/file.txt")
+#  txtTbl <- as(txt, "tbl_xdf")
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  # pipeline 1
@@ -29,20 +40,20 @@ flightsTbl
 #      group_by(dest) %>%
 #      summarise(delay=mean(delay))
 
-## ---- eval=FALSE---------------------------------------------------------
-#  # pipeline 1 -- use .outFile to save the data
-#  output1 <- flightsXdf %>%
-#      mutate(delay=(arr_delay + dep_delay)/2, .outFile="output1.xdf")
-#  
-#  # use the output from pipeline 1
-#  output2 <- output1 %>%
-#      group_by(carrier) %>%
-#      summarise(delay=mean(delay))
-#  
-#  # reuse the output from pipeline 1 -- this works as expected
-#  output3 <- output1 %>%
-#      group_by(dest) %>%
-#      summarise(delay=mean(delay))
+## ------------------------------------------------------------------------
+# pipeline 1 -- use .outFile to save the data
+output1 <- flightsXdf %>%
+    mutate(delay=(arr_delay + dep_delay)/2, .outFile="output1.xdf")
+
+# use the output from pipeline 1
+output2 <- output1 %>%
+    group_by(carrier) %>%
+    summarise(delay=mean(delay))
+
+# reuse the output from pipeline 1 -- this works as expected
+output3 <- output1 %>%
+    group_by(dest) %>%
+    summarise(delay=mean(delay))
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  # pipeline 1 -- use persist to save the data
@@ -58,6 +69,26 @@ flightsTbl
 #  output3 <- output1 %>%
 #      group_by(dest) %>%
 #      summarise(delay=mean(delay))
+
+## ------------------------------------------------------------------------
+outputXdf <- as_xdf(output3)
+
+output3
+
+# no longer a tbl_xdf
+outputXdf
+
+## ------------------------------------------------------------------------
+output3 <- move_xdf(output3, "d:/data")
+output3
+
+## ------------------------------------------------------------------------
+compositeOutput3 <- as_composite_xdf(output3)
+compositeOutput3
+
+## ---- echo=FALSE, message=FALSE, results="hide"--------------------------
+delete_xdf(output3)
+delete_xdf(compositeOutput3)
 
 ## ------------------------------------------------------------------------
 subset(flights, month <= 6 & day == 1, c(dep_time, dep_delay, carrier))
@@ -128,7 +159,7 @@ head(flightsScores)
 # fit a regression model by carrier, using rxLinMod
 flightsMods <- flightsXdf %>%
     group_by(carrier) %>%
-    doXdf(model=rxLinMod(arr_delay ~ dep_delay + hour, data=.))
+    do_xdf(model=rxLinMod(arr_delay ~ dep_delay + hour, data=.))
 
 flightsMods$model[[1]]
 

@@ -12,7 +12,7 @@
 #' These are utility functions for working with the files/directories where the data for an Xdf data source is stored. They make use of low-level OS functionality, so should be more efficient that running \code{rxDataStep}. They work with both standard and composite Xdf files, and with data stored both in the native filesystem and in HDFS.
 #'
 #' @return
-#' \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf} return an Xdf data source object pointing to the new file location. \code{delete_xdf} returns TRUE/FALSE depending on whether the delete operation succeeded.
+#' \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf} return an Xdf data source object pointing to the new file location. \code{delete_xdf} returns TRUE if the delete operation succeeded, FALSE otherwise.
 #'
 #' @seealso
 #' \code{\link{file.copy}}, \code{\link{file.rename}}, \code{\link{unlink}},

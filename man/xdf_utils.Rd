@@ -25,7 +25,7 @@ delete_xdf(xdf)
 \item{xdf}{For \code{delete_xdf}, an Xdf data source object.}
 }
 \value{
-\code{copy_xdf}, \code{move_xdf} and \code{rename_xdf} return an Xdf data source object pointing to the new file location. \code{delete_xdf} returns TRUE/FALSE depending on whether the delete operation succeeded.
+\code{copy_xdf}, \code{move_xdf} and \code{rename_xdf} return an Xdf data source object pointing to the new file location. \code{delete_xdf} returns TRUE if the delete operation succeeded, FALSE otherwise.
 }
 \description{
 Copy, move, rename and delete an Xdf file.

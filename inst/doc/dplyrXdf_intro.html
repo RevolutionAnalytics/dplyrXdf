@@ -8,6 +8,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <meta name="author" content="Hong Ooi" />
 
 <meta name="date" content="2016-11-27" />
@@ -54,14 +56,10 @@ code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Ann
 code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
 code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
 </style>
-<style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
 
 
-<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0A%7D%0Apre%20%7B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
 
 </head>
 
@@ -69,11 +67,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<div id="header">
-<h1 class="title">Introducing the dplyrXdf package</h1>
+
+<h1 class="title toc-ignore">Introducing the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
 <h4 class="date"><em>2016-11-27</em></h4>
-</div>
+
 
 
 <div id="introduction" class="section level2">
@@ -81,8 +79,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>The <a href="https://cran.r-project.org/web/packages/dplyr/index.html">dplyr package</a> is a popular toolkit for data transformation and manipulation. Since its release dplyr has become very popular in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks.</p>
 <p>Out of the box, dplyr supports data frames, data tables (from the data.table package), and a number of SQL databases including MySQL/MariaDB, SQLite, and PostgreSQL. However, a feature of dplyr is that it’s <em>extensible</em>: by writing a specific backend, you can make it work with many other kinds of data sources. For example the <a href="https://cran.r-project.org/package=RSQLServer">RSQLServer package</a> implements a dplyr backend for Microsoft SQL Server.</p>
 <p>The dplyrXdf package implements such a backend for <a href="https://www.microsoft.com/en-au/cloud-platform/r-server">Microsoft R Server</a> (MRS). A key feature of MRS is that it allows you to break R’s memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the <code>.xdf</code> extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.</p>
-<p>MRS includes a suite of data transformation and modelling functions in the RevoScaleR package that can handle xdf files. These functions are highly optimised and efficient, but their user interface can be complex. dplyrXdf allows you to work with xdf files within the framework supplied by dplyr, which reduces the learning curve and allows you to become productive more quickly.</p>
-<p><em>Note that dplyrXdf is a shell on top of the existing functions provided by Microsoft R Server, which is a commercial distribution of R. You must have MRS installed to make use of dplyrXdf. In particular, Microsoft R Open does not include support for xdf files.</em></p>
+<p>MRS includes a suite of data transformation and modelling functions in the RevoScaleR package that can handle Xdf files. These functions are highly optimised and efficient, but their user interface can be complex. dplyrXdf allows you to work with Xdf files within the framework supplied by dplyr, which reduces the learning curve and allows you to become productive more quickly.</p>
+<p><em>Note that dplyrXdf is a shell on top of the existing functions provided by Microsoft R Server, which is a commercial distribution of R. You must have MRS installed to make use of dplyrXdf. In particular, Microsoft R Open does not include support for Xdf files.</em></p>
 </div>
 <div id="a-sample-dplyrxdf-pipeline" class="section level2">
 <h2>A sample dplyrXdf pipeline</h2>
@@ -154,7 +152,7 @@ flights_rx5 &lt;-<span class="st"> </span>flights_rx5[<span class="kw">order</sp
 <ul>
 <li><p>The base RevoScaleR functions require you to specify the location for the output xdf file. It’s very common to end up with many different versions of your data scattered around the filesystem, causing reproducibility problems and making it hard to keep track of changes. By contrast, the dplyrXdf pipeline has no filenames. This is because dplyrXdf handles the task of file management, so that you can focus on the data itself.</p></li>
 <li><p>The <code>summarise</code> verb is much simpler to work with than the RevoScaleR <code>rxSummary</code> function. It doesn’t require scanning through a list of output objects to find the information you’re after, and it accepts grouping variables of any type (numeric, character or factor). (The alternative summarisation tool, <code>rxCube</code>, is simpler but has its own limitations: for example, it supports a much narrower range of summary statistics, and can only compute one type of statistic at a time.)</p></li>
-<li><p>The pipeline operator, along with the design of the verbs, makes it clear at a glance what is the sequence of operations being carried out. This is one of the major benefits of dplyr, and can now also be used with xdf files.</p></li>
+<li><p>The pipeline operator, along with the design of the verbs, makes it clear at a glance what is the sequence of operations being carried out. This is one of the major benefits of dplyr, and can now also be used with Xdf files.</p></li>
 </ul>
 <p>Here are a couple of additional features that may not be immediately apparent from the code above:</p>
 <ul>
@@ -196,29 +194,67 @@ flightsJoin &lt;-<span class="st"> </span><span class="kw">left_join</span>(
     <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;dest&quot;</span>=<span class="st">&quot;faa&quot;</span>))
 <span class="kw">head</span>(flightsJoin)
 <span class="co">#&gt;   year month day hour origin faa tailnum carrier</span>
-<span class="co">#&gt; 1 2013    10   1   19    JFK ABQ  N554JB      B6</span>
+<span class="co">#&gt; 1 2013    10   1   20    JFK ABQ  N554JB      B6</span>
 <span class="co">#&gt; 2 2013    10   2   20    JFK ABQ  N607JB      B6</span>
-<span class="co">#&gt; 3 2013    10   3   19    JFK ABQ  N591JB      B6</span>
+<span class="co">#&gt; 3 2013    10   3   20    JFK ABQ  N591JB      B6</span>
 <span class="co">#&gt; 4 2013    10   4   20    JFK ABQ  N662JB      B6</span>
 <span class="co">#&gt; 5 2013    10   5   19    JFK ABQ  N580JB      B6</span>
-<span class="co">#&gt; 6 2013    10   6   19    JFK ABQ  N507JB      B6</span>
+<span class="co">#&gt; 6 2013    10   6   20    JFK ABQ  N507JB      B6</span>
 <span class="co">#&gt;                                name      lat       lon  alt tz dst</span>
 <span class="co">#&gt; 1 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
 <span class="co">#&gt; 2 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
 <span class="co">#&gt; 3 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
 <span class="co">#&gt; 4 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
 <span class="co">#&gt; 5 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
-<span class="co">#&gt; 6 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span></code></pre></div>
+<span class="co">#&gt; 6 Albuquerque International Sunport 35.04022 -106.6092 5355 -7   A</span>
+<span class="co">#&gt;            tzone</span>
+<span class="co">#&gt; 1 America/Denver</span>
+<span class="co">#&gt; 2 America/Denver</span>
+<span class="co">#&gt; 3 America/Denver</span>
+<span class="co">#&gt; 4 America/Denver</span>
+<span class="co">#&gt; 5 America/Denver</span>
+<span class="co">#&gt; 6 America/Denver</span></code></pre></div>
+</div>
+<div id="utility-functions" class="section level3">
+<h3>Utility functions</h3>
+<p>In addition to the above verbs, dplyrXdf provides a number of functions to ease working with Xdf data sources, both in the native filesystem and in HDFS.</p>
+<div id="xdf-utilities" class="section level4">
+<h4>Xdf utilities</h4>
+<ul>
+<li><code>cbind</code> and <code>rbind</code> combine Xdf files</li>
+<li><code>as.data.frame</code> converts an Xdf file into a data frame</li>
+<li><code>[[</code>, <code>$</code> and <code>pull</code> extract a column into memory</li>
+<li><code>sample_frac</code> and <code>sample_n</code> do random sampling</li>
+<li><code>copy_xdf</code>, <code>move_xdf</code>, <code>rename_xdf</code> and <code>delete_xdf</code> copy, move, rename and delete an Xdf file</li>
+<li><code>is_xdf</code> and <code>is_composite_xdf</code> return whether an object is a (composite) Xdf</li>
+<li><code>as_xdf</code> imports a data source or data frame into an Xdf file, optionally composite; <code>as_composite_xdf</code> and <code>as_standard_xdf</code> are shortcuts for creating a composite and standard Xdf file respectively</li>
+</ul>
+</div>
+<div id="hdfs-utilities" class="section level4">
+<h4>HDFS utilities</h4>
+<ul>
+<li><code>copy_to</code> uploads a dataset to HDFS, saving it as Xdf</li>
+<li><code>collect</code> and <code>compute</code> do the opposite, downloading an Xdf file from HDFS</li>
+<li><code>hdfs_dir</code> lists files in a HDFS directory</li>
+<li><code>hdfs_dir_exists</code> and <code>hdfs_file_exists</code> test for directory/file existence</li>
+<li><code>hdfs_dir_create</code> and <code>hdfs_dir_remove</code> create and delete directories</li>
+<li><code>hdfs_file_copy</code>, <code>hdfs_file_move</code>, <code>hdfs_file_rename</code> and <code>hdfs_file_remove</code> copy, move, rename and delete files</li>
+<li><code>hdfs_expunge</code> empties the HDFS trash</li>
+<li><code>in_hdfs</code> returns whether a dataset is in HDFS</li>
+<li><code>local_exec</code> runs an expression in the local compute context</li>
+</ul>
+</div>
 </div>
 </div>
 <div id="non-xdf-and-non-local-data-sources" class="section level2">
 <h2>Non-xdf and non-local data sources</h2>
 <p>Despite the name, dplyrXdf supports all file data sources defined by RevoScaleR, not just xdf files. This includes delimited text (<code>RxTextData</code>), SAS datasets (<code>RxSasData</code>) and SPSS datasets (<code>RxSpssData</code>). If you pass one of these data sources to a dplyrXdf pipeline, it will import the data to an xdf file first before executing the rest of the pipeline.</p>
-<p>For the moment, dplyrXdf only supports files stored in the local filesystem. Support for datasets stored in HDFS (using the <code>RxHdfsFileSystem</code> class) may appear in a future version. For data stored in a SQL database, consider using the dplyr backend for that database, if available — such as the RSQLServer package mentioned at the start of this vignette.</p>
+<p>Most verbs will work transparently with datasets stored in both the native filesystem, and in HDFS (as when working with a Hadoop or Spark cluster. In general, the output of a verb will be created in the same filesystem as the input. To transfer data between the two filesystems, you can use <code>copy_to</code> to upload, and <code>collect</code> and <code>compute</code> to download.</p>
+<p>Similarly, all verbs will work transparently with both standard and <em>composite</em> Xdf files. A composite Xdf is actually a directory that contains multiple data and metadata files. Xdf files in the native filesystem can be either standard or composite, but those in HDFS must be composite to work properly.</p>
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
-<p>This article has been a quick executive-summary introduction to dplyrXdf. Like dplyr, dplyrXdf is a package under active development. If you have any suggestions on features to add (including bits of dplyr that have been left out) or bugs that need fixing, please contact me at <a href="hongooi@microsoft.com" class="uri">hongooi@microsoft.com</a>.</p>
+<p>This article has been a quick executive-summary introduction to dplyrXdf. If you have any suggestions on features to add (including bits of dplyr that have been left out) or bugs that need fixing, please contact me at <a href="hongooi@microsoft.com" class="uri">hongooi@microsoft.com</a>.</p>
 </div>
 
 

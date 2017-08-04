@@ -12,34 +12,54 @@ vignette: >
 ```{r, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 options(dplyr.print_min = 5L, dplyr.print_max = 5L)
-library(dplyrXdf)
 ```
 
 This vignette goes into more details on using dplyrXdf. Most of dplyrXdf works the same way as dplyr, so if you know how to use the latter, then you also (mostly) know how to use the former. However, there are some places in which the two packages are different. These will be described below.
 
 As with the introductory vignette, we'll use the nycflights13 flights data to demonstrate the use of dplyrXdf.
 
+
+## Importing data
+
+The easiest way to import data into an Xdf file is via the `as_xdf` function. This works with any RevoScaleR data source, as well as any object that can be converted into a data frame. For example, you can use this to import data from a SQL Server database table, a SAS or SPSS dataset, or a delimited text file. The syntax is very simple, as can be seen by importing the flights data:
+
 ```{r}
-library(dplyrXdf)  # also loads dplyr
+library(dplyrXdf) # also loads dplyr
 library(nycflights13)
 
-# write the data as an xdf file
-flightsXdf <- rxDataStep(flights, "flights.xdf", overwrite=TRUE)
+flightsXdf <- as_xdf(flights)
+tbl_vars(flightsXdf)
+```
+
+This will create an Xdf file whose name is taken from the input data, in this case "flights.xdf".
+
+To demonstrate importing from something other than a data frame, let's write the flights data to a csv file, and then import it. As before, the name of the output Xdf file will be taken from the name of the input, with the extension changed to ".xdf". To avoid overwriting the Xdf we've just created, we should therefore call our csv file something other than "flights". However, `as_xdf` has a `file` argument to specify the name of the output Xdf, so let's use that instead:
+
+```{r}
+# create a RevoScaleR text data source pointing to a csv file
+write.csv(flights, "flights.csv", row.names=FALSE)
+flightsCsv <- RxTextData("flights.csv")
+
+flightsXdf2 <- as_xdf(flights, file="flights2.xdf")
+tbl_vars(flightsXdf2)
+```
+
+```{r, echo=FALSE, message=FALSE, results="hide"}
+file.remove("flights.csv")
+delete_xdf(flightsXdf2)
 ```
 
 
 ## Tbls and file management
 
-To facilitate the task of file management, dplyrXdf defines a new `tbl_xdf` class that extends the `RxXdfData` class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an `tbl_xdf` object is just a normal xdf data source; thus, existing code dealing with xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a `tbl_xdf`, as opposed to a normal xdf file, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.
+To facilitate the task of file management, dplyrXdf defines a new `tbl_xdf` class that extends the `RxXdfData` class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an `tbl_xdf` object is just a normal Xdf data source; thus, existing code dealing with Xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a `tbl_xdf`, as opposed to a normal Xdf file, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.
 
-To create a `tbl_xdf` yourself, you can call the `tbl` function on an xdf data source:
+In general, you never need to create a `tbl_xdf` manually. An exception is if you want to create a `tbl_xdf` from a non-Xdf data source. In that case you can do the following, which will transparently import the data into an Xdf file:
 
-```{r}
-flightsTbl <- tbl(flightsXdf)
-flightsTbl
+```{r, eval=FALSE}
+txt <- RxTextData("path/to/file.txt")
+txtTbl <- as(txt, "tbl_xdf")
 ```
-
-However this should rarely (if ever) be necessary, as dplyrXdf will automatically handle such matters.
 
 A side-effect of dplyrXdf managing files for you is that you should be careful when passing the result from an initial pipeline into subsequent pipelines. Consider the following example:
 
@@ -59,11 +79,11 @@ output3 <- output1 %>%
     summarise(delay=mean(delay))
 ```
 
-The bug in this code is that the second pipeline will overwrite or delete its input, so the third pipeline will fail. This is consistent with dplyrXdf's philosophy of only saving the most recent output of a pipeline, where a pipeline is defined as _all operations starting from a raw xdf file._ However, in this case it isn't what we want.
+The bug in this code is that the second pipeline will overwrite or delete its input, so the third pipeline will fail. This is consistent with dplyrXdf's philosophy of only saving the most recent output of a pipeline, where a pipeline is defined as _all operations starting from a raw Xdf file._ However, in this case it isn't what we want.
 
 Similarly, dplyrXdf creates its output files in a temporary directory, which will be deleted when you quit R. This saves you having to manually delete files that are no longer in use, but it does mean that you must copy the results of your analyses to a permanent location if you want to keep it around.
 
-dplyrXdf gives you two ways to deal with these issues.
+dplyrXdf gives you a number of ways to deal with these issues.
 
 ### Specifying the output format
 
@@ -71,11 +91,11 @@ First, all dplyrXdf verbs support a special argument `.outFile`, which controls 
 
 - If you specify `.outFile = NULL`, the data will be returned in memory as a data frame.
 
-- If `.outFile` is a character string giving a file name, the data will be saved to an xdf file at that location, and a persistent xdf data source will be returned.
+- If `.outFile` is a character string giving a file name, the data will be saved to an Xdf file at that location, and a persistent Xdf data source will be returned.
 
 To show how this works, we can modify pipeline 1 above to save its output to a persistent location. This resets the status of the pipeline, so that subsequent operations will know not to modify the data.
 
-```{r, eval=FALSE}
+```{r}
 # pipeline 1 -- use .outFile to save the data
 output1 <- flightsXdf %>%
     mutate(delay=(arr_delay + dep_delay)/2, .outFile="output1.xdf")
@@ -93,7 +113,7 @@ output3 <- output1 %>%
 
 ### The `persist` verb
 
-The second way of creating a persistent xdf file is with the `persist` verb. This is a simple function that moves or copies its input to the specified location. Like the `.outFile` argument described above, it will also reset the status of the pipeline.
+The second way of creating a persistent Xdf file is with the `persist` verb. This is a simple function that moves or copies its input to the specified location. Like the `.outFile` argument described above, it will also reset the status of the pipeline.
 
 ```{r, eval=FALSE}
 # pipeline 1 -- use persist to save the data
@@ -111,12 +131,59 @@ output3 <- output1 %>%
     summarise(delay=mean(delay))
 ```
 
-In general, setting `.outFile` to save an xdf file is preferred to using the `persist` verb. You would use `persist` if you have already run a pipeline, and want to save its output after the fact.
+In general, setting `.outFile` to save an Xdf file is preferred to using the `persist` verb. You would use `persist` if you have already run a pipeline, and want to save its output after the fact.
+
+### Using `as_xdf`
+
+Another way to create a Xdf file from a `tbl_xdf` is via `as_xdf`, which was described previously. `as_xdf` always creates a raw Xdf data source, and if called from a `tbl_xdf`, has the effect of removing the tbl information. This does not modify the file at all, unlike `persist`. The advantage of this is that it's fast (since the data is not touched); the disadvantage is that the file remains in the dplyrXdf temporary directory. Because of this, you still have to make a new copy if you want the data to remain after you quit your R session.
+
+```{r}
+outputXdf <- as_xdf(output3)
+
+output3
+
+# no longer a tbl_xdf
+outputXdf
+```
+
+### Copying, moving and deleting Xdf files
+
+A number of functions are supplied for manipulating Xdf files _as files_:
+
+* `copy_xdf` and `move_xdf` copy and move an Xdf file, optionally renaming it as well.
+* `rename_xdf` does a strict rename, ie without changing the file's location.
+* `delete_xdf` deletes the Xdf file.
+
+All of these except `delete_xdf` return an Xdf data source object pointing to the new file's name/location. For example, we can use `move_xdf` to move the output of `as_xdf`, from above, to a more permanent location.
+
+```{r}
+output3 <- move_xdf(output3, "d:/data")
+output3
+```
+
+
+### Switching between standard and composite Xdf
+
+RevoScaleR actually supports two kinds of Xdf files: standard (what we've been using so far) and _composite_. A composite Xdf is actually a directory that contains multiple data and metadata files; the RevoScaleR functions know how to treat this as a single data source. Xdf files in the native filesystem can be either standard or composite, but those in HDFS must be composite to work properly.
+
+By default, `as_xdf` will create a composite Xdf if the input dataset is stored in HDFS, and standard otherwise; there are also `as_standard_xdf` and `as_composite_xdf` functions if you want to specify the format of the output directly.
+
+If required, you can use this feature to switch an Xdf file (including a `tbl_xdf`) between standard and composite. Calling `as_standard_xdf` on a composite Xdf file will convert it to standard format, and vice-versa for calling `as_composite_xdf` on a standard Xdf.
+
+```{r}
+compositeOutput3 <- as_composite_xdf(output3)
+compositeOutput3
+```
+
+```{r, echo=FALSE, message=FALSE, results="hide"}
+delete_xdf(output3)
+delete_xdf(compositeOutput3)
+```
 
 
 ## The `subset` verb
 
-In dplyr, subsetting data is handled by two verbs: `filter` for subsetting by rows, and `select` for subsetting by columns. This is fine for data frames, where everything runs in memory, and for SQL databases, where the hard work is done by the database. For xdf files, however, this is suboptimal, as each verb translates into a separate I/O step where the data is read from disk, subsetted, then written out again. This can waste a lot of time with large datasets.
+In dplyr, subsetting data is handled by two verbs: `filter` for subsetting by rows, and `select` for subsetting by columns. This is fine for data frames, where everything runs in memory, and for SQL databases, where the hard work is done by the database. For Xdf files, however, this is suboptimal, as each verb translates into a separate I/O step where the data is read from disk, subsetted, then written out again. This can waste a lot of time with large datasets.
 
 As it turns out, base R has a `subset` generic which (as the name says) performs subsetting on both rows and columns. You've probably used it with data frames:
 
@@ -124,7 +191,7 @@ As it turns out, base R has a `subset` generic which (as the name says) performs
 subset(flights, month <= 6 & day == 1, c(dep_time, dep_delay, carrier))
 ```
 
-dplyrXdf implements a method for `subset` that works for xdf files. The code is exactly the same as for a data frame, except that it creates another xdf file. This produces the same result as a `filter` followed by a `select`, but requires only half the amount of I/O.
+dplyrXdf implements a method for `subset` that works for Xdf files. The code is exactly the same as for a data frame, except that it creates another Xdf file. This produces the same result as a `filter` followed by a `select`, but requires only half the amount of I/O.
 
 ```{r}
 flightsXdfSub <- subset(flightsXdf, month <= 6 & day == 1, c(dep_time, dep_delay, carrier))
@@ -135,7 +202,7 @@ head(flightsXdfSub)
 
 ## The `.rxArgs` parameter
 
-The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don't need to touch these, it can sometimes be useful to do so. For example, when using `mutate` or `transmute`, you could specify [more complicated transformations via a `transformFunc`](https://msdn.microsoft.com/en-us/microsoft-r/scaler/rxtransform). Similarly, rather than chaining together a `mutate` and a `summarise` --- which would involve creating an intermediate file --- you could incorporate the variable transformation into the `summarise` itself. More low-level uses of such arguments include setting the block size for an xdf file, changing the compression level, limiting the number of rows, and so on.
+The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don't need to touch these, it can sometimes be useful to do so. For example, when using `mutate` or `transmute`, you could specify [more complicated transformations via a `transformFunc`](https://msdn.microsoft.com/en-us/microsoft-r/scaler/rxtransform). Similarly, rather than chaining together a `mutate` and a `summarise` --- which would involve creating an intermediate file --- you could incorporate the variable transformation into the `summarise` itself. More low-level uses of such arguments include setting the block size for an Xdf file, changing the compression level, limiting the number of rows, and so on.
 
 Most of the dplyrXdf verbs accept a `.rxArgs` argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the RevoScaleR function that is called, which will in turn depend on the verb. Here is a list of the verbs and the underlying RevoScaleR function that they call:
 
@@ -144,7 +211,7 @@ Most of the dplyrXdf verbs accept a `.rxArgs` argument as a way of transmitting 
 * `summarise`: depending on the method chosen, `rxCube` or `rxSummary`
 * `arrange`: `rxSort`
 * `distinct`: `rxDataStep`
-* `factorise`: depending on the data source, `rxFactors` (for an xdf) or `rxImport` (for a non-xdf file source)
+* `factorise`: depending on the data source, `rxFactors` (for an Xdf) or `rxImport` (for a non-Xdf file source)
 * `doXdf`: `rxDataStep`
 * Two-table verbs (`left_join`, `right_join` et al): `rxMerge`
 
@@ -205,11 +272,11 @@ The dplyrXdf version of `summarise` can choose from a number of methods for comp
 2. Use `rxSummary`
 3. Use `rxSummary` but create the groups by concatenating the grouping variables together; this is to work around a limitation in the RevoScaleR functions on the maximum number of cells in a cube
 4. Split the dataset into multiple data frames, call `dplyr::summarise` on each
-5. Split the dataset into multiple xdf files, call `rxSummary` on each
+5. Split the dataset into multiple Xdf files, call `rxSummary` on each
 
 Only methods 1, 2 and 3 support the use of `.rxArgs`.
 
-In addition, dplyrXdf `summarise` doesn't support expressions as summary statistics. For example, something like `summarise(datasrc, weightedMean=sum(x*wt)/sum(wt))` works when `datasrc` is a data frame, but not when it is an xdf. To get the desired result, one workaround would be to use three verbs in a pipeline:
+In addition, dplyrXdf `summarise` doesn't support expressions as summary statistics. For example, something like `summarise(datasrc, weightedMean=sum(x*wt)/sum(wt))` works when `datasrc` is a data frame, but not when it is an Xdf. To get the desired result, one workaround would be to use three verbs in a pipeline:
 
 ```{r, eval=FALSE}
 datasrc %>%
@@ -249,17 +316,17 @@ There are a number of ways to specify the variables to convert, in addition to n
 By default, if no variables are specified in the `factorise` call, then all character variables will be converted to factors. As with `select`, renaming variables as part of the factor conversion is not supported.
 
 
-## Executing code with `do` and `doXdf`
+## Executing code with `do` and `do_xdf`
 
-The `do` verb is an exception to the rule that `dplyrXdf` verbs write their output as xdf files. This is because `do` executes arbitrary R code, and can return arbitrary R objects; while a data frame is capable of storing these objects, an xdf file is limited to character and numeric vectors only.
+The `do` verb is an exception to the rule that `dplyrXdf` verbs write their output as Xdf files. This is because `do` executes arbitrary R code, and can return arbitrary R objects; while a data frame is capable of storing these objects, an Xdf file is limited to character and numeric vectors only.
 
-The `doXdf` verb is similar to `do`, but where `do` splits its input into one data frame per group, `doXdf` splits it into one xdf file per group. This allows `do`-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to `doXdf` must obviously know how to handle xdfs.
+The `doXdf` verb is similar to `do`, but where `do` splits its input into one data frame per group, `do_xdf` splits it into one Xdf file per group. This allows `do`-like functionality with grouped data, where each group can be arbitrarily large. The syntax for the two functions is essentially the same, although the code passed to `do_xdf` must obviously know how to handle Xdfs.
 
 ```{r}
 # fit a regression model by carrier, using rxLinMod
 flightsMods <- flightsXdf %>%
     group_by(carrier) %>%
-    doXdf(model=rxLinMod(arr_delay ~ dep_delay + hour, data=.))
+    do_xdf(model=rxLinMod(arr_delay ~ dep_delay + hour, data=.))
 
 flightsMods$model[[1]]
 ```
@@ -267,27 +334,27 @@ flightsMods$model[[1]]
 
 ## Setting the tbl directory
 
-By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large xdf files. You can view the location of the current xdf tbl directory with `getdplyrxdf_dir`:
+By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large Xdf files. You can view the location of the current Xdf tbl directory with `get_dplyrxdf_dir`:
 
 ```{r}
-getdplyrxdf_dir()
+get_dplyrxdf_dir()
 ```
 
-Similarly, you can change the location of the xdf tbl directory with the `setdplyrxdf_dir` function:
+Similarly, you can change the location of the Xdf tbl directory with the `set_dplyrxdf_dir` function:
 
 ```{r, eval=FALSE}
 # set the tbl directory to a network drive (on Windows)
-setdplyrxdf_dir("n:/Rtemp")
+set_dplyrxdf_dir("n:/Rtemp")
 ```
 
-For best results, you should avoid setting the xdf tbl directory to a remote location/network drive unless you have a fast network connection.
+For best results, you should avoid setting the Xdf tbl directory to a remote location/network drive unless you have a fast network connection.
 
 
 ## Data frame methods
 
-dplyrXdf includes a number of convenience functions for exporting data from xdf to data frames:
+dplyrXdf includes a number of convenience functions for exporting data from Xdf to data frames:
 
-- An `as.data.frame` method for xdf files (and other RevoScaleR data sources).
+- An `as.data.frame` method for Xdf files (and other RevoScaleR data sources).
 - Methods for `$` and `[[` that will extract a given column as a vector in memory.
 
 These are simple wrappers around RevoScaleR's `rxDataStep` function that turn off the default size check. Make sure you have enough memory to hold the data before using them!

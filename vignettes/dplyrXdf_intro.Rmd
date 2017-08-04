@@ -12,7 +12,6 @@ vignette: >
 ```{r, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 options(dplyr.print_min = 5L, dplyr.print_max = 5L)
-library(dplyrXdf)
 ```
 ## Introduction
 
@@ -22,9 +21,9 @@ Out of the box, dplyr supports data frames, data tables (from the data.table pac
 
 The dplyrXdf package implements such a backend for [Microsoft R Server](https://www.microsoft.com/en-au/cloud-platform/r-server) (MRS). A key feature of MRS is that it allows you to break R's memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the `.xdf` extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.
 
-MRS includes a suite of data transformation and modelling functions in the RevoScaleR package that can handle xdf files. These functions are highly optimised and efficient, but their user interface can be complex. dplyrXdf allows you to work with xdf files within the framework supplied by dplyr, which reduces the learning curve and allows you to become productive more quickly.
+MRS includes a suite of data transformation and modelling functions in the RevoScaleR package that can handle Xdf files. These functions are highly optimised and efficient, but their user interface can be complex. dplyrXdf allows you to work with Xdf files within the framework supplied by dplyr, which reduces the learning curve and allows you to become productive more quickly.
 
-_Note that dplyrXdf is a shell on top of the existing functions provided by Microsoft R Server, which is a commercial distribution of R. You must have MRS installed to make use of dplyrXdf. In particular, Microsoft R Open does not include support for xdf files._
+_Note that dplyrXdf is a shell on top of the existing functions provided by Microsoft R Server, which is a commercial distribution of R. You must have MRS installed to make use of dplyrXdf. In particular, Microsoft R Open does not include support for Xdf files._
 
 ## A sample dplyrXdf pipeline
 
@@ -97,7 +96,7 @@ Even with this relatively straightforward example, dplyrXdf hides the complexity
 
 * The `summarise` verb is much simpler to work with than the RevoScaleR `rxSummary` function. It doesn't require scanning through a list of output objects to find the information you're after, and it accepts grouping variables of any type (numeric, character or factor). (The alternative summarisation tool, `rxCube`, is simpler but has its own limitations: for example, it supports a much narrower range of summary statistics, and can only compute one type of statistic at a time.)
 
-* The pipeline operator, along with the design of the verbs, makes it clear at a glance what is the sequence of operations being carried out. This is one of the major benefits of dplyr, and can now also be used with xdf files.
+* The pipeline operator, along with the design of the verbs, makes it clear at a glance what is the sequence of operations being carried out. This is one of the major benefits of dplyr, and can now also be used with Xdf files.
 
 Here are a couple of additional features that may not be immediately apparent from the code above:
 
@@ -148,19 +147,38 @@ head(flightsJoin)
 
 ### Utility functions
 
-In addition, dplyrXdf provides methods for the following utilities:
+In addition to the above verbs, dplyrXdf provides a number of functions to ease working with Xdf data sources, both in the native filesystem and in HDFS.
 
-* `cbind` and `rbind` to combine Xdf files
-* `as.data.frame`, `collect` and `compute` to convert an Xdf file into a data frame
-* `[[`, `$` and `pull` to extract a column into memory
-* `sample_frac` and `sample_n` to do random sampling
+#### Xdf utilities
+
+* `cbind` and `rbind` combine Xdf files
+* `as.data.frame` converts an Xdf file into a data frame
+* `[[`, `$` and `pull` extract a column into memory
+* `sample_frac` and `sample_n` do random sampling
+* `copy_xdf`, `move_xdf`, `rename_xdf` and `delete_xdf` copy, move, rename and delete an Xdf file
+* `is_xdf` and `is_composite_xdf` return whether an object is a (composite) Xdf
+* `as_xdf` imports a data source or data frame into an Xdf file, optionally composite; `as_composite_xdf` and `as_standard_xdf` are shortcuts for creating a composite and standard Xdf file respectively
+
+#### HDFS utilities
+
+* `copy_to` uploads a dataset to HDFS, saving it as Xdf
+* `collect` and `compute` do the opposite, downloading an Xdf file from HDFS
+* `hdfs_dir` lists files in a HDFS directory
+* `hdfs_dir_exists` and `hdfs_file_exists` test for directory/file existence
+* `hdfs_dir_create` and `hdfs_dir_remove` create and delete directories
+* `hdfs_file_copy`, `hdfs_file_move`, `hdfs_file_rename` and `hdfs_file_remove` copy, move, rename and delete files
+* `hdfs_expunge` empties the HDFS trash
+* `in_hdfs` returns whether a dataset is in HDFS
+* `local_exec` runs an expression in the local compute context
 
 
 ## Non-xdf and non-local data sources
 
 Despite the name, dplyrXdf supports all file data sources defined by RevoScaleR, not just xdf files. This includes delimited text (`RxTextData`), SAS datasets (`RxSasData`) and SPSS datasets (`RxSpssData`). If you pass one of these data sources to a dplyrXdf pipeline, it will import the data to an xdf file first before executing the rest of the pipeline.
 
-For the moment, dplyrXdf only supports files stored in the local filesystem. Support for datasets stored in HDFS (using the `RxHdfsFileSystem` class) may appear in a future version. For data stored in a SQL database, consider using the dplyr backend for that database, if available --- such as the RSQLServer package mentioned at the start of this vignette.
+Most verbs will work transparently with datasets stored in both the native filesystem, and in HDFS (as when working with a Hadoop or Spark cluster. In general, the output of a verb will be created in the same filesystem as the input. To transfer data between the two filesystems, you can use `copy_to` to upload, and `collect` and `compute` to download.
+
+Similarly, all verbs will work transparently with both standard and _composite_ Xdf files. A composite Xdf is actually a directory that contains multiple data and metadata files. Xdf files in the native filesystem can be either standard or composite, but those in HDFS must be composite to work properly.
 
 
 ## Conclusion
