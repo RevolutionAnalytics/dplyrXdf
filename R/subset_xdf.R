@@ -27,7 +27,7 @@ subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile=tbl_xdf(
     
     vars <- do.call(dplyr::select_vars, c(list(names(.data), select)),
                     envir=parent.frame()) # cannot use rlang::invoke
-    vars <- c(grps, vars)
+    vars <- unique(c(grps, vars))
     if(length(vars) == 0)
         stop("No variables selected", call.=FALSE)
 
