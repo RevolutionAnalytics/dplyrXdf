@@ -1,0 +1,185 @@
+---
+title: "Working with HDFS"
+author: "Hong Ooi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Introducing dplyrXdf}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+options(dplyr.print_min = 5L, dplyr.print_max = 5L)
+```
+Microsoft R Server includes the ability to work with Hadoop and Spark clusters. As part of this, it also lets you work with datasets, in particular Xdf files, that are stored in HDFS.
+
+As of version 0.10.0, dplyrXdf also supports Xdf files in HDFS. Most of the basic dplyr verbs will work exactly the same as with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark.
+
+
+## Basics: Hadoop, Spark and HDFS
+
+If you're used to dplyr and how it handles databases, Microsoft R Server and dplyrXdf work a little differently. What dplyr calls a "src" (a remote data source) is handled by two related concepts in MRS: a _compute context_ and a _filesystem_. The compute context determines where computations take place: on a local machine, in a database like SQL Server, or in a Hadoop or Spark cluster. The _filesystem_ is where the data files are stored. Note that not all data sources have a filesystem: eg a SQL Server table is part of a database, not a filesystem as such.
+
+In general, there are only two filesystems you should have to deal with: the native filesystem, meaning the hard disk of the machine where your R session is running, and HDFS. To MRS and dplyrXdf, an Xdf file is much the same regardless of which filesystem it's in (there are some limitations for HDFS files, but they are the exception, not the rule). You can use the same verbs and pipelines without having to worry about filesystem details.
+
+The compute context is important because it is how you benefit from the parallelism provided by Hadoop and Spark. If you are in the `RxHadoopMR` or `RxSpark` compute context, _and_ your data is in HDFS, then the RevoScaleR functions will execute in parallel on the cluster worker nodes. If you are in a local compute context, and your data is in HDFS, then the data is streamed to the edge node for processing. Conversely, if you are in `RxHadoopMR` or `RxSpark` and your data is _not_ in HDFS, then the RevoScaleR functions will throw an error. However, the compute context doesn't change the way you _write_ your code -- only how it's executed.
+
+For more information about working with HDFS, Hadoop and Spark, see the [documentation on MSDN](https://docs.microsoft.com/en-us/r-server/r/how-to-revoscaler-spark), or the Microsoft Learn Analytics [course materials on Spark](https://github.com/Azure/LearnAnalytics-mrs-spark).
+
+
+## Connecting to a cluster
+
+If you are logged into the edge node of a Hadoop or Spark cluster with Microsoft R Server installed, you don't have to do anything more to access HDFS using the base RevoScaleR functions. To use dplyrXdf, though, you should also install the dplyr package on the edge and worker nodes (you don't have to install dplyrXdf itself on the worker nodes).
+
+If you are on a standalone machine, you can login to the cluster remotely and access HDFS that way. You will obviously need dplyr and dplyrXdf installed on your remote machine in this case, but you don't need them on the edge node. The following is some sample code to connect to a HDInsight Spark cluster from a (Windows) remote client. This logs into the cluster, starts the Spark application and sets the R compute context to `RxSpark`. The same code should work on most supported flavours of Spark and Hadoop (Cloudera, Hortonworks, etc).
+
+```{r, eval=FALSE}
+user <- "username"
+host <- "edge-node-name"
+shareDir <- paste("/var/RevoShare", user, sep="/")
+hdfsShareDir <- paste("/user/RevoShare", user, sep="/")
+rxSparkConnect(
+    hdfsShareDir=hdfsShareDir,
+    shareDir=shareDir,
+    sshUsername=user,
+    sshHostname=host,
+    sshClientDir="C:\\ssh\\putty",
+    sshSwitches='-i "privatekey.ppk"')
+```
+
+Your dplyrXdf code should not require changing, regardles of whether your R session is taking place on the edge node or remotely.
+
+
+### Upload and download
+
+There are a number of ways to get your data into and out of HDFS. Note that there are several data formats in use in Hadoop and Spark environments; dplyrXdf focuses mainly on Xdf files.
+
+To copy a dataset from the native filesystem into HDFS, use `copy_to`. This is the standard dplyr verb for copying data into a remote src. In this case, the src is a filesystem, which RevoScaleR represents via a `RxHdfsFileSystem` object:
+
+```{r}
+library(dplyrXdf)
+library(nycflights13)
+
+hd <- RxHdfsFileSystem()
+
+# copy a data frame into an Xdf file in HDFS
+flightsHd <- copy_to(hd, flights)
+
+flightsHd
+
+as_data_frame(flightsHd)
+```
+
+This will copy the flights table into HDFS, returning an Xdf data source object pointing to the file. If the path isn't specified, the data is saved as an Xdf file in your HDFS home directory, normally `/user/<username>`. In this example we connected to the Spark cluster from a remote client, but `copy_to` works the same if you're on the cluster edge node.
+
+You can also use `copy_to_hdfs`, which is a shortcut that saves having to create an explicit filesystem object:
+
+```{r, eval=FALSE}
+# same as above
+flightsHd <- copy_to_hdfs(flights, path=".")
+```
+
+To download an Xdf file from HDFS to the native filesystem, use `collect` and `compute`. Again, these are the standard dplyr verbs for copying data from a remote src. For dplyrXdf, the difference between `collect` and `compute` is that the former by default will return a data frame, whereas the latter will save the copied data in an Xdf file and return a `tbl_xdf` object pointing to that file.
+
+```{r}
+flightsLocal <- compute(flightsHd)
+
+flightsLocal
+
+as_data_frame(flightsLocal)
+```
+
+`copy_to`, `collect` and `compute` are for copying _datasets_ (including data frames and Xdf files) to and from HDFS. To transfer arbitrary files, dplyrXdf also provides the `hdfs_upload` and `hdfs_download` functions. If you've used the base R function `download.file` or a command-line file transfer utility like `ftp` or `pscp`, the syntax should be familiar: `hdfs_download(src, dest)` downloads the file at `src` to the location `dest`, while `hdfs_upload(src, dest)` uploads `src` to `dest`.
+
+```{r}
+# create a csv file and upload it
+write.csv(flights, "flights.csv")
+hdfs_upload("flights.csv", "/tmp")
+```
+
+If you uploaded a non-Xdf data source (like a csv file), you can then import it into Xdf format with `as_xdf`:
+
+```{r}
+flightsCsv <- RxTextData("/tmp/flights.csv", fileSystem=RxHdfsFileSystem())
+flightsHd2 <- as_xdf(flightsCsv, file="flights2")
+
+as_data_frame(flightsHd2)
+```
+
+### Note on composite datasets
+
+Note that there are two kinds of Xdf files: standard and _composite_. A composite Xdf file is actually a directory containing multiple data and metadata files. The RevoScaleR functions can treat a composite Xdf as a single dataset, and so can dplyrXdf. However, Xdf files in HDFS must be composite in order to work properly; by default, `copy_to` will convert an existing Xdf file into composite, if it's not already in that format.
+
+
+## Working with files and directories
+
+dplyrXdf provides the following functions to let you manipulate files and directories in HDFS. By and large they wrap similar functions provided by the RevoScaleR package, which in turn call various Hadoop filesystem commands.
+
+- `hdfs_file_copy(src, dest)` copies the file or directory given by `src` to the location `dest`. It is vectorised in both `src` and dest`, meaning `src1` will be copied to `dest1`, `src2` to `dest2`, and so on. It is analogous to base R's `file.copy` for the native filesystem.
+- `hdfs_file_move(src, dest)` is similar, but moves files/directories. It is analogous to base R's `file.rename`.
+- `hdfs_file_remove` deletes the path. Its counterpart in base R is `file.remove`.
+- `hdfs_dir_create` and `hdfs_dir_remove` create and delete directories. They are analogous to `dir.create` and `unlink(recursive=TRUE)`.
+- `hdfs_file_exists` and `hdfs_dir_exists` test for the existence of a file or directory, like base R's `file.exists` and `dir.exists`.
+- `hdfs_dir` lists files in a HDFS directory, returning a vector of file names. It has a number of options for recursively listing subdirectories, returning subdirectories only (omitting files), 
+
+```{r}
+# create a new directory
+hdfs_dir_create("/tmp/mydata")
+
+# check that it exists
+hdfs_dir_exists("/tmp/mydata")
+
+# copy files into the new directory
+hdfs_file_copy("flights", "/tmp/mydata")
+
+# create a new data source
+flightsHd3 <- RxXdfData("/tmp/mydata/flights", fileSystem=RxHdfsFileSystem())
+
+# read the data
+head(flightsHd3)
+```
+
+
+## Miscellaneous functions
+
+The `in_hdfs` function returns whether a given data source is stored in HDFS.
+
+```{r}
+in_hdfs(flightsHd)
+
+# also works with non-Revo data sources, like data frames
+in_hdfs(iris)
+
+in_hdfs(flights)
+```
+
+The `local_exec` function runs an expression in the local compute context. This can be useful if you need to work with local datasets while connected to a remote cluster. By default, RevoScaleR functions will throw an error if you provide a local data source as an input when you are in the Hadoop or Spark compute context. `local_exec` temporarily changes to the local compute context, runs your code, and then changes back to the original context.
+
+```{r, error=TRUE}
+# try to access a local Xdf file
+names(flightsLocal)
+
+local_exec(names(flightsLocal))
+```
+
+
+## Unsupported dplyr verbs
+
+Most of the dplyr verbs supported by dplyrXdf will work for datasets in HDFS. The main exceptions are:
+
+- `arrange`
+- `distinct`
+- `cbind` and `rbind`
+- `sample_n` and `sample_frac`
+- `anti_join` and `semi_join` (because they rely on `distinct`)
+- `mutate` and `transmute` only work for ungrouped data. Consider whether you really need to group before transforming; many transformations do not require grouping information. If your data fits into memory, you can also use `do` or `do_xdf`.
+- `summarise` on HDFS data will send the output to the edge node/remote client, before writing it back to the cluster. This is because of the way in which `rxCube` and `rxSummary` work, by creating an in-memory data structure.
+
+
+```{r, echo=FALSE, message=FALSE, results="hide"}
+hdfs_dir_remove(c("flights", "/tmp/mydata"))
+```
+
+

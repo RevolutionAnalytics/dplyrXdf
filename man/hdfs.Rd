@@ -66,7 +66,7 @@ in_hdfs(obj = NULL)
 
 The other \code{hdfs_*} functions return TRUE or FALSE depending on whether the operation succeeded.
 
-\code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}. If no argument is specified, returns whether the default filesystem is HDFS.
+\code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}. If no argument is specified, it returns whether the default filesystem is HDFS.
 }
 \description{
 Functions for working with files in HDFS: directory listing; file copy, move and delete; directory create and delete; test for file/directory existence; check if in HDFS; expunge Trash.

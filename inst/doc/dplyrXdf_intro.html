@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-11-27" />
+<meta name="date" content="2017-08-06" />
 
 <title>Introducing the dplyrXdf package</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introducing the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-11-27</em></h4>
+<h4 class="date"><em>2017-08-06</em></h4>
 
 
 
@@ -227,7 +227,7 @@ flightsJoin &lt;-<span class="st"> </span><span class="kw">left_join</span>(
 <li><code>sample_frac</code> and <code>sample_n</code> do random sampling</li>
 <li><code>copy_xdf</code>, <code>move_xdf</code>, <code>rename_xdf</code> and <code>delete_xdf</code> copy, move, rename and delete an Xdf file</li>
 <li><code>is_xdf</code> and <code>is_composite_xdf</code> return whether an object is a (composite) Xdf</li>
-<li><code>as_xdf</code> imports a data source or data frame into an Xdf file, optionally composite; <code>as_composite_xdf</code> and <code>as_standard_xdf</code> are shortcuts for creating a composite and standard Xdf file respectively</li>
+<li><code>as_xdf</code> imports a data source or data frame into an Xdf file, optionally as composite; <code>as_composite_xdf</code> and <code>as_standard_xdf</code> are shortcuts for creating a composite and standard Xdf file respectively</li>
 </ul>
 </div>
 <div id="hdfs-utilities" class="section level4">
@@ -235,6 +235,7 @@ flightsJoin &lt;-<span class="st"> </span><span class="kw">left_join</span>(
 <ul>
 <li><code>copy_to</code> uploads a dataset to HDFS, saving it as Xdf</li>
 <li><code>collect</code> and <code>compute</code> do the opposite, downloading an Xdf file from HDFS</li>
+<li><code>hdfs_upload</code> and <code>hdfs_download</code> transfer arbitrary files to and from HDFS</li>
 <li><code>hdfs_dir</code> lists files in a HDFS directory</li>
 <li><code>hdfs_dir_exists</code> and <code>hdfs_file_exists</code> test for directory/file existence</li>
 <li><code>hdfs_dir_create</code> and <code>hdfs_dir_remove</code> create and delete directories</li>

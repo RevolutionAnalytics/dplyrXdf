@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2016-11-27" />
+<meta name="date" content="2017-08-06" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2016-11-27</em></h4>
+<h4 class="date"><em>2017-08-06</em></h4>
 
 
 
@@ -105,7 +105,7 @@ flightsXdf2 &lt;-<span class="st"> </span><span class="kw">as_xdf</span>(flights
 </div>
 <div id="tbls-and-file-management" class="section level2">
 <h2>Tbls and file management</h2>
-<p>To facilitate the task of file management, dplyrXdf defines a new <code>tbl_xdf</code> class that extends the <code>RxXdfData</code> class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an <code>tbl_xdf</code> object is just a normal Xdf data source; thus, existing code dealing with Xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a <code>tbl_xdf</code>, as opposed to a normal Xdf file, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.</p>
+<p>To facilitate the task of file management, dplyrXdf defines a new <code>tbl_xdf</code> class that extends the <code>RxXdfData</code> class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, a <code>tbl_xdf</code> object is just a normal Xdf data source; thus, existing code dealing with Xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a <code>tbl_xdf</code>, as opposed to a normal Xdf file, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.</p>
 <p>In general, you never need to create a <code>tbl_xdf</code> manually. An exception is if you want to create a <code>tbl_xdf</code> from a non-Xdf data source. In that case you can do the following, which will transparently import the data into an Xdf file:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">txt &lt;-<span class="st"> </span><span class="kw">RxTextData</span>(<span class="st">&quot;path/to/file.txt&quot;</span>)
 txtTbl &lt;-<span class="st"> </span><span class="kw">as</span>(txt, <span class="st">&quot;tbl_xdf&quot;</span>)</code></pre></div>
@@ -173,7 +173,7 @@ output3 &lt;-<span class="st"> </span>output1 %&gt;%
 
 output3
 <span class="co">#&gt; tbl_xdf Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpIH9U02\dxTmp3ea47cea3e27\file3ea432de44a7.xdf&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpWKTquH\dxTmpa5bc52ca6fea\filea5bc39f161e6.xdf&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: FALSE</span>
@@ -181,7 +181,7 @@ output3
 <span class="co"># no longer a tbl_xdf</span>
 outputXdf
 <span class="co">#&gt; RxXdfData Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpIH9U02\dxTmp3ea47cea3e27\file3ea432de44a7.xdf&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpWKTquH\dxTmpa5bc52ca6fea\filea5bc39f161e6.xdf&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: FALSE</span></code></pre></div>
@@ -195,23 +195,23 @@ outputXdf
 <li><code>delete_xdf</code> deletes the Xdf file.</li>
 </ul>
 <p>All of these except <code>delete_xdf</code> return an Xdf data source object pointing to the new file’s name/location. For example, we can use <code>move_xdf</code> to move the output of <code>as_xdf</code>, from above, to a more permanent location.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output3 &lt;-<span class="st"> </span><span class="kw">move_xdf</span>(output3, <span class="st">&quot;d:/data&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output3 &lt;-<span class="st"> </span><span class="kw">move_xdf</span>(output3, <span class="st">&quot;d:/data/output3.xdf&quot;</span>)
 output3
 <span class="co">#&gt; RxXdfData Source</span>
-<span class="co">#&gt; &quot;d:/data/file3ea432de44a7.xdf&quot;</span>
+<span class="co">#&gt; &quot;d:/data/output3.xdf&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: FALSE</span></code></pre></div>
 </div>
-<div id="switching-between-standard-and-composite-xdf" class="section level3">
-<h3>Switching between standard and composite Xdf</h3>
-<p>RevoScaleR actually supports two kinds of Xdf files: standard (what we’ve been using so far) and <em>composite</em>. A composite Xdf is actually a directory that contains multiple data and metadata files; the RevoScaleR functions know how to treat this as a single data source. Xdf files in the native filesystem can be either standard or composite, but those in HDFS must be composite to work properly.</p>
-<p>By default, <code>as_xdf</code> will create a composite Xdf if the input dataset is stored in HDFS, and standard otherwise; there are also <code>as_standard_xdf</code> and <code>as_composite_xdf</code> functions if you want to specify the format of the output directly.</p>
-<p>If required, you can use this feature to switch an Xdf file (including a <code>tbl_xdf</code>) between standard and composite. Calling <code>as_standard_xdf</code> on a composite Xdf file will convert it to standard format, and vice-versa for calling <code>as_composite_xdf</code> on a standard Xdf.</p>
+<div id="standard-and-composite-xdf-files" class="section level3">
+<h3>Standard and composite Xdf files</h3>
+<p>RevoScaleR actually supports two kinds of Xdf files: standard (what we’ve been using so far) and <em>composite</em>. A composite Xdf is actually a directory that contains multiple data and metadata files; the RevoScaleR functions know how to treat this as a single data source. Similarly, the dplyrXdf verbs can work transparently with both kinds of Xdfs, with the output of a verb being of the same kind as the input.</p>
+<p>Xdf files in the native filesystem can be either standard or composite, but those in HDFS must be composite to work properly. By default, dplyrXdf will create a composite Xdfs if the input dataset is stored in HDFS, and standard otherwise. There are also <code>as_standard_xdf</code> and <code>as_composite_xdf</code> functions if you want to create a specific type directly.</p>
+<p>If required, you can also use these functions to switch an Xdf file (including a <code>tbl_xdf</code>) between standard and composite. Calling <code>as_standard_xdf</code> on a composite Xdf file will convert it to standard format, and vice-versa for calling <code>as_composite_xdf</code> on a standard Xdf.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">compositeOutput3 &lt;-<span class="st"> </span><span class="kw">as_composite_xdf</span>(output3)
 compositeOutput3
 <span class="co">#&gt; RxXdfData Source</span>
-<span class="co">#&gt; &quot;d:/data/file3ea432de44a7&quot;</span>
+<span class="co">#&gt; &quot;d:/data/output3&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: TRUE</span></code></pre></div>
@@ -371,7 +371,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     d:\misc\Rtemp\RtmpIH9U02\tmpPartitions3ea442c433b4\data\tmpPartitions3ea442c433b4_8198236150526572797.xdf</span>
+<span class="co">#&gt;     d:\misc\Rtemp\RtmpWKTquH\tmpPartitionsa5bc32f230fa\data\tmpPartitionsa5bc32f230fa_8198236150526572797.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 57782</span>
@@ -387,7 +387,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <h2>Setting the tbl directory</h2>
 <p>By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large Xdf files. You can view the location of the current Xdf tbl directory with <code>get_dplyrxdf_dir</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_dplyrxdf_dir</span>()
-<span class="co">#&gt; [1] &quot;d:\\misc\\Rtemp\\RtmpIH9U02\\dxTmp3ea47cea3e27&quot;</span></code></pre></div>
+<span class="co">#&gt; [1] &quot;d:\\misc\\Rtemp\\RtmpWKTquH\\dxTmpa5bc52ca6fea&quot;</span></code></pre></div>
 <p>Similarly, you can change the location of the Xdf tbl directory with the <code>set_dplyrxdf_dir</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># set the tbl directory to a network drive (on Windows)</span>
 <span class="kw">set_dplyrxdf_dir</span>(<span class="st">&quot;n:/Rtemp&quot;</span>)</code></pre></div>

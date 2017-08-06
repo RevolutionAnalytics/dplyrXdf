@@ -1,7 +1,7 @@
 ---
 title: "Using the dplyrXdf package"
 author: "Hong Ooi"
-date: "2016-11-27"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
@@ -52,7 +52,7 @@ delete_xdf(flightsXdf2)
 
 ## Tbls and file management
 
-To facilitate the task of file management, dplyrXdf defines a new `tbl_xdf` class that extends the `RxXdfData` class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, an `tbl_xdf` object is just a normal Xdf data source; thus, existing code dealing with Xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a `tbl_xdf`, as opposed to a normal Xdf file, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.
+To facilitate the task of file management, dplyrXdf defines a new `tbl_xdf` class that extends the `RxXdfData` class. This is what allows it to keep track of which data sources should remain untouched, and which can be modified or overwritten as part of a pipeline. To the base RevoScaleR functions, a `tbl_xdf` object is just a normal Xdf data source; thus, existing code dealing with Xdfs should work with minimal modification. However, the verbs implemented in dplyrXdf will recognise when they are passed a `tbl_xdf`, as opposed to a normal Xdf file, in which case they will delete their input file after writing the output file. Thus there is always only one file that represents the latest stage of a pipeline.
 
 In general, you never need to create a `tbl_xdf` manually. An exception is if you want to create a `tbl_xdf` from a non-Xdf data source. In that case you can do the following, which will transparently import the data into an Xdf file:
 
@@ -157,18 +157,18 @@ A number of functions are supplied for manipulating Xdf files _as files_:
 All of these except `delete_xdf` return an Xdf data source object pointing to the new file's name/location. For example, we can use `move_xdf` to move the output of `as_xdf`, from above, to a more permanent location.
 
 ```{r}
-output3 <- move_xdf(output3, "d:/data")
+output3 <- move_xdf(output3, "d:/data/output3.xdf")
 output3
 ```
 
 
-### Switching between standard and composite Xdf
+### Standard and composite Xdf files
 
-RevoScaleR actually supports two kinds of Xdf files: standard (what we've been using so far) and _composite_. A composite Xdf is actually a directory that contains multiple data and metadata files; the RevoScaleR functions know how to treat this as a single data source. Xdf files in the native filesystem can be either standard or composite, but those in HDFS must be composite to work properly.
+RevoScaleR actually supports two kinds of Xdf files: standard (what we've been using so far) and _composite_. A composite Xdf is actually a directory that contains multiple data and metadata files; the RevoScaleR functions know how to treat this as a single data source. Similarly, the dplyrXdf verbs can work transparently with both kinds of Xdfs, with the output of a verb being of the same kind as the input.
 
-By default, `as_xdf` will create a composite Xdf if the input dataset is stored in HDFS, and standard otherwise; there are also `as_standard_xdf` and `as_composite_xdf` functions if you want to specify the format of the output directly.
+Xdf files in the native filesystem can be either standard or composite, but those in HDFS must be composite to work properly. By default, dplyrXdf will create a composite Xdfs if the input dataset is stored in HDFS, and standard otherwise. There are also `as_standard_xdf` and `as_composite_xdf` functions if you want to create a specific type directly.
 
-If required, you can use this feature to switch an Xdf file (including a `tbl_xdf`) between standard and composite. Calling `as_standard_xdf` on a composite Xdf file will convert it to standard format, and vice-versa for calling `as_composite_xdf` on a standard Xdf.
+If required, you can also use these functions to switch an Xdf file (including a `tbl_xdf`) between standard and composite. Calling `as_standard_xdf` on a composite Xdf file will convert it to standard format, and vice-versa for calling `as_composite_xdf` on a standard Xdf.
 
 ```{r}
 compositeOutput3 <- as_composite_xdf(output3)

@@ -2,7 +2,7 @@ context("Xdf file utilities in HDFS")
 
 # set the compute context manually
 
-skip_if_not(!is.na(isRemoteHdfsClient(FALSE)), message="not in distributed compute context")
+detectHdfsConnection()
 
 mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=hd, createCompositeSet=TRUE)
 mtc <- RxXdfData("mtcarsc", fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE)

@@ -12,6 +12,8 @@
 #'
 #' The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the uploading is a two-stage process: the data is first transferred to the native filesystem of the edge node, and then copied from the edge node into HDFS.
 #'
+#' The \code{force_composite} argument sets whether an existing Xdf file should be converted to composite format before uploading, if it is not already so. Xdf files stored in HDFS must be composite to work properly. Datasets that are not in Xdf format (data frames and other RevoScaleR data sources, such as text files) are always uploaded as composite.
+#'
 #' @return
 #' An Xdf data source object pointing to the uploaded data.
 #'
@@ -23,7 +25,7 @@
 #' @export
 copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force_composite=TRUE, ...)
 {
-    isRemoteHdfsClient()  # fail early if no HDFS found
+    detectHdfsConnection() # fail early if no HDFS found
 
     if(is.character(df))
         df <- RxXdfData(df)
@@ -53,7 +55,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, path=NULL, overwrite=FALSE, force
     if(is.null(path))
         path <- getHdfsUserDir()
 
-    hdfsUpload(df@file, path, overwrite=overwrite, isDir=is_composite_xdf(df), ...)
+    hdfs_upload(df@file, path, overwrite=overwrite, ...)
 
     RxXdfData(file.path(path, basename(df@file), fsep="/"), fileSystem=dest, createCompositeSet=is_composite_xdf(df))
 }
@@ -68,75 +70,4 @@ copy_to_hdfs <- function(...)
     copy_to(RxHdfsFileSystem(), ...)
 }
 
-
-hdfsUpload <- function(src, dest, nativeTarget="/tmp", overwrite, isDir, ...)
-{
-    # based on rxHadoopCopyFromClient
-    if(isRemoteHdfsClient())
-    {
-        ## need to add name for directory, but not for file
-        #rxRemoteCopy(cc, "file.xdf", FALSE, "/tmp", TRUE, extraSwitches="")
-        #rxRemoteCopy(cc, "dir", FALSE, "/tmp/dir", TRUE, extraSwitches="-r")
-
-        if(isDir)
-            nativeTarget <- file.path(nativeTarget, basename(src), fsep="/")
-        extraSwitches <- if(isDir) "-r" else ""
-
-        RevoScaleR:::rxRemoteCopy(rxGetComputeContext(), shQuote(src), FALSE, nativeTarget, TRUE, extraSwitches)
-
-        if(isDir)
-            src <- nativeTarget
-        else src <- file.path(nativeTarget, basename(src), fsep="/")
-    }
-
-    if(isDir)
-        dest <- file.path(dest, basename(src), fsep="/")
-
-    # based on rxHadoopCopyFromLocal, with -f option for overwriting
-    cmd <- "fs -copyFromLocal"
-    if(overwrite)
-        cmd <- paste(cmd, "-f")
-    cmd <- paste(cmd, src, dest)
-
-    ret <- rxHadoopCommand(cmd, ...)
-    if(ret)
-    {
-        cmd <- paste0("sudo rm -rf ", src)
-        RevoScaleR:::rxRemoteCommand(rxGetComputeContext(), cmd)
-    }
-    ret
-}
-
-
-hdfsDownload <- function(src, dest, nativeTarget="/tmp", overwrite, isDir, ...)
-{
-    localDest <- if(isRemoteHdfsClient()) nativeTarget else dest
-
-    cmd <- "fs -copyToLocal"
-    if(!missing(overwrite))
-        warning("overwrite option not supported for HDFS downloading")
-    cmd <- paste(cmd, src, localDest)
-
-    ret <- rxHadoopCommand(cmd, ...)
-
-    if(ret && isRemoteHdfsClient())
-    {
-        if(isDir)
-        {
-            localDest <- file.path(localDest, basename(src))
-            #dest <- file.path(dest, basename(src))
-            extraSwitches <- "-r"
-        }
-        else
-        {
-            localDest <- file.path(localDest, basename(src), fsep="/")
-            extraSwitches <- ""
-        }
-        RevoScaleR:::rxRemoteCopy(rxGetComputeContext(), localDest, TRUE, shQuote(dest), FALSE, extraSwitches)
-
-        cmd <- paste0("sudo rm -rf ", localDest)
-        RevoScaleR:::rxRemoteCommand(rxGetComputeContext(), cmd)
-    }
-    else ret
-}
 

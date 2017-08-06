@@ -90,17 +90,18 @@ print.dplyrXdf_hdfs_dir <- function(x, ...)
 #' @export
 hdfs_dir_exists <- function(path, convert_backslashes=TRUE)
 {
+    detectHdfsConnection()
     path <- convertBS(path, convert_backslashes)
     out <- suppressWarnings(try(hdfs_dir(path, "-d", dirs_only=TRUE), silent=TRUE))
     !inherits(out, "try-error") && length(out) > 0 && out == basename(path)
 }
 
 
-# for symmetry with hdfs_dir_exists
 #' @rdname hdfs
 #' @export
 hdfs_file_exists <- function(path, convert_backslashes=TRUE)
 {
+    detectHdfsConnection()
     path <- convertBS(path, convert_backslashes)
     rxHadoopFileExists(path)
 }
@@ -115,6 +116,7 @@ hdfs_file_exists <- function(path, convert_backslashes=TRUE)
 #' @export
 hdfs_dir_create <- function(path, ..., convert_backslashes=TRUE)
 {
+    detectHdfsConnection()
     path <- convertBS(path, convert_backslashes)
     rxHadoopMakeDir(path, ...)
 }
@@ -124,6 +126,7 @@ hdfs_dir_create <- function(path, ..., convert_backslashes=TRUE)
 #' @export
 hdfs_dir_remove <- function(path, ..., convert_backslashes=TRUE)
 {
+    detectHdfsConnection()
     path <- convertBS(path, convert_backslashes)
     rxHadoopRemoveDir(path, ...)
 }
@@ -135,6 +138,7 @@ hdfs_dir_remove <- function(path, ..., convert_backslashes=TRUE)
 #' @export
 hdfs_file_copy <- function(src, dest, ..., overwrite=TRUE, convert_backslashes=TRUE)
 {
+    detectHdfsConnection()
     src <- convertBS(src, convert_backslashes)
     dest <- convertBS(dest, convert_backslashes)
     if(length(src) > 1 && length(dest) > 1)
@@ -147,6 +151,7 @@ hdfs_file_copy <- function(src, dest, ..., overwrite=TRUE, convert_backslashes=T
 #' @export
 hdfs_file_move <- function(src, dest, ..., convert_backslashes=TRUE)
 {
+    detectHdfsConnection()
     src <- convertBS(src, convert_backslashes)
     dest <- convertBS(dest, convert_backslashes)
     if(length(src) > 1 && length(dest) > 1)
@@ -161,6 +166,7 @@ hdfs_file_move <- function(src, dest, ..., convert_backslashes=TRUE)
 #' @export
 hdfs_file_remove <- function(path, ..., convert_backslashes=TRUE)
 {
+    detectHdfsConnection()
     path <- convertBS(path, convert_backslashes)
     rxHadoopRemove(path, ...)
 }
@@ -172,6 +178,7 @@ hdfs_file_remove <- function(path, ..., convert_backslashes=TRUE)
 #' @export
 hdfs_expunge <- function()
 {
+    detectHdfsConnection()
     rxHadoopCommand("fs -expunge")
 }
 
@@ -179,7 +186,7 @@ hdfs_expunge <- function()
 #' @param obj For \code{in_hdfs}, An R object, typically a RevoScaleR data source object.
 #'
 #' @return
-#' \code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}. If no argument is specified, returns whether the default filesystem is HDFS.
+#' \code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}. If no argument is specified, it returns whether the default filesystem is HDFS.
 #' @rdname hdfs
 #' @export
 in_hdfs <- function(obj=NULL)
@@ -241,8 +248,15 @@ isRemoteHdfsClient <- function(stopIfNotConnected=TRUE)
 }
 
 
+# better name for this use case
+detectHdfsConnection <- function(stopIfNotConnected=TRUE)
+{
+    isRemoteHdfsClient(stopIfNotConnected)
+}
+
+
 # not all xdf functionality currently supported on HDFS
-# rxSort, rxMerge, Pema, anything involving appends (which also means grouping)
+# rxSort, Pema, anything involving appends (which also means grouping)
 stopIfHdfs <- function(.data, ...)
 {
     if(in_hdfs(.data))

@@ -86,10 +86,10 @@ sampleBase <- function(.data, size, frac)
         stop("sample size must be at least 1")
     sel <- sample.int(n, size=size)
 
+    # .tblDir and .composite assumed to exist in eval environment
     file <- tempfile(tmpdir=.tblDir)
     output <- dplyrXdf:::tbl_xdf(.data, file=file, createCompositeSet=.composite)
 
     rxDataStep(.data, output, rowSelection=(.rxStartRow + seq_len(.rxNumRows) - 1) %in% .sel,
         transformObjects=list(.sel=sel))
-    output
 }

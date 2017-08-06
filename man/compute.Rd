@@ -15,6 +15,8 @@
 \item{x}{An Xdf data source object.}
 
 \item{as_data_frame}{Should the downloaded data be converted to a data frame, or left as an Xdf file?}
+
+\item{...}{If the output is to be a data frame, further arguments to the \code{as.data.frame} method.}
 }
 \value{
 If \code{as_data_frame} is FALSE, a data frame. Otherwise, a tbl_xdf data source.
@@ -25,7 +27,7 @@ Download a dataset to the local machine
 \details{
 The \code{collect} and \code{compute} functions can be used for two purposes: to download a dataset stored in HDFS to the native filesystem; or to convert a dataset (whether stored in HDFS or not) to a data frame. If \code{x} is an Xdf data source in HDFS, the data is downloaded as a tbl_xdf in the dplyrXdf working directory.
 
-The functions differ only in the default value of the \code{as_data_frame} argument. By default \code{collect} will always output a data frame, while \code{compute} will only do so if the source data was \emph{not} downloaded from HDFS.
+The functions differ only in the default value of the \code{as_data_frame} argument. By default \code{collect} will always output a data frame, while \code{compute} will only do so if the source data was \emph{not} downloaded from HDFS. Note that if \code{as_data_frame} is FALSE and the source data is on the native filesystem, then \code{collect}/\code{compute} is effectively a no-op.
 
 The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the downloading is a two-stage process: the data is first transferred from HDFS to the native filesystem of the edge node, and then downloaded from the edge node to the client.
 }

@@ -4,7 +4,7 @@
 #'
 #' @param .data An R object that can be coerced to an Xdf data source. This includes another existing Xdf data source; see details below.
 #' @param file The path/filename for the Xdf data file.
-#' @param composite Whether to create a composite Xdf.
+#' @param composite Whether to create a composite Xdf. Defaults to TRUE if \code{.data} is stored in HDFS, or if a HDFS connection is detected; FALSE otherwise.
 #' @param overwrite Whether to overwrite any existing file.
 #' @param ... Other arguments to pass to \code{\link{rxDataStep}}.
 #'
@@ -15,7 +15,7 @@
 #'
 #' Passing a \code{tbl_xdf} object to an \code{as} function will strip off the tbl information, returning a raw Xdf data source. This can be useful for resetting the beginning of a pipeline.
 #'
-#' The \code{file} argument gives the name of the Xdf file to create. If not specified, this is taken from the input data source where possible (for Xdf and file data sources, including text). Otherwise, a random name is generated. If no directory is specified, the file is created in the current working directory (if in the native filesystem) or in the user directory (in HDFS).
+#' The \code{file} argument gives the name of the Xdf file to create. If not specified, this is taken from the input data source where possible (for Xdf and file data sources, including text). Otherwise, it is taken from the name of R input object. If no directory is specified, the file is created in the current working directory (if in the native filesystem) or in the user directory (in HDFS).
 #'
 #' You can use the \code{as} functions with any RevoScaleR data source, or otherwise with any R object that can be turned into a data frame. The resulting Xdf file will be created in the same filesystem as the input data source. If the input does not have a filesystem, for example if it is an in-database table or a data frame, the file is created in the native filesystem.
 #'
@@ -100,7 +100,7 @@ as_xdf.RxFileData <- function(.data, file=NULL, composite=in_hdfs(.data), overwr
 #' @export
 as_xdf.RxDataSource <- function(.data, file=NULL, composite=NULL, overwrite=TRUE, ...)
 {
-    hdfsDetected <- !is.na(isRemoteHdfsClient(FALSE)) || in_hdfs(.data)
+    hdfsDetected <- !is.na(detectHdfsConnection(FALSE)) || in_hdfs(.data)
     if(is.null(composite))
         composite <- hdfsDetected
 
@@ -108,7 +108,7 @@ as_xdf.RxDataSource <- function(.data, file=NULL, composite=NULL, overwrite=TRUE
         stop("only composite Xdf files supported in HDFS")
 
     if(is.null(file))
-        file <- URLencode(deparse(substitute(.data)))
+        file <- URLencode(deparse(substitute(.data)), reserved=TRUE)
     file <- validateXdfFile(file, composite)
 
     out <- RxXdfData(file=file, fileSystem=rxGetFileSystem(.data), createCompositeSet=composite)
@@ -122,12 +122,12 @@ as_xdf.RxDataSource <- function(.data, file=NULL, composite=NULL, overwrite=TRUE
 #' @export
 as_xdf.default <- function(.data, file=NULL, composite=NULL, overwrite=TRUE, ...)
 {
-    hdfsDetected <- !is.na(isRemoteHdfsClient(FALSE)) || in_hdfs()
+    hdfsDetected <- !is.na(detectHdfsConnection(FALSE)) || in_hdfs()
     if(is.null(composite))
         composite <- hdfsDetected
 
     if(is.null(file))
-        file <- URLencode(deparse(substitute(.data)))
+        file <- URLencode(deparse(substitute(.data)), reserved=TRUE)
     file <- validateXdfFile(file, composite)
 
     .data <- as.data.frame(.data)

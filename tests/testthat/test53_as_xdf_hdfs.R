@@ -2,7 +2,7 @@ context("Coerce to Xdf, HDFS")
 
 # set the compute context manually
 
-skip_if_not(!is.na(isRemoteHdfsClient(FALSE)), message="not in distributed compute context")
+detectHdfsConnection()
 
 mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=hd, createCompositeSet=TRUE)
 mtt <- RxTextData("/user/sshuser/mttext.csv", fileSystem=hd)

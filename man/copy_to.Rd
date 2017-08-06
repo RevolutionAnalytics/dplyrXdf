@@ -35,6 +35,8 @@ This is the RevoScaleR HDFS method for the dplyr \code{\link[dplyr]{copy_to}} fu
 
 The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the uploading is a two-stage process: the data is first transferred to the native filesystem of the edge node, and then copied from the edge node into HDFS.
 
+The \code{force_composite} argument sets whether an existing Xdf file should be converted to composite format before uploading, if it is not already so. Xdf files stored in HDFS must be composite to work properly. Datasets that are not in Xdf format (data frames and other RevoScaleR data sources, such as text files) are always uploaded as composite.
+
 The \code{copy_to_hdfs} function is a simple wrapper that avoids having to create an explicit filesystem object.
 }
 \seealso{

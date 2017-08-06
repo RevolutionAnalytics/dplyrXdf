@@ -1,7 +1,7 @@
 ---
 title: "Introducing the dplyrXdf package"
 author: "Hong Ooi"
-date: "2016-11-27"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
@@ -157,12 +157,13 @@ In addition to the above verbs, dplyrXdf provides a number of functions to ease 
 * `sample_frac` and `sample_n` do random sampling
 * `copy_xdf`, `move_xdf`, `rename_xdf` and `delete_xdf` copy, move, rename and delete an Xdf file
 * `is_xdf` and `is_composite_xdf` return whether an object is a (composite) Xdf
-* `as_xdf` imports a data source or data frame into an Xdf file, optionally composite; `as_composite_xdf` and `as_standard_xdf` are shortcuts for creating a composite and standard Xdf file respectively
+* `as_xdf` imports a data source or data frame into an Xdf file, optionally as composite; `as_composite_xdf` and `as_standard_xdf` are shortcuts for creating a composite and standard Xdf file respectively
 
 #### HDFS utilities
 
 * `copy_to` uploads a dataset to HDFS, saving it as Xdf
 * `collect` and `compute` do the opposite, downloading an Xdf file from HDFS
+* `hdfs_upload` and `hdfs_download` transfer arbitrary files to and from HDFS
 * `hdfs_dir` lists files in a HDFS directory
 * `hdfs_dir_exists` and `hdfs_file_exists` test for directory/file existence
 * `hdfs_dir_create` and `hdfs_dir_remove` create and delete directories

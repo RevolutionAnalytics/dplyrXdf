@@ -21,7 +21,7 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
 {
     # calling rxDataStep on HDFS data from remote client is bog-slow, use direct download instead
     if(in_hdfs(x))
-        collect(x, maxRowsByCols=maxRowsByCols)
+        collect(x, as_data_frame=TRUE, maxRowsByCols=maxRowsByCols, ...)
     else local_exec(rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...))
 }
 
@@ -30,11 +30,12 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
 #'
 #' @param x An Xdf data source object.
 #' @param as_data_frame Should the downloaded data be converted to a data frame, or left as an Xdf file?
+#' @param ... If the output is to be a data frame, further arguments to the \code{as.data.frame} method.
 #'
 #' @details
 #' The \code{collect} and \code{compute} functions can be used for two purposes: to download a dataset stored in HDFS to the native filesystem; or to convert a dataset (whether stored in HDFS or not) to a data frame. If \code{x} is an Xdf data source in HDFS, the data is downloaded as a tbl_xdf in the dplyrXdf working directory.
 #'
-#' The functions differ only in the default value of the \code{as_data_frame} argument. By default \code{collect} will always output a data frame, while \code{compute} will only do so if the source data was \emph{not} downloaded from HDFS.
+#' The functions differ only in the default value of the \code{as_data_frame} argument. By default \code{collect} will always output a data frame, while \code{compute} will only do so if the source data was \emph{not} downloaded from HDFS. Note that if \code{as_data_frame} is FALSE and the source data is on the native filesystem, then \code{collect}/\code{compute} is effectively a no-op.
 #'
 #' The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the downloading is a two-stage process: the data is first transferred from HDFS to the native filesystem of the edge node, and then downloaded from the edge node to the client.
 #'
@@ -55,7 +56,7 @@ collect.RxXdfData <- function(x, as_data_frame=TRUE, ...)
         composite <- is_composite_xdf(x)
         file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
         localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
-        hdfsDownload(x@file, localXdf@file, isDir=composite)
+        hdfs_download(x@file, localXdf@file)
     }
     else localXdf <- x
 
@@ -75,7 +76,7 @@ compute.RxXdfData <- function(x, as_data_frame=!in_hdfs(x), ...)
         composite <- is_composite_xdf(x)
         file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
         localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
-        hdfsDownload(x@file, localXdf@file, isDir=composite)
+        hdfs_download(x@file, localXdf@file)
     }
     else localXdf <- x
 
