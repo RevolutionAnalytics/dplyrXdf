@@ -199,7 +199,9 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
 {
     # copy not used by dplyrXdf at the moment
     if(copy)
-        warning("copy argument not currently used")
+        warning("copy argument not yet implemented")
+
+    hdfsMergeCheck(x, y, .outFile)
 
     grps <- group_vars(x)
     yOrig <- getTblFile(y)
@@ -224,6 +226,33 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
     arglst <- doExtraArgs(arglst, x, .rxArgs, .outFile)
     arglst$rowsPerRead <- NULL # not used by rxMerge
 
+    # rxMerge writes to wrong location in Spark if given relative output path
+    if(in_hdfs(x) && substr(arglst$outFile@file, 1, 1) != "/")
+        arglst$outFile <- modifyXdf(arglst$outFile, file=normalizeHdfsPath(arglst$outFile@file))
+
     output <- callRx("rxMerge", arglst)
     simpleRegroup(output, grps)
 }
+
+
+hdfsMergeCheck <- function(x, y, outFile)
+{
+    if(!in_hdfs(x) && !in_hdfs(y))
+        return()
+
+    if(in_hdfs(x) != in_hdfs(y))
+        stop("x and y must both be in the same filesystem", call.=FALSE)
+
+    if(is.null(outFile))
+        stop("cannot output to data frame in Spark compute context", call.=FALSE)
+
+    xSupp <- inherits(x, c("RxSparkData", "RxXdfData"))
+    ySupp <- inherits(y, c("RxSparkData", "RxXdfData"))
+    if(!xSupp || !ySupp)
+        stop("unsupported HDFS file type for merge", call.=FALSE)
+
+    cc <- rxGetComputeContext()
+    if(!inherits(cc, "RxSpark"))
+        stop("files in HDFS can only be merged in the Spark compute context", call.=FALSE)
+}
+
