@@ -141,8 +141,13 @@ hdfs_file_copy <- function(src, dest, ..., overwrite=TRUE, convert_backslashes=T
     detectHdfsConnection()
     src <- convertBS(src, convert_backslashes)
     dest <- convertBS(dest, convert_backslashes)
-    if(length(src) > 1 && length(dest) > 1)
+    nSrc <- length(src)
+    nDest <- length(dest)
+
+    if(nSrc > 1 && nDest > 1 && nSrc == nDest)
         all(mapply(rxHadoopCopy, src, dest, MoreArgs=list(...)))
+    else if(nDest > 1)
+        stop("either supply one dest for each src, or exactly one dest")
     else rxHadoopCopy(src, dest, ...)
 }
 
@@ -154,8 +159,13 @@ hdfs_file_move <- function(src, dest, ..., convert_backslashes=TRUE)
     detectHdfsConnection()
     src <- convertBS(src, convert_backslashes)
     dest <- convertBS(dest, convert_backslashes)
-    if(length(src) > 1 && length(dest) > 1)
+    nSrc <- length(src)
+    nDest <- length(dest)
+
+    if(nSrc > 1 && nDest > 1 && nSrc == nDest)
         all(mapply(rxHadoopMove, src, dest, MoreArgs=list(...)))
+    else if(nDest > 1)
+        stop("either supply one dest for each src, or exactly one dest")
     else rxHadoopMove(src, dest, ...)
 }
 
@@ -236,11 +246,11 @@ isRemoteHdfsClient <- function(stopIfNotConnected=TRUE)
     {
         # assume if hadoop executable found, then this is an edge node
         if(file.exists(rxGetOption("mrsHadoopPath")))
-            return(TRUE)
+            return(FALSE)
         else
         {
             if(stopIfNotConnected)
-                stop("not connected to HDFS filesystem", call.=FALSE)
+                stop("not connected to HDFS", call.=FALSE)
             return(NA)
         }
     }
