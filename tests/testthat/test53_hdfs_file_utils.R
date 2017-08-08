@@ -16,7 +16,7 @@ verifyHdfsData <- function(xdf, expectedClass)
 # check actual data -- slow but necessary to check that non-Revo file ops succeeded
 verifyCompositeData <- function(xdf, expectedClass)
 {
-    isTRUE(xdf@createCompositeSet) && is.data.frame(head(xdf)) && class(xdf) == expectedClass # test for exact class
+    isTRUE(xdf@createCompositeSet) && is.data.frame(as.data.frame(xdf)) && class(xdf) == expectedClass # test for exact class
 }
 
 .path <- function(path)

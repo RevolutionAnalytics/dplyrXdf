@@ -84,9 +84,10 @@ delete_xdf <- function(xdf)
         stop("only for deleting Xdf files")
     if(in_hdfs(xdf))
     {
-        if(is_composite_xdf(xdf))
-            rxHadoopRemoveDir(xdf@file)
-        else rxHadoopRemove(xdf@file)
+        out <- if(is_composite_xdf(xdf))
+            rxHadoopRemoveDir(xdf@file, intern=TRUE)
+        else rxHadoopRemove(xdf@file, intern=TRUE)
+        attr(out, "status")
     }
     else unlink(xdf@file, recursive=TRUE)
 }

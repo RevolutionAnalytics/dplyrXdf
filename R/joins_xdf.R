@@ -2,19 +2,23 @@
 #'
 #' @param x, y Data sources to join.
 #' @param by Character vector of variables to join by. See \code{\link[dplyr]{join}} for details.
-#' @param copy If the data sources are not stored in the same system, whether to copy y to x's location. Not currently used.
+#' @param copy If the data sources are not stored in the same filesystem, whether to copy y to x's location. Not currently implemented.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param ... Not currently used.
 #'
 #' @details
-#' Currently joining only supports the local file system.
+#' These functions merge two datasets together, using \code{rxMerge}.
+#'
+#' For best performance, avoid merging on factor variables or on variables with different types, especially in Spark. This is because \code{rxMerge} is picky about its inputs, and dplyrXdf may have to transform the data to ensure that the merge succeeds.
+#'
+#' Currently, merging in Spark has a few limitations. Only Xdf (in HDFS) and Spark data sources (\code{RxHiveData}, \code{RxOrcData} and \code{RxParquetData}) can be merged, and only the "standard" join operations are supported: \code{left_join}, \code{right_join}, \code{inner_join} and \code{full join}.
 #'
 #' @return
 #' An object representing the joined data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
-#' \code{\link[dplyr]{join}} in package dplyr
+#' \code{\link[dplyr]{join}} in package dplyr, \code{\link{rxMerge}}
 #' @aliases join left_join right_join inner_join full_join semi_join anti_join
 #' @name join
 NULL

@@ -62,8 +62,8 @@ union_all.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs)
         else stop("error handling base table in union", call.=TRUE)
     }
 
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
+    stopIfHdfs(x, "union_all not supported on HDFS")
+    stopIfHdfs(y, "union_all not supported on HDFS")
 
     grps <- group_vars(x)
 
@@ -99,8 +99,8 @@ union_all.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs)
 #' @method union RxFileData
 union.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs, ...)
 {
-    stopIfHdfs(x, "joining not supported on HDFS")
-    stopIfHdfs(y, "joining not supported on HDFS")
+    stopIfHdfs(x, "union not supported on HDFS")
+    stopIfHdfs(y, "union not supported on HDFS")
 
     union_all(x, y, .rxArgs=.rxArgs) %>%
         distinct(.outFile=.outFile)

@@ -171,7 +171,7 @@ alignInputs <- function(x, y, by, yOrig)
                 rename(!!!yRename)
         }
     }
-    list(x=x, y=y, by=by)
+    list(x=x, y=y)
 }
 
 
@@ -212,9 +212,11 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
 {
     # copy not used by dplyrXdf at the moment
     if(copy)
+    {
         warning("copy argument not yet implemented")
+    }
 
-    hdfsMergeCheck(x, y, .outFile)
+    mergeFsCheck(x, y, .outFile, copy)
 
     grps <- group_vars(x)
     yOrig <- if(inherits(y, "RxFileData")) y@file else NULL
@@ -239,22 +241,42 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
     arglst <- doExtraArgs(arglst, x, .rxArgs, .outFile)
     arglst$rowsPerRead <- NULL # not used by rxMerge
 
+    inputHd <- in_hdfs(x)
+
+    # rxMerge won't create a data frame directly from HDFS input; do it the hard way
+    outputDf <- is.null(.outFile)
+    if(inputHd && outputDf)
+        arglst$outFile <- tbl_xdf(x)
+
     # rxMerge writes to wrong location in Spark if given relative output path
-    if(in_hdfs(x) && substr(arglst$outFile@file, 1, 1) != "/")
+    if(inputHd && substr(arglst$outFile@file, 1, 1) != "/")
         arglst$outFile <- modifyXdf(arglst$outFile, file=normalizeHdfsPath(arglst$outFile@file))
 
     output <- callRx("rxMerge", arglst)
+
+    if(inputHd && outputDf)
+    {
+        outTbl <- arglst$outFile
+        on.exit(deleteIfTbl(outTbl))
+        output <- as.data.frame(output)
+    }
+
     simpleRegroup(output, grps)
 }
 
 
-hdfsMergeCheck <- function(x, y, outFile)
+mergeFsCheck <- function(x, y, outFile, copy)
 {
-    if(!in_hdfs(x) && !in_hdfs(y))
-        return()
-
     if(in_hdfs(x) != in_hdfs(y))
-        stop("x and y must both be in the same filesystem", call.=FALSE)
+    {
+        if(!copy)
+            stop("x and y must both be in the same filesystem; use copy=TRUE to join", call.=FALSE)
+        else y <- copy_to(RxFileSystem(x), y)
+    }
+
+    # nothing in HDFS: return early
+    if(!in_hdfs(x) && !in_hdfs(y))
+        return(list(x, y))
 
     xSupported <- inherits(x, c("RxSparkData", "RxXdfData"))
     ySupported <- inherits(y, c("RxSparkData", "RxXdfData"))
@@ -265,7 +287,6 @@ hdfsMergeCheck <- function(x, y, outFile)
     if(!inherits(cc, "RxSpark"))
         stop("files in HDFS can only be merged in the Spark compute context", call.=FALSE)
 
-    if(is.null(outFile))
-        stop("cannot output to data frame in Spark compute context", call.=FALSE)
+    list(x, y)
 }
 
