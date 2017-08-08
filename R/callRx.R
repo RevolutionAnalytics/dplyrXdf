@@ -6,12 +6,14 @@ callRx <- function(func="rxDataStep", arglst, asTbl=NULL)
         asTbl <- inherits(arglst$outFile, "tbl_xdf")
 
     arglst <- lapply(arglst, unTbl)
-
     out <- do.call(func, arglst, envir=parent.frame(2))
 
     # rxMerge returns NULL on Spark, use outFile arg from arglst
     if(is.null(out))
         out <- arglst$outFile
+
+    if(is.null(out))
+        stop("unable to find output from ", func)
 
     if(asTbl)
         as(out, "tbl_xdf")

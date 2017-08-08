@@ -99,16 +99,6 @@ varLevels <- function(x, vars=NULL)
 }
 
 
-# delete one or more xdf tbls (vectorised)
-deleteTbl <- function(xdf)
-{
-    if(!is.list(xdf))
-        xdf <- list(xdf)
-    lapply(xdf, delete_xdf)
-    NULL
-}
-
-
 # on.exit function
 deleteIfTbl <- function(data)
 {
@@ -119,15 +109,4 @@ deleteIfTbl <- function(data)
         delete_xdf(data)
     NULL
 }
-
-
-getTblFile <- function(data)
-{
-    if(is.data.frame(data))
-        NULL
-    else if(inherits(data, "RxFileData"))
-        data@file
-    else stop("not a local data source format", call.=FALSE)
-}
-
 

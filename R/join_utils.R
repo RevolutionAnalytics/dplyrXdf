@@ -57,11 +57,13 @@ alignVars <- function(x, y, by, yOrig)
         else NULL
     }
 
-    xVars <- names(x)
-    yVars <- names(y)
-    xTypes <- varTypes(x, by)
-    yTypes <- varTypes(y, by)
+    # only read metadata once per file: slow on Spark
+    xVars <- names(by$xTypes)
+    yVars <- names(by$yTypes)
+    xTypes <- by$xTypes[by$y]
+    yTypes <- by$yTypes[by$y]
 
+    by <- by$y
     xChanges <- sapply(by, function(i) {
         xt <- xTypes[i]
         yt <- yTypes[i]
@@ -139,10 +141,14 @@ alignInputs <- function(x, y, by, yOrig)
             x <- rename(x, !!!existing)
         }
         x <- rename(x, !!!xby)
+
+        # modify saved metadata to match any renamed vars
+        whichXBy <- which(names(by$xTypes) %in% by$x)
+        names(by$xTypes)[whichXBy] <- names(xby)
     }
-    
+
     # align by-variable types and factor levels
-    align <- alignVars(x, y, by$y)
+    align <- alignVars(x, y, by)
     if(!is.null(align$xFunc))
     {
         xRename <- paste0(align$xVars, "__new__")
@@ -159,39 +165,46 @@ alignInputs <- function(x, y, by, yOrig)
         else
         {
             # make sure not to delete original y by accident after factoring
-            if(!is.null(yOrig) && getTblFile(y) == yOrig)
+            if(!is.null(yOrig) && y@file == yOrig)
                 y <- as(y, "RxXdfData")
-            #y <- rxDataStep(y, tbl_xdf(y), transformFunc=align$yFunc, transformVars=align$yVars)
-            #names(y)[names(y) == yRename] <- names(yRename)
-            #print(names(y))
             y <- mutate(y, .rxArgs=list(transformFunc=align$yFunc, transformVars=align$yVars)) %>%
                 rename(!!!yRename)
-            #y <- mutate(y, a__new__=as.character(a), a=NULL)
-            #y <- rename(y, a=a__new__)
         }
     }
-    list(x=x, y=y)
+    list(x=x, y=y, by=by)
 }
 
 
 # copied from dplyr:::common_by, dplyr:::`%||%`
 commonBy <- function (by = NULL, x, y) 
 {
-    if (is.list(by)) 
+    # save metadata: important on Spark to minimise retrieving this
+    xTypes <- tbl_types(x)
+    yTypes <- tbl_types(y)
+    xVars <- names(xTypes)
+    yVars <- names(yTypes)
+
+    if(is.list(by))
+    {
+        by <- c(by, xTypes=xTypes, yTypes=yTypes)
         return(by)
-    if (!is.null(by)) {
+    }
+
+    if(!is.null(by))
+    {
         x <- if(is.null(names(by))) by else names(by)
-        #x <- names(by) %||% by
         y <- unname(by)
         x[x == ""] <- y[x == ""]
-        return(list(x = x, y = y))
+        return(list(x=x, y=y, xTypes=xTypes, yTypes=yTypes))
     }
-    by <- intersect(tbl_vars(x), tbl_vars(y))
-    if (length(by) == 0) {
-        stop("No common variables. Please specify `by` param.", call. = FALSE)
+
+    by <- base::intersect(xVars, yVars)
+    if(length(by) == 0)
+    {
+        stop("No common variables. Please specify `by` param.", call.=FALSE)
     }
     message("Joining by: ", capture.output(dput(by)))
-    list(x = by, y = by)
+    list(x=by, y=by, xTypes=xTypes, yTypes=yTypes)
 }
 
 
@@ -204,7 +217,7 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
     hdfsMergeCheck(x, y, .outFile)
 
     grps <- group_vars(x)
-    yOrig <- getTblFile(y)
+    yOrig <- if(inherits(y, "RxFileData")) y@file else NULL
     newxy <- alignInputs(x, y, by, yOrig)
     x <- newxy$x
     y <- newxy$y
@@ -214,8 +227,8 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
     {
         deleteIfTbl(x)
         # make sure not to delete original y by accident after factoring
-        if(!is.data.frame(y) && getTblFile(y) != yOrig)
-            deleteTbl(y)
+        if(!is.null(yOrig) && y@file != yOrig)
+            deleteIfTbl(y)
     })
 
     # sigh
@@ -243,16 +256,16 @@ hdfsMergeCheck <- function(x, y, outFile)
     if(in_hdfs(x) != in_hdfs(y))
         stop("x and y must both be in the same filesystem", call.=FALSE)
 
-    if(is.null(outFile))
-        stop("cannot output to data frame in Spark compute context", call.=FALSE)
-
-    xSupp <- inherits(x, c("RxSparkData", "RxXdfData"))
-    ySupp <- inherits(y, c("RxSparkData", "RxXdfData"))
-    if(!xSupp || !ySupp)
+    xSupported <- inherits(x, c("RxSparkData", "RxXdfData"))
+    ySupported <- inherits(y, c("RxSparkData", "RxXdfData"))
+    if(!xSupported || !ySupported)
         stop("unsupported HDFS file type for merge", call.=FALSE)
 
     cc <- rxGetComputeContext()
     if(!inherits(cc, "RxSpark"))
         stop("files in HDFS can only be merged in the Spark compute context", call.=FALSE)
+
+    if(is.null(outFile))
+        stop("cannot output to data frame in Spark compute context", call.=FALSE)
 }
 

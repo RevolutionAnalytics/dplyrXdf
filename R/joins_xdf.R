@@ -24,7 +24,7 @@ NULL
 left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     by <- commonBy(by, x, y)
-    mergeBase(x, y, by, copy, "left", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
+    mergeBase(x, y, by, copy, "left", .outFile, rlang::enexpr(.rxArgs), suffix)
 }
 
 
@@ -33,7 +33,7 @@ left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y")
 right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     by <- commonBy(by, x, y)
-    mergeBase(x, y, by, copy, "right", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
+    mergeBase(x, y, by, copy, "right", .outFile, rlang::enexpr(.rxArgs), suffix)
 }
 
 
@@ -42,7 +42,7 @@ right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"
 inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     by <- commonBy(by, x, y)
-    mergeBase(x, y, by, copy, "inner", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
+    mergeBase(x, y, by, copy, "inner", .outFile, rlang::enexpr(.rxArgs), suffix)
 }
 
 
@@ -51,7 +51,7 @@ inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"
 full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     by <- commonBy(by, x, y)
-    mergeBase(x, y, by, copy, "full", .outFile, rlang::enexpr(.rxArgs), suffix, ...)
+    mergeBase(x, y, by, copy, "full", .outFile, rlang::enexpr(.rxArgs), suffix)
 }
 
 
