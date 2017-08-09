@@ -13,7 +13,7 @@ splitGroups <- function(data, outXdf=data)
     # if files exist that could interfere with splitting output, delete them
     # should never be necessary because base filename is a randomly generated tempfile
     # and each split should be followed by a combine
-    deleteSplitOutputs(fname, grps)
+    deleteSplitOutput(fname, grps)
 
     # mimic behaviour of rxSplit: rxDataStep that splits each chunk, calls rxDataStep on each split
     filelst <- rxDataStep(data, transformFunc=function(varlst) {
@@ -40,7 +40,21 @@ splitGroups <- function(data, outXdf=data)
 }
 
 
-deleteSplitOutputs <- function(fname, grps)
+createSplitOutput <- function(datalst, output, tblDir=get_dplyrxdf_dir())
+{
+    n <- length(datalst)
+    if(!missing(output) && is.null(output)) # data frame
+        out <- vector("list", n) # n NULLs
+    else out <- lapply(datalst, function(data)
+    {
+        # tbl_xdf
+        tbl_xdf(data)
+    })
+    out
+}
+
+
+deleteSplitOutput <- function(fname, grps)
 {
     dname <- dirname(fname)
     fname <- basename(fname)

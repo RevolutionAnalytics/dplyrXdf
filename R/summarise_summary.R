@@ -1,7 +1,3 @@
-#' @include summarise_xdf.R
-NULL
-
-
 smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     outvars <- names(exprs)

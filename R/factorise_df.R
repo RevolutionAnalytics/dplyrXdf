@@ -1,4 +1,4 @@
-#' @include factorise_xdf.R
+#' @include factorise.R
 NULL
 
 #' The data frame method simply calls \code{factor} to convert the specified columns into factors.

@@ -1,7 +1,3 @@
-#' @include summarise_xdf.R
-NULL
-
-
 smryRxSummary2 <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     # should always have groups

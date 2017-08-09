@@ -30,6 +30,8 @@ The \code{collect} and \code{compute} functions can be used for two purposes: to
 The functions differ only in the default value of the \code{as_data_frame} argument. By default \code{collect} will always output a data frame, while \code{compute} will only do so if the source data was \emph{not} downloaded from HDFS. Note that if \code{as_data_frame} is FALSE and the source data is on the native filesystem, then \code{collect}/\code{compute} is effectively a no-op.
 
 The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the downloading is a two-stage process: the data is first transferred from HDFS to the native filesystem of the edge node, and then downloaded from the edge node to the client.
+
+If you want to look at the first few rows of an Xdf file, it may be faster to use \code{compute}) to copy the entire file off HDFS, and then run \code{head}, than to run \code{head} on the original. This is due to quirks in how RevoScaleR works in Spark and Hadoop.
 }
 \seealso{
 \code{\link[dplyr]{compute}} in package dplyr, \code{\link{copy_to}} for uploading to HDFS

@@ -1,7 +1,3 @@
-#' @include summarise_xdf.R
-NULL
-
-
 smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
 {
     if(length(grps) == 0)
