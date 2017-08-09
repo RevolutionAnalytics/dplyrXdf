@@ -63,7 +63,10 @@ collect.RxXdfData <- function(x, as_data_frame=TRUE, ...)
     else localXdf <- x
 
     if(as_data_frame)
+    {
+        on.exit(delete_xdf(localXdf))
         as.data.frame(localXdf, ...)
+    }
     else localXdf
 }
 
@@ -83,7 +86,10 @@ compute.RxXdfData <- function(x, as_data_frame=!in_hdfs(x), ...)
     else localXdf <- x
 
     if(as_data_frame)
+    {
+        on.exit(delete_xdf(localXdf))
         as.data.frame(localXdf, ...)
+    }
     else localXdf
 }
 

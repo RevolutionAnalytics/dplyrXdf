@@ -3,7 +3,8 @@ getFactorLevels <- function(data, vars=group_vars(data))
     if(length(vars) == 0)
         stop("no grouping variables supplied")
 
-    levs <- if(in_hdfs(data))
+    # use rxExecBy if in Spark/Hadoop CC: only for the keys, not the data
+    levs <- if(inherits(rxGetComputeContext(), "RxHadoopMR"))
     {
         # workaround crazy rxExecBy issue
         vars <- unname(vars)
@@ -12,7 +13,6 @@ getFactorLevels <- function(data, vars=group_vars(data))
         tmpSrc <- modifyXdf(data, varsToKeep=vars)
         message("Scanning data to get levels")
 
-        # use rxExecBy on HDFS: only for the keys, not the data
         keys <- execByResult(tmpSrc, vars, function(keys, data) keys)
 
         lapply(seq_along(vars), function(i)

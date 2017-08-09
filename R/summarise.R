@@ -145,7 +145,7 @@ makeSmryOutputHdfs <- function(smry, .outFile, .data)
         {
             # create xdf directly in HDFS
             if(is.character(.outFile))
-                .outFile <- RxXdfData(.outFile, fileSystem=rxGetFileSystem(.data), rowsPerRead=.dxOptions$rowsPerRead)
+                .outFile <- RxXdfData(.outFile, fileSystem=rxGetFileSystem(.data), createCompositeSet=TRUE)
 
             output <- rxDataStep(smry, unTbl(.outFile), rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         }

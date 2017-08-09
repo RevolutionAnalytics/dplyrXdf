@@ -62,9 +62,10 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     )
 
     inputHd <- in_hdfs(.data)
+    inDistribCC <- inherits(rxGetComputeContext(), "RxHadoopMR")
 
-    # rxFactors needs explicit factor levels in HDFS
-    if(inputHd && length(vars$blankArgs) > 0)
+    # rxFactors needs explicit factor levels in Spark
+    if(inDistribCC && length(vars$blankArgs) > 0)
     {
         message("To improve efficiency with data in HDFS, specify factor levels in call to factorise")
         levs <- getFactorLevels(.data, vars$blankArgs)
