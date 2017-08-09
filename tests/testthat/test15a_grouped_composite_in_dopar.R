@@ -7,8 +7,8 @@ verifyCompositeData <- function(xdf, expectedClass)
     isTRUE(xdf@createCompositeSet) && is.data.frame(head(xdf)) && class(xdf) == expectedClass # test for exact class
 }
 
-
-doParallel::registerDoParallel()
+cl <- parallel::makeCluster(3)
+doParallel::registerDoParallel(cl)
 rxSetComputeContext("dopar")
 
 
@@ -165,6 +165,6 @@ test_that("output to xdf works",
 
 # cleanup
 rxSetComputeContext("local")
-doParallel::stopImplicitCluster()
+parallel::stopCluster(cl)
 
 unlink(c("mtc", "test15a"), recursive=TRUE)
