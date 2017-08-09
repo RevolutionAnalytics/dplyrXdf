@@ -4,8 +4,8 @@ context("Coerce to Xdf, HDFS")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=hd, createCompositeSet=TRUE)
-mtt <- RxTextData("/user/sshuser/mttext.csv", fileSystem=hd)
+mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
+mtt <- RxTextData("/user/sshuser/mttext.csv", fileSystem=RxHdfsFileSystem())
 mtc <- RxXdfData("mtcarsc", createCompositeSet=TRUE)
 
 write.csv(mtcars, "mttext.csv", row.names=FALSE)

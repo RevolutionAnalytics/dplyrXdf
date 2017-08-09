@@ -4,7 +4,7 @@ context("HDFS functionality")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=hd, createCompositeSet=TRUE)
+mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
 
 
 verifyHdfsData <- function(xdf, expectedClass)

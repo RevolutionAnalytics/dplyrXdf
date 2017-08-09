@@ -6,7 +6,8 @@ verifyData <- function(xdf, expectedClass)
     is.data.frame(head(xdf)) && class(xdf) == expectedClass # test for exact class
 }
 
-doParallel::registerDoParallel()
+cl <- parallel::makeCluster(3)
+doParallel::registerDoParallel(cl)
 rxSetComputeContext("dopar")
 
 
@@ -90,7 +91,7 @@ test_that("reset compute context works",
 })
 
 rxSetComputeContext("local")
-doParallel::stopImplicitCluster()
+parallel::stopCluster(cl)
 
 # cleanup
 file.remove("mtx.xdf")
