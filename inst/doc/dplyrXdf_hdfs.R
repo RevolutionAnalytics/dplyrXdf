@@ -1,19 +1,8 @@
 ## ---- echo = FALSE, message = FALSE--------------------------------------
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-options(dplyr.print_min = 5L, dplyr.print_max = 5L)
+knitr::opts_chunk$set(collapse=TRUE, comment="#>")
+options(dplyr.print_min=5L, dplyr.print_max=5L)
 
-## ---- eval=FALSE---------------------------------------------------------
-#  user <- "username"
-#  host <- "edge-node-name"
-#  shareDir <- paste("/var/RevoShare", user, sep="/")
-#  hdfsShareDir <- paste("/user/RevoShare", user, sep="/")
-#  rxSparkConnect(
-#      hdfsShareDir=hdfsShareDir,
-#      shareDir=shareDir,
-#      sshUsername=user,
-#      sshHostname=host,
-#      sshClientDir="C:\\ssh\\putty",
-#      sshSwitches='-i "privatekey.ppk"')
+# set compute context prior to building this vignette
 
 ## ------------------------------------------------------------------------
 library(dplyrXdf)
@@ -22,7 +11,7 @@ library(nycflights13)
 hd <- RxHdfsFileSystem()
 
 # copy a data frame into an Xdf file in HDFS
-flightsHd <- copy_to(hd, flights)
+flightsHd <- copy_to(hd, flights, path=".")
 
 flightsHd
 
@@ -41,7 +30,7 @@ as_data_frame(flightsLocal)
 
 ## ------------------------------------------------------------------------
 # create a csv file and upload it
-write.csv(flights, "flights.csv")
+write.csv(flights, "flights.csv", row.names=FALSE)
 hdfs_upload("flights.csv", "/tmp")
 
 ## ------------------------------------------------------------------------
@@ -64,7 +53,7 @@ hdfs_file_copy("flights", "/tmp/mydata")
 flightsHd3 <- RxXdfData("/tmp/mydata/flights", fileSystem=RxHdfsFileSystem())
 
 # read the data
-head(flightsHd3)
+names(flightsHd3)
 
 ## ------------------------------------------------------------------------
 in_hdfs(flightsHd)
@@ -81,5 +70,5 @@ names(flightsLocal)
 local_exec(names(flightsLocal))
 
 ## ---- echo=FALSE, message=FALSE, results="hide"--------------------------
-hdfs_dir_remove(c("flights", "/tmp/mydata"))
+hdfs_dir_remove(c("flights", "flights2", "/tmp/mydata", "/tmp/flights.csv"))
 

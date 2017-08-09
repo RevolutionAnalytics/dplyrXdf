@@ -10,8 +10,8 @@ vignette: >
 ---
 
 ```{r, echo = FALSE, message = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-options(dplyr.print_min = 5L, dplyr.print_max = 5L)
+knitr::opts_chunk$set(collapse=TRUE, comment="#>")
+options(dplyr.print_min=5L, dplyr.print_max=5L)
 ```
 ## Introduction
 
@@ -177,14 +177,14 @@ In addition to the above verbs, dplyrXdf provides a number of functions to ease 
 
 Despite the name, dplyrXdf supports all file data sources defined by RevoScaleR, not just xdf files. This includes delimited text (`RxTextData`), SAS datasets (`RxSasData`) and SPSS datasets (`RxSpssData`). If you pass one of these data sources to a dplyrXdf pipeline, it will import the data to an xdf file first before executing the rest of the pipeline.
 
-Most verbs will work transparently with datasets stored in both the native filesystem, and in HDFS (as when working with a Hadoop or Spark cluster. In general, the output of a verb will be created in the same filesystem as the input. To transfer data between the two filesystems, you can use `copy_to` to upload, and `collect` and `compute` to download.
+Most verbs will work transparently with datasets stored in both the native filesystem, and in HDFS (as when working with a Hadoop or Spark cluster). In general, the output of a verb will be created in the same filesystem as the input. To transfer data between the two filesystems, you can use `copy_to` to upload, and `as_data_frame`, `collect` and `compute` to download.
 
 Similarly, all verbs will work transparently with both standard and _composite_ Xdf files. A composite Xdf is actually a directory that contains multiple data and metadata files. Xdf files in the native filesystem can be either standard or composite, but those in HDFS must be composite to work properly.
 
 
 ## Conclusion
 
-This article has been a quick executive-summary introduction to dplyrXdf. If you have any suggestions on features to add (including bits of dplyr that have been left out) or bugs that need fixing, please contact me at [hongooi@microsoft.com](hongooi@microsoft.com).
+This article has been a quick executive-summary introduction to dplyrXdf. If you have any suggestions on features to add (including bits of dplyr that have been left out) or bugs that need fixing, please [file an issue on the repo](https://github.com/RevolutionAnalytics/dplyrXdf/issues), or contact me at [hongooi@microsoft.com](hongooi@microsoft.com).
 
 
 

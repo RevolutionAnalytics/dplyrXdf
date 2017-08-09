@@ -10,12 +10,14 @@ vignette: >
 ---
 
 ```{r, echo = FALSE, message = FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
+
+# set compute context prior to building this vignette
 ```
 Microsoft R Server includes the ability to work with Hadoop and Spark clusters. As part of this, it also lets you work with datasets, in particular Xdf files, that are stored in HDFS.
 
-As of version 0.10.0, dplyrXdf also supports Xdf files in HDFS. Most of the basic dplyr verbs will work exactly the same as with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark.
+As of version 0.10.0, dplyrXdf also supports Xdf files in HDFS. Most verbs will work exactly the same as  with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark. You will need to have Microsoft R Server version 9.0 or later to use dplyrXdf with HDFS, and ideally version 9.1 for grouped functionality.
 
 
 ## Basics: Hadoop, Spark and HDFS
@@ -31,7 +33,7 @@ For more information about working with HDFS, Hadoop and Spark, see the [documen
 
 ## Working with a cluster
 
-To use dplyrXdf on a cluster, you'll have to install it, and dplyr, on the machine where you'll be running your R sessions. This can be either the cluster edge node, or if you're connecting remotely, on the remote machine. For full functionality, you should also install dplyr on the cluster worker nodes. You don't need to install dplyrXdf on the worker nodes, though.
+To use dplyrXdf on a cluster, you'll have to install it, and dplyr, on the machine where you'll be running your R sessions. This can be either the cluster edge node, or if you're connecting remotely, on your remote machine. For full functionality, you should also install dplyr on the cluster worker nodes. You don't need to install dplyrXdf on the worker nodes, though.
 
 Your dplyrXdf code should work the same regardless of whether you're running on the edge node or a remote client. The package abstracts away the underlying differences between the two scenarios, so that from your point of view, you're simply connected to a HDFS filesystem somewhere in the cloud. Similarly, dplyrXdf should work for all flavours of Spark and Hadoop that MRS supports (HDInsight, Cloudera, Hortonworks and MapR).
 
@@ -75,11 +77,14 @@ flightsLocal
 as_data_frame(flightsLocal)
 ```
 
+If you want to look at the first few rows of an Xdf file, it may be faster to use `compute` to copy the entire file off HDFS, and then run `head`, than to run `head` on the original. This is due to quirks in how RevoScaleR works in Spark and Hadoop.
+
 `copy_to`, `collect` and `compute` are for copying _datasets_ (R objects, including data frames and Xdf files) to and from HDFS. To transfer arbitrary files and directories, dplyrXdf also provides the `hdfs_upload` and `hdfs_download` functions. If you've used the base R function `download.file` or a command-line file transfer utility like `ftp` or `pscp`, the syntax should be familiar: `hdfs_download(src, dest)` downloads the file at `src` to the location `dest`, while `hdfs_upload(src, dest)` uploads `src` to `dest`.
+
 
 ```{r}
 # create a csv file and upload it
-write.csv(flights, "flights.csv")
+write.csv(flights, "flights.csv", row.names=FALSE)
 hdfs_upload("flights.csv", "/tmp")
 ```
 
@@ -160,11 +165,11 @@ Most of the single-table dplyr verbs supported by dplyrXdf will work for dataset
 - `mutate` and `transmute` only work for ungrouped data. Consider whether you really need to group before transforming; many transformations do not require grouping information. If your data fits into memory, you can also use `do` or `do_xdf`.
 - `summarise` on HDFS data will always send the output to the edge node/remote client, before writing it back to the cluster. This is a consequence of the way in which `rxCube` and `rxSummary` work, by creating an in-memory data structure.
 
-Two-table verbs are currently not supported for datasets in HDFS.
+Support for two-table verbs is more limited for datasets in HDFS than in the native filesystem. First, only the Spark compute context supports joining (not Hadoop), and only for Xdf data sources and Spark data sources (`RxHiveData`, `RxOrcData` and `RxParquetData`). Only the "standard" joins (`left_join`, `right_join`, `inner_join` and `full_join`) are supported.
 
 
 ```{r, echo=FALSE, message=FALSE, results="hide"}
-hdfs_dir_remove(c("flights", "/tmp/mydata"))
+hdfs_dir_remove(c("flights", "flights2", "/tmp/mydata", "/tmp/flights.csv"))
 ```
 
 

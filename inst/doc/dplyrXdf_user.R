@@ -1,6 +1,6 @@
 ## ---- echo = FALSE, message = FALSE--------------------------------------
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-options(dplyr.print_min = 5L, dplyr.print_max = 5L)
+knitr::opts_chunk$set(collapse=TRUE, comment="#>")
+options(dplyr.print_min=5L, dplyr.print_max=5L)
 
 ## ------------------------------------------------------------------------
 library(dplyrXdf) # also loads dplyr

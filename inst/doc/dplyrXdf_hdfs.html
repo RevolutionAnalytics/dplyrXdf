@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2017-08-06" />
+<meta name="date" content="2017-08-09" />
 
 <title>Working with HDFS</title>
 
@@ -70,37 +70,25 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Working with HDFS</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2017-08-06</em></h4>
+<h4 class="date"><em>2017-08-09</em></h4>
 
 
 
 <p>Microsoft R Server includes the ability to work with Hadoop and Spark clusters. As part of this, it also lets you work with datasets, in particular Xdf files, that are stored in HDFS.</p>
-<p>As of version 0.10.0, dplyrXdf also supports Xdf files in HDFS. Most of the basic dplyr verbs will work exactly the same as with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark.</p>
+<p>As of version 0.10.0, dplyrXdf also supports Xdf files in HDFS. Most verbs will work exactly the same as with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark. You will need to have Microsoft R Server version 9.0 or later to use dplyrXdf with HDFS, and ideally version 9.1 for grouped functionality.</p>
 <div id="basics-hadoop-spark-and-hdfs" class="section level2">
 <h2>Basics: Hadoop, Spark and HDFS</h2>
 <p>If you’re used to dplyr and how it handles databases, Microsoft R Server and dplyrXdf work a little differently. What dplyr calls a “src” (a remote data source) is handled by two related concepts in MRS: a <em>compute context</em> and a <em>filesystem</em>. The compute context determines where computations take place: on a local machine, in a database like SQL Server, or in a Hadoop or Spark cluster. The <em>filesystem</em> is where the data files are stored. Note that not all data sources have a filesystem: eg a SQL Server table is part of a database, not a filesystem as such.</p>
-<p>In general, there are only two filesystems you should have to deal with: the native filesystem, meaning the hard disk of the machine where your R session is running, and HDFS. To MRS and dplyrXdf, an Xdf file is much the same regardless of which filesystem it’s in (there are some limitations for HDFS files, but they are the exception, not the rule). You can use the same verbs and pipelines without having to worry about filesystem details.</p>
+<p>In general, there are only two filesystems you should have to deal with: the native filesystem, meaning the hard disk of the machine where your R session is running, and HDFS. To MRS and dplyrXdf, an Xdf file is much the same regardless of which filesystem it’s in (there are some limitations for HDFS files, but they are the exception, not the rule). You can use the same code and pipelines without having to worry about filesystem details.</p>
 <p>The compute context is important because it is how you benefit from the parallelism provided by Hadoop and Spark. If you are in the <code>RxHadoopMR</code> or <code>RxSpark</code> compute context, <em>and</em> your data is in HDFS, then the RevoScaleR functions will execute in parallel on the cluster worker nodes. If you are in a local compute context, and your data is in HDFS, then the data is streamed to the edge node for processing. Conversely, if you are in <code>RxHadoopMR</code> or <code>RxSpark</code> and your data is <em>not</em> in HDFS, then the RevoScaleR functions will throw an error. However, the compute context doesn’t change the way you <em>write</em> your code – only how it’s executed.</p>
 <p>For more information about working with HDFS, Hadoop and Spark, see the <a href="https://docs.microsoft.com/en-us/r-server/r/how-to-revoscaler-spark">documentation on MSDN</a>, or the Microsoft Learn Analytics <a href="https://github.com/Azure/LearnAnalytics-mrs-spark">course materials on Spark</a>.</p>
 </div>
-<div id="connecting-to-a-cluster" class="section level2">
-<h2>Connecting to a cluster</h2>
-<p>If you are logged into the edge node of a Hadoop or Spark cluster with Microsoft R Server installed, you don’t have to do anything more to access HDFS using the base RevoScaleR functions. To use dplyrXdf, though, you should also install the dplyr package on the edge and worker nodes (you don’t have to install dplyrXdf itself on the worker nodes).</p>
-<p>If you are on a standalone machine, you can login to the cluster remotely and access HDFS that way. You will obviously need dplyr and dplyrXdf installed on your remote machine in this case, but you don’t need them on the edge node. The following is some sample code to connect to a HDInsight Spark cluster from a (Windows) remote client. This logs into the cluster, starts the Spark application and sets the R compute context to <code>RxSpark</code>. The same code should work on most supported flavours of Spark and Hadoop (Cloudera, Hortonworks, etc).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">user &lt;-<span class="st"> &quot;username&quot;</span>
-host &lt;-<span class="st"> &quot;edge-node-name&quot;</span>
-shareDir &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;/var/RevoShare&quot;</span>, user, <span class="dt">sep=</span><span class="st">&quot;/&quot;</span>)
-hdfsShareDir &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;/user/RevoShare&quot;</span>, user, <span class="dt">sep=</span><span class="st">&quot;/&quot;</span>)
-<span class="kw">rxSparkConnect</span>(
-    <span class="dt">hdfsShareDir=</span>hdfsShareDir,
-    <span class="dt">shareDir=</span>shareDir,
-    <span class="dt">sshUsername=</span>user,
-    <span class="dt">sshHostname=</span>host,
-    <span class="dt">sshClientDir=</span><span class="st">&quot;C:</span><span class="ch">\\</span><span class="st">ssh</span><span class="ch">\\</span><span class="st">putty&quot;</span>,
-    <span class="dt">sshSwitches=</span><span class="st">'-i &quot;privatekey.ppk&quot;'</span>)</code></pre></div>
-<p>Your dplyrXdf code should not require changing, regardles of whether your R session is taking place on the edge node or remotely.</p>
-<div id="upload-and-download" class="section level3">
-<h3>Upload and download</h3>
+<div id="working-with-a-cluster" class="section level2">
+<h2>Working with a cluster</h2>
+<p>To use dplyrXdf on a cluster, you’ll have to install it, and dplyr, on the machine where you’ll be running your R sessions. This can be either the cluster edge node, or if you’re connecting remotely, on your remote machine. For full functionality, you should also install dplyr on the cluster worker nodes. You don’t need to install dplyrXdf on the worker nodes, though.</p>
+<p>Your dplyrXdf code should work the same regardless of whether you’re running on the edge node or a remote client. The package abstracts away the underlying differences between the two scenarios, so that from your point of view, you’re simply connected to a HDFS filesystem somewhere in the cloud. Similarly, dplyrXdf should work for all flavours of Spark and Hadoop that MRS supports (HDInsight, Cloudera, Hortonworks and MapR).</p>
+<div id="uploading-and-downloading" class="section level3">
+<h3>Uploading and downloading</h3>
 <p>There are a number of ways to get your data into and out of HDFS. Note that there are several data formats in use in Hadoop and Spark environments; dplyrXdf focuses mainly on Xdf files.</p>
 <p>To copy a dataset from the native filesystem into HDFS, use <code>copy_to</code>. This is the standard dplyr verb for copying data into a remote src. In this case, the src is a filesystem, which RevoScaleR represents via a <code>RxHdfsFileSystem</code> object:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyrXdf)
@@ -109,11 +97,11 @@ hdfsShareDir &lt;-<span class="st"> </span><span class="kw">paste</span>(<span c
 hd &lt;-<span class="st"> </span><span class="kw">RxHdfsFileSystem</span>()
 
 <span class="co"># copy a data frame into an Xdf file in HDFS</span>
-flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to</span>(hd, flights)
+flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to</span>(hd, flights, <span class="dt">path=</span><span class="st">&quot;.&quot;</span>)
 
 flightsHd
 <span class="co">#&gt; RxXdfData Source</span>
-<span class="co">#&gt; &quot;/user/sshuser/flights&quot;</span>
+<span class="co">#&gt; &quot;./flights&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: hdfs</span>
 <span class="co">#&gt;     hostName: default</span>
@@ -135,7 +123,7 @@ flightsHd
 <span class="co">#&gt; #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,</span>
 <span class="co">#&gt; #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</span></code></pre></div>
-<p>This will copy the flights table into HDFS, returning an Xdf data source object pointing to the file. If the path isn’t specified, the data is saved as an Xdf file in your HDFS home directory, normally <code>/user/&lt;username&gt;</code>. In this example we connected to the Spark cluster from a remote client, but <code>copy_to</code> works the same if you’re on the cluster edge node.</p>
+<p>This will copy the flights table into HDFS, returning an Xdf data source object pointing to the file. If the path isn’t specified, the data is saved as an Xdf file in your HDFS home directory, normally <code>/user/&lt;username&gt;</code>.</p>
 <p>You can also use <code>copy_to_hdfs</code>, which is a shortcut that saves having to create an explicit filesystem object:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as above</span>
 flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to_hdfs</span>(flights, <span class="dt">path=</span><span class="st">&quot;.&quot;</span>)</code></pre></div>
@@ -144,7 +132,7 @@ flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to_hdfs</span>(fli
 
 flightsLocal
 <span class="co">#&gt; tbl_xdf Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpWKTquH\dxTmpa5bc52ca6fea/flights&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\Rtmpgb6Y5q\dxTmpa7ac3bd54d46/flights&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: TRUE</span>
@@ -162,9 +150,10 @@ flightsLocal
 <span class="co">#&gt; #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,</span>
 <span class="co">#&gt; #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</span></code></pre></div>
-<p><code>copy_to</code>, <code>collect</code> and <code>compute</code> are for copying <em>datasets</em> (including data frames and Xdf files) to and from HDFS. To transfer arbitrary files, dplyrXdf also provides the <code>hdfs_upload</code> and <code>hdfs_download</code> functions. If you’ve used the base R function <code>download.file</code> or a command-line file transfer utility like <code>ftp</code> or <code>pscp</code>, the syntax should be familiar: <code>hdfs_download(src, dest)</code> downloads the file at <code>src</code> to the location <code>dest</code>, while <code>hdfs_upload(src, dest)</code> uploads <code>src</code> to <code>dest</code>.</p>
+<p>If you want to look at the first few rows of an Xdf file, it may be faster to use <code>compute</code> to copy the entire file off HDFS, and then run <code>head</code>, than to run <code>head</code> on the original. This is due to quirks in how RevoScaleR works in Spark and Hadoop.</p>
+<p><code>copy_to</code>, <code>collect</code> and <code>compute</code> are for copying <em>datasets</em> (R objects, including data frames and Xdf files) to and from HDFS. To transfer arbitrary files and directories, dplyrXdf also provides the <code>hdfs_upload</code> and <code>hdfs_download</code> functions. If you’ve used the base R function <code>download.file</code> or a command-line file transfer utility like <code>ftp</code> or <code>pscp</code>, the syntax should be familiar: <code>hdfs_download(src, dest)</code> downloads the file at <code>src</code> to the location <code>dest</code>, while <code>hdfs_upload(src, dest)</code> uploads <code>src</code> to <code>dest</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># create a csv file and upload it</span>
-<span class="kw">write.csv</span>(flights, <span class="st">&quot;flights.csv&quot;</span>)
+<span class="kw">write.csv</span>(flights, <span class="st">&quot;flights.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)
 <span class="kw">hdfs_upload</span>(<span class="st">&quot;flights.csv&quot;</span>, <span class="st">&quot;/tmp&quot;</span>)
 <span class="co">#&gt; [1] TRUE</span></code></pre></div>
 <p>If you uploaded a non-Xdf data source (like a csv file), you can then import it into Xdf format with <code>as_xdf</code>:</p>
@@ -172,14 +161,14 @@ flightsLocal
 flightsHd2 &lt;-<span class="st"> </span><span class="kw">as_xdf</span>(flightsCsv, <span class="dt">file=</span><span class="st">&quot;flights2&quot;</span>)
 
 <span class="kw">as_data_frame</span>(flightsHd2)
-<span class="co">#&gt; # A tibble: 336,776 x 20</span>
-<span class="co">#&gt;   .rxRowNames  year month   day dep_time sched_dep_time dep_delay arr_time</span>
-<span class="co">#&gt;         &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;int&gt;    &lt;int&gt;</span>
-<span class="co">#&gt; 1           1  2013     1     1      517            515         2      830</span>
-<span class="co">#&gt; 2           2  2013     1     1      533            529         4      850</span>
-<span class="co">#&gt; 3           3  2013     1     1      542            540         2      923</span>
-<span class="co">#&gt; 4           4  2013     1     1      544            545        -1     1004</span>
-<span class="co">#&gt; 5           5  2013     1     1      554            600        -6      812</span>
+<span class="co">#&gt; # A tibble: 336,776 x 19</span>
+<span class="co">#&gt;    year month   day dep_time sched_dep_time dep_delay arr_time</span>
+<span class="co">#&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;int&gt;    &lt;int&gt;</span>
+<span class="co">#&gt; 1  2013     1     1      517            515         2      830</span>
+<span class="co">#&gt; 2  2013     1     1      533            529         4      850</span>
+<span class="co">#&gt; 3  2013     1     1      542            540         2      923</span>
+<span class="co">#&gt; 4  2013     1     1      544            545        -1     1004</span>
+<span class="co">#&gt; 5  2013     1     1      554            600        -6      812</span>
 <span class="co">#&gt; # ... with 336,771 more rows, and 12 more variables: sched_arr_time &lt;int&gt;,</span>
 <span class="co">#&gt; #   arr_delay &lt;int&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,</span>
 <span class="co">#&gt; #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;int&gt;, distance &lt;int&gt;, hour &lt;int&gt;,</span>
@@ -187,19 +176,19 @@ flightsHd2 &lt;-<span class="st"> </span><span class="kw">as_xdf</span>(flightsC
 </div>
 <div id="note-on-composite-datasets" class="section level3">
 <h3>Note on composite datasets</h3>
-<p>Note that there are two kinds of Xdf files: standard and <em>composite</em>. A composite Xdf file is actually a directory containing multiple data and metadata files. The RevoScaleR functions can treat a composite Xdf as a single dataset, and so can dplyrXdf. However, Xdf files in HDFS must be composite in order to work properly; by default, <code>copy_to</code> will convert an existing Xdf file into composite, if it’s not already in that format.</p>
+<p>Note that there are two kinds of Xdf files: standard and <em>composite</em>. A composite Xdf file is actually a directory containing multiple data and metadata files. The RevoScaleR functions can treat a composite Xdf as a single dataset, and so can dplyrXdf. Xdf files in HDFS must be composite in order to work properly; by default, <code>copy_to</code> will convert an existing Xdf file into composite, if it’s not already in that format.</p>
 </div>
 </div>
 <div id="working-with-files-and-directories" class="section level2">
 <h2>Working with files and directories</h2>
 <p>dplyrXdf provides the following functions to let you manipulate files and directories in HDFS. By and large they wrap similar functions provided by the RevoScaleR package, which in turn call various Hadoop filesystem commands.</p>
 <ul>
-<li><code>hdfs_file_copy(src, dest)</code> copies the file or directory given by <code>src</code> to the location <code>dest</code>. It is vectorised in both <code>src</code> and dest<code>, meaning</code>src1<code>will be copied to</code>dest1<code>,</code>src2<code>to</code>dest2<code>, and so on. It is analogous to base R's</code>file.copy` for the native filesystem.</li>
+<li><code>hdfs_file_copy(src, dest)</code> copies the file or directory given by <code>src</code> to the location <code>dest</code>. It is vectorised in both <code>src</code> and <code>dest</code>, meaning <code>src1</code> will be copied to <code>dest1</code>, <code>src2</code> to <code>dest2</code>, and so on. It is analogous to base R’s <code>file.copy</code> for the native filesystem.</li>
 <li><code>hdfs_file_move(src, dest)</code> is similar, but moves files/directories. It is analogous to base R’s <code>file.rename</code>.</li>
 <li><code>hdfs_file_remove</code> deletes the path. Its counterpart in base R is <code>file.remove</code>.</li>
 <li><code>hdfs_dir_create</code> and <code>hdfs_dir_remove</code> create and delete directories. They are analogous to <code>dir.create</code> and <code>unlink(recursive=TRUE)</code>.</li>
 <li><code>hdfs_file_exists</code> and <code>hdfs_dir_exists</code> test for the existence of a file or directory, like base R’s <code>file.exists</code> and <code>dir.exists</code>.</li>
-<li><code>hdfs_dir</code> lists files in a HDFS directory, returning a vector of file names. It has a number of options for recursively listing subdirectories, returning subdirectories only (omitting files),</li>
+<li><code>hdfs_dir</code> lists files in a HDFS directory, returning a vector of file names. It has a number of options for recursively listing subdirectories, returning subdirectories only (omitting files), etc.</li>
 </ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># create a new directory</span>
 <span class="kw">hdfs_dir_create</span>(<span class="st">&quot;/tmp/mydata&quot;</span>)
@@ -217,28 +206,12 @@ flightsHd2 &lt;-<span class="st"> </span><span class="kw">as_xdf</span>(flightsC
 flightsHd3 &lt;-<span class="st"> </span><span class="kw">RxXdfData</span>(<span class="st">&quot;/tmp/mydata/flights&quot;</span>, <span class="dt">fileSystem=</span><span class="kw">RxHdfsFileSystem</span>())
 
 <span class="co"># read the data</span>
-<span class="kw">head</span>(flightsHd3)
-<span class="co">#&gt;   year month day dep_time sched_dep_time dep_delay arr_time sched_arr_time</span>
-<span class="co">#&gt; 1 2013     1   1      517            515         2      830            819</span>
-<span class="co">#&gt; 2 2013     1   1      533            529         4      850            830</span>
-<span class="co">#&gt; 3 2013     1   1      542            540         2      923            850</span>
-<span class="co">#&gt; 4 2013     1   1      544            545        -1     1004           1022</span>
-<span class="co">#&gt; 5 2013     1   1      554            600        -6      812            837</span>
-<span class="co">#&gt; 6 2013     1   1      554            558        -4      740            728</span>
-<span class="co">#&gt;   arr_delay carrier flight tailnum origin dest air_time distance hour</span>
-<span class="co">#&gt; 1        11      UA   1545  N14228    EWR  IAH      227     1400    5</span>
-<span class="co">#&gt; 2        20      UA   1714  N24211    LGA  IAH      227     1416    5</span>
-<span class="co">#&gt; 3        33      AA   1141  N619AA    JFK  MIA      160     1089    5</span>
-<span class="co">#&gt; 4       -18      B6    725  N804JB    JFK  BQN      183     1576    5</span>
-<span class="co">#&gt; 5       -25      DL    461  N668DN    LGA  ATL      116      762    6</span>
-<span class="co">#&gt; 6        12      UA   1696  N39463    EWR  ORD      150      719    5</span>
-<span class="co">#&gt;   minute           time_hour</span>
-<span class="co">#&gt; 1     15 2013-01-01 05:00:00</span>
-<span class="co">#&gt; 2     29 2013-01-01 05:00:00</span>
-<span class="co">#&gt; 3     40 2013-01-01 05:00:00</span>
-<span class="co">#&gt; 4     45 2013-01-01 05:00:00</span>
-<span class="co">#&gt; 5      0 2013-01-01 06:00:00</span>
-<span class="co">#&gt; 6     58 2013-01-01 05:00:00</span></code></pre></div>
+<span class="kw">names</span>(flightsHd3)
+<span class="co">#&gt;  [1] &quot;year&quot;           &quot;month&quot;          &quot;day&quot;            &quot;dep_time&quot;      </span>
+<span class="co">#&gt;  [5] &quot;sched_dep_time&quot; &quot;dep_delay&quot;      &quot;arr_time&quot;       &quot;sched_arr_time&quot;</span>
+<span class="co">#&gt;  [9] &quot;arr_delay&quot;      &quot;carrier&quot;        &quot;flight&quot;         &quot;tailnum&quot;       </span>
+<span class="co">#&gt; [13] &quot;origin&quot;         &quot;dest&quot;           &quot;air_time&quot;       &quot;distance&quot;      </span>
+<span class="co">#&gt; [17] &quot;hour&quot;           &quot;minute&quot;         &quot;time_hour&quot;</span></code></pre></div>
 </div>
 <div id="miscellaneous-functions" class="section level2">
 <h2>Miscellaneous functions</h2>
@@ -266,16 +239,16 @@ flightsHd3 &lt;-<span class="st"> </span><span class="kw">RxXdfData</span>(<span
 </div>
 <div id="unsupported-dplyr-verbs" class="section level2">
 <h2>Unsupported dplyr verbs</h2>
-<p>Most of the dplyr verbs supported by dplyrXdf will work for datasets in HDFS. The main exceptions are:</p>
+<p>Most of the single-table dplyr verbs supported by dplyrXdf will work for datasets in HDFS. The main exceptions are:</p>
 <ul>
-<li><code>arrange</code></li>
+<li><code>arrange</code> only works if the compute context is local</li>
 <li><code>distinct</code></li>
 <li><code>cbind</code> and <code>rbind</code></li>
 <li><code>sample_n</code> and <code>sample_frac</code></li>
-<li><code>anti_join</code> and <code>semi_join</code> (because they rely on <code>distinct</code>)</li>
 <li><code>mutate</code> and <code>transmute</code> only work for ungrouped data. Consider whether you really need to group before transforming; many transformations do not require grouping information. If your data fits into memory, you can also use <code>do</code> or <code>do_xdf</code>.</li>
-<li><code>summarise</code> on HDFS data will send the output to the edge node/remote client, before writing it back to the cluster. This is because of the way in which <code>rxCube</code> and <code>rxSummary</code> work, by creating an in-memory data structure.</li>
+<li><code>summarise</code> on HDFS data will always send the output to the edge node/remote client, before writing it back to the cluster. This is a consequence of the way in which <code>rxCube</code> and <code>rxSummary</code> work, by creating an in-memory data structure.</li>
 </ul>
+<p>Support for two-table verbs is more limited for datasets in HDFS than in the native filesystem. First, only the Spark compute context supports joining (not Hadoop), and only for Xdf data sources and Spark data sources (<code>RxHiveData</code>, <code>RxOrcData</code> and <code>RxParquetData</code>). Only the “standard” joins (<code>left_join</code>, <code>right_join</code>, <code>inner_join</code> and <code>full_join</code>) are supported.</p>
 </div>
 
 
