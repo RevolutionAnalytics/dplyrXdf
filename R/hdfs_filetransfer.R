@@ -66,12 +66,10 @@ hdfs_upload <- function(src, dest, overwrite=TRUE, nativeTarget="/tmp", ...)
     cmd <- paste(cmd, src, dest)
 
     ret <- rxHadoopCommand(cmd, ...)
-    if(ret)
+    if(ret && isRemoteHdfsClient())
     {
         cmd <- paste0("sudo rm -rf ", src)
-        if(isRemoteHdfsClient())
-            RevoScaleR:::rxRemoteCommand(rxGetComputeContext(), cmd)
-        else system(cmd)
+        RevoScaleR:::rxRemoteCommand(rxGetComputeContext(), cmd)
     }
     ret
 }
