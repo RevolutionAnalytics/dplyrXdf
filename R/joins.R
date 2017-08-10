@@ -2,7 +2,7 @@
 #'
 #' @param x, y Data sources to join.
 #' @param by Character vector of variables to join by. See \code{\link[dplyr]{join}} for details.
-#' @param copy If the data sources are not stored in the same filesystem, whether to copy y to x's location. Not currently implemented.
+#' @param copy If the data sources are not stored in the same filesystem, whether to copy y to x's location.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
 #' @param ... Not currently used.

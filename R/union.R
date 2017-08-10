@@ -12,7 +12,7 @@
 #' An object representing the joined data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
-#' \code{\link[dplyr]{setops}} in package dplyr
+#' \code{\link[dplyr]{setops}} and \code{\link[dplyr]{bind_rows}} in package dplyr, \code{rbind}
 #' @aliases setops union union_all intersect setdiff setequal
 #' @name setops
 NULL

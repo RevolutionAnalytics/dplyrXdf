@@ -113,7 +113,6 @@ alignVars <- function(x, y, by, yOrig)
 
 alignInputs <- function(x, y, by, yOrig)
 {
-
     asXdfOrDf <- function(data)
     {
         if(inherits(data, c("data.frame", "RxXdfData")))
@@ -176,7 +175,7 @@ alignInputs <- function(x, y, by, yOrig)
 
 
 # copied from dplyr:::common_by, dplyr:::`%||%`
-commonBy <- function (by = NULL, x, y) 
+commonBy <- function(by = NULL, x, y) 
 {
     # save metadata: important on Spark to minimise retrieving this
     xTypes <- tbl_types(x)
@@ -210,13 +209,9 @@ commonBy <- function (by = NULL, x, y)
 
 mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxArgs, suffix=c(".x", ".y"))
 {
-    # copy not used by dplyrXdf at the moment
-    if(copy)
-    {
-        warning("copy argument not yet implemented")
-    }
-
-    mergeFsCheck(x, y, .outFile, copy)
+    newxy <- mergeFsCheck(x, y, copy)
+    x <- newxy$x
+    y <- newxy$y
 
     grps <- group_vars(x)
     yOrig <- if(inherits(y, "RxFileData")) y@file else NULL
@@ -265,18 +260,23 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
 }
 
 
-mergeFsCheck <- function(x, y, outFile, copy)
+mergeFsCheck <- function(x, y, copy)
 {
     if(in_hdfs(x) != in_hdfs(y))
     {
         if(!copy)
             stop("x and y must both be in the same filesystem; use copy=TRUE to join", call.=FALSE)
-        else y <- copy_to(RxFileSystem(x), y)
+        if(in_hdfs(x))
+        {
+            xFs <- rxGetFileSystem(x)
+            y <- copy_to(xFs, path=get_dplyrxdf_dir(Xfs), overwrite=TRUE)
+        }
+        else y <- compute(y)
     }
 
     # nothing in HDFS: return early
     if(!in_hdfs(x) && !in_hdfs(y))
-        return(list(x, y))
+        return(list(x=x, y=y))
 
     xSupported <- inherits(x, c("RxSparkData", "RxXdfData"))
     ySupported <- inherits(y, c("RxSparkData", "RxXdfData"))
@@ -287,6 +287,6 @@ mergeFsCheck <- function(x, y, outFile, copy)
     if(!inherits(cc, "RxSpark"))
         stop("files in HDFS can only be merged in the Spark compute context", call.=FALSE)
 
-    list(x, y)
+    list(x=x, x=y)
 }
 
