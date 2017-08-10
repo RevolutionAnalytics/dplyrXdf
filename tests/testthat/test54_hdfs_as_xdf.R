@@ -4,8 +4,8 @@ context("Coerce to Xdf, HDFS")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
-mtt <- RxTextData("/user/sshuser/mttext.csv", fileSystem=RxHdfsFileSystem())
+mthc <- RxXdfData("mtcarsc", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
+mtt <- RxTextData("mttext.csv", fileSystem=RxHdfsFileSystem())
 mtc <- RxXdfData("mtcarsc", createCompositeSet=TRUE)
 
 write.csv(mtcars, "mttext.csv", row.names=FALSE)
@@ -27,8 +27,8 @@ test_that("local_exec works",
 
 test_that("copy_to works",
 {
-    if(hdfs_dir_exists("/user/sshuser/mtcarsc"))
-        rxHadoopRemoveDir("/user/sshuser/mtcarsc", skipTrash=TRUE)
+    if(hdfs_dir_exists("mtcarsc"))
+        rxHadoopRemoveDir("mtcarsc", skipTrash=TRUE)
     copy_to(RxHdfsFileSystem(), mtc, overwrite=TRUE)
     verifyCompositeData(mthc, "RxXdfData")
 })

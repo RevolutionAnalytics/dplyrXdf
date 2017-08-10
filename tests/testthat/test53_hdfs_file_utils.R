@@ -4,7 +4,7 @@ context("Xdf file utilities in HDFS")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("/user/sshuser/mtcarsc", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
+mthc <- RxXdfData("mtcarsc", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
 mtc <- RxXdfData("mtcarsc", fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE)
 
 
@@ -36,8 +36,8 @@ test_that("local_exec works",
 
 test_that("copy_to works",
 {
-    if(hdfs_dir_exists("/user/sshuser/mtcarsc"))
-        rxHadoopRemoveDir("/user/sshuser/mtcarsc", skipTrash=TRUE)
+    if(hdfs_dir_exists("mtcarsc"))
+        rxHadoopRemoveDir("mtcarsc", skipTrash=TRUE)
     copy_to(RxHdfsFileSystem(), mtc, overwrite=TRUE)
     verifyCompositeData(mthc, "RxXdfData")
 })
