@@ -4,7 +4,7 @@ execByCheck <- function(execLst)
     if(!all(ok))
     {
         errs <- sapply(execLst[!ok], function(x) x$status[[2]])
-        stop("Bad result from rxExecBy: ", errs[1])
+        stop("bad result from rxExecBy: ", errs[1])
     }
 }
 
@@ -16,7 +16,7 @@ execByResult <- function(.data, ...)
 
     # rxExecBy fails in local CC with relative path for HDFS data
     if(!inherits(cc, "RxDistributedHpa") && in_hdfs(.data) && substr(.data@file, 1, 1) != "/")
-        .data@file <- normalizeHdfsPath(.data@file)
+        .data <- modifyXdf(file=normalizeHdfsPath(.data@file))
 
     execLst <- rxExecBy(.data, ...)
     execByCheck(execLst)
