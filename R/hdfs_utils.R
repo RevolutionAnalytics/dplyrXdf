@@ -290,7 +290,6 @@ normalizeHdfsPath <- function(path)
     userDir <- getHdfsUserDir()
     path <- gsub("/\\./", "/", convertBS(path, TRUE))
     path <- sub("^\\./", "", path)
-    #dir <- dirname(path)
     if(path == ".")
         userDir
     else if(substr(path, 1, 1) != "/")
