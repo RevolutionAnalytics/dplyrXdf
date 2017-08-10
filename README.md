@@ -17,7 +17,7 @@ install.packages("devtools")
 devtools::install_github("RevolutionAnalytics/dplyrXdf", build_vignettes=FALSE)
 ```
 
-dplyrXdf 0.10 requires dplyr 0.7 and Microsoft R Server release 8.0 or higher. If you are on an earlier release of MRS and/or dplyr, you can install dplyr 0.9.2 instead: `install_github("RevolutionAnalytics/dplyrXdf@v0.9.2")`.
+dplyrXdf 0.10 requires dplyr 0.7 and Microsoft R Server release 8.0 or higher. If you are on an earlier release of MRS and/or dplyr, you can install dplyrXdf 0.9.2 instead: `install_github("RevolutionAnalytics/dplyrXdf@v0.9.2")`.
 
 ## Obtaining dplyr
 
