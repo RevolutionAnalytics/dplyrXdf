@@ -136,7 +136,7 @@ hdfs_dir_remove <- function(path, ..., convert_backslashes=TRUE)
 #' \code{hdfs_file_copy} and \code{hdfs_file_move} copy and move files. They are analogous to \code{file.copy} and \code{file.rename} for the native filesystem. Unlike \code{\link{rxHadoopCopy}} and \code{\link{rxHadoopMove}}, they are vectorised in both \code{src} and \code{dest}.
 #' @rdname hdfs
 #' @export
-hdfs_file_copy <- function(src, dest, ..., overwrite=TRUE, convert_backslashes=TRUE)
+hdfs_file_copy <- function(src, dest, ..., convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     src <- convertBS(src, convert_backslashes)

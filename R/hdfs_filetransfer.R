@@ -17,25 +17,30 @@
 #' \code{\link{download.file}}, \code{\link{rxHadoopCopyFromLocal}}, \code{\link{rxHadoopCopyFromClient}}
 #' @rdname hdfs_filetransfer
 #' @export
-hdfs_upload <- function(src, dest, overwrite=TRUE, nativeTarget="/tmp", ...)
+hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
 {
     detectHdfsConnection()
     isDir <- dir.exists(src)
 
-    if(!overwrite)
+    destExists <- if(isDir)
+        hdfs_dir_exists(file.path(dest, basename(src), fsep="/"))
+    else
     {
-        exists <- if(isDir)
-            hdfs_dir_exists(file.path(dest, basename(src), fsep="/"))
-        else
+        isDestDir <- hdfs_dir_exists(dest)
+        if(isDestDir)
+            hdfs_file_exists(file.path(dest, basename(src), fsep="/"))
+        else hdfs_file_exists(dest)
+    }
+    if(destExists)
+    {
+        if(overwrite)
         {
-            isDestDir <- hdfs_dir_exists(dest)
-            if(isDestDir)
-                hdfs_file_exists(file.path(dest, basename(src), fsep="/"))
-            else hdfs_file_exists(dest)
+            # copyFromLocal can overwrite files
+            if(isDir)
+                hdfs_dir_remove(file.path(dest, basename(src), fsep="/"))
         }
-        if(exists)
-            stop(sprintf("target %s exists; set overwrite=TRUE to replace it",
-                if(isDir) "directory" else "file"))
+        else stop(sprintf("target %s exists; set overwrite=TRUE to replace it",
+                          if(isDir) "directory" else "file"))
     }
 
     # based on rxHadoopCopyFromClient
@@ -77,25 +82,30 @@ hdfs_upload <- function(src, dest, overwrite=TRUE, nativeTarget="/tmp", ...)
 
 #' @rdname hdfs_filetransfer
 #' @export
-hdfs_download <- function(src, dest, overwrite=TRUE, nativeTarget="/tmp", ...)
+hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
 {
     detectHdfsConnection()
     isDir <- hdfs_dir_exists(src)
 
-    if(!overwrite)
+    destExists <- if(isDir)
+        dir.exists(file.path(dest, basename(src)))
+    else
     {
-        exists <- if(isDir)
-            dir.exists(file.path(dest, basename(src)))
-        else
+        isDestDir <- hdfs_dir_exists(dest)
+        if(isDestDir)
+            file.exists(file.path(dest, basename(src)))
+        else file.exists(dest)
+    }
+    if(destExists)
+    {
+        if(!overwrite)
         {
-            isDestDir <- hdfs_dir_exists(dest)
-            if(isDestDir)
-                file.exists(file.path(dest, basename(src)))
-            else file.exists(dest)
+            if(isDir || isDestDir)
+                unlink(file.path(dest, basename(src)), recursive=TRUE)
+            else unlink(dest)
         }
-        if(exists)
-            stop(sprintf("target %s exists; set overwrite=TRUE to replace it",
-                if(isDir) "directory" else "file"))
+        else stop(sprintf("target %s exists; set overwrite=TRUE to replace it",
+                          if(isDir) "directory" else "file"))
     }
 
     localDest <- if(isRemoteHdfsClient()) nativeTarget else dest
