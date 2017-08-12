@@ -3,7 +3,7 @@
 #' Functions to detect and coerce to Xdf data source objects.
 #'
 #' @param .data An R object that can be coerced to an Xdf data source. This includes another existing Xdf data source; see details below.
-#' @param file The path/filename for the Xdf data file.
+#' @param file The path/filename for the Xdf data file. If not supplied, this is taken from \code{.data}.
 #' @param composite Whether to create a composite Xdf. Defaults to TRUE if \code{.data} is stored in HDFS, or if a HDFS connection is detected; FALSE otherwise.
 #' @param overwrite Whether to overwrite any existing file.
 #' @param ... Other arguments to pass to \code{\link{rxDataStep}}.

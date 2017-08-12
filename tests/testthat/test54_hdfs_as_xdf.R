@@ -4,9 +4,9 @@ context("Coerce to Xdf, HDFS")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("mtcarsc", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
+mthc <- RxXdfData("mtcars", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
 mtt <- RxTextData("mttext.csv", fileSystem=RxHdfsFileSystem())
-mtc <- RxXdfData("mtcarsc", createCompositeSet=TRUE)
+mtc <- RxXdfData("mtcars", createCompositeSet=TRUE)
 
 write.csv(mtcars, "mttext.csv", row.names=FALSE)
 if(isRemoteHdfsClient()) rxHadoopCopyFromClient("mttext.csv", hdfsDest=".") else rxHadoopCopyFromLocal("mttext.csv", ".")
@@ -27,9 +27,9 @@ test_that("local_exec works",
 
 test_that("copy_to works",
 {
-    if(hdfs_dir_exists("mtcarsc"))
-        rxHadoopRemoveDir("mtcarsc", skipTrash=TRUE)
-    copy_to(RxHdfsFileSystem(), mtc)
+    if(hdfs_dir_exists("mtcars"))
+        rxHadoopRemoveDir("mtcars", skipTrash=TRUE)
+    copy_to_hdfs(mtc, name="mtcars")
     verifyCompositeData(mthc, "RxXdfData")
 })
 
@@ -62,7 +62,7 @@ test_that("as_composite_xdf works",
 
 test_that("as_xdf works, tbl input",
 {
-    tbl0 <- mutate(mthc)
+    tbl0 <- as(mthc, "tbl_xdf")
     tbl <- as_xdf(tbl0)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
     expect_identical(tbl0@file, tbl@file)
@@ -75,13 +75,13 @@ test_that("as_xdf works, tbl input",
 
 test_that("as_standard_xdf works, tbl input",
 {
-    tbl0 <- mutate(mthc)
+    tbl0 <- as(mthc, "tbl_xdf")
     expect_error(tbl <- as_standard_xdf(tbl0))
 })
 
 test_that("as_composite_xdf works, tbl input",
 {
-    tbl0 <- mutate(mthc)
+    tbl0 <- as(mthc, "tbl_xdf")
     tbl <- as_composite_xdf(tbl0)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 

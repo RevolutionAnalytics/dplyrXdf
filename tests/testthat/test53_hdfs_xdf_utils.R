@@ -4,8 +4,8 @@ context("Xdf file utilities in HDFS")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("mtcarsc", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
-mtc <- RxXdfData("mtcarsc", fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE)
+mthc <- RxXdfData("mtcars", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
+mtc <- RxXdfData("mtcars", fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE)
 
 
 verifyHdfsData <- function(xdf, expectedClass)
@@ -48,7 +48,7 @@ test_that("rename works",
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
     expect_false(hdfs_dir_exists(mthc@file))
 
-    rename_xdf(tbl, "mtcarsc")
+    rename_xdf(tbl, "mtcars")
     expect_true(verifyCompositeData(mthc, "RxXdfData"))
     expect_false(hdfs_dir_exists(tbl@file))
 
@@ -71,7 +71,7 @@ test_that("copy and move work",
     # copy to different dir
     tbl <- copy_xdf(mthc, test2)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
-    expect_identical(.path(tbl@file), .path(file.path(test2, "mtcarsc")))
+    expect_identical(.path(tbl@file), .path(file.path(test2, "mtcars")))
 
     # move to different dir
     tbl2 <- move_xdf(tbl2, test2)
@@ -113,7 +113,7 @@ test_that("copy and move work",
     expect_identical(.path(tbl2@file), dest2)
 
     # recreate original file
-    copy_to(RxHdfsFileSystem(), mtc, overwrite=TRUE)
+    copy_to_hdfs(mtc, name="mtcars")
 })
 
 test_that("persist works",
@@ -140,6 +140,6 @@ test_that("collect and compute work",
 })
 
 
-hdfs_dir_remove(c("mtcars", "mtcarsc", "test53", "test53a", test2), skipTrash=TRUE)
-unlink(c("mtcars", "mtcarsc"), recursive=TRUE)
+hdfs_dir_remove(c("mtcars", "test53", "test53a", test2), skipTrash=TRUE)
+unlink("mtcars", recursive=TRUE)
 
