@@ -43,5 +43,5 @@ Set operations on data sources
 Currently, only \code{union} and \code{union_all} are supported for RevoScaleR data sources. The code uses \code{rxDataStep(append="rows")} to do the union; this can be much faster than using \code{rxMerge(type="union")}.
 }
 \seealso{
-\code{\link[dplyr]{setops}} in package dplyr
+\code{\link[dplyr]{setops}} and \code{\link[dplyr]{bind_rows}} in package dplyr, \code{rbind}
 }

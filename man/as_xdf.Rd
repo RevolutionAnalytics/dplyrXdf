@@ -5,11 +5,11 @@
 \alias{as_standard_xdf}
 \alias{as_xdf}
 \alias{as_xdf.RxXdfData}
-\alias{as_xdf.RxFileData}
 \alias{as_xdf.RxDataSource}
 \alias{as_xdf.default}
 \alias{is_xdf}
 \alias{is_composite_xdf}
+\alias{is_standard_xdf}
 \title{Detect and coerce to Xdf data source objects}
 \usage{
 as_composite_xdf(...)
@@ -18,28 +18,27 @@ as_standard_xdf(...)
 
 as_xdf(.data, ...)
 
-\method{as_xdf}{RxXdfData}(.data, file = NULL, composite = NULL,
-  overwrite = TRUE, ...)
+\method{as_xdf}{RxXdfData}(.data, file = NULL,
+  composite = is_composite_xdf(.data), overwrite = FALSE, ...)
 
-\method{as_xdf}{RxFileData}(.data, file = NULL, composite = in_hdfs(.data),
-  overwrite = TRUE, ...)
+\method{as_xdf}{RxDataSource}(.data, file = NULL,
+  composite = in_hdfs(.data), overwrite = FALSE, ...)
 
-\method{as_xdf}{RxDataSource}(.data, file = NULL, composite = NULL,
-  overwrite = TRUE, ...)
-
-\method{as_xdf}{default}(.data, file = NULL, composite = NULL,
-  overwrite = TRUE, ...)
+\method{as_xdf}{default}(.data, file = NULL, composite = FALSE,
+  overwrite = FALSE, ...)
 
 is_xdf(x)
 
 is_composite_xdf(x)
+
+is_standard_xdf(x)
 }
 \arguments{
 \item{...}{Other arguments to pass to \code{\link{rxDataStep}}.}
 
 \item{.data}{An R object that can be coerced to an Xdf data source. This includes another existing Xdf data source; see details below.}
 
-\item{file}{The path/filename for the Xdf data file.}
+\item{file}{The path/filename for the Xdf data file. If not supplied, this is taken from \code{.data}.}
 
 \item{composite}{Whether to create a composite Xdf. Defaults to TRUE if \code{.data} is stored in HDFS, or if a HDFS connection is detected; FALSE otherwise.}
 
@@ -48,7 +47,7 @@ is_composite_xdf(x)
 \item{x}{An R object.}
 }
 \value{
-For the \code{as} functions, an Xdf data source object pointing to the created file. For the \code{is} functions, a TRUE/FALSE value.
+For the \code{as} functions, an Xdf data source object pointing to the created file. For the \code{is} functions, a logical value.
 }
 \description{
 Functions to detect and coerce to Xdf data source objects.
@@ -66,7 +65,7 @@ The \code{file} argument gives the name of the Xdf file to create. If not specif
 
 You can use the \code{as} functions with any RevoScaleR data source, or otherwise with any R object that can be turned into a data frame. The resulting Xdf file will be created in the same filesystem as the input data source. If the input does not have a filesystem, for example if it is an in-database table or a data frame, the file is created in the native filesystem.
 
-The \code{is_xdf} function returns TRUE if \code{x} is an Xdf data source object; ie, it inherits from the \code{RxXdfData} class. This includes both raw Xdf data sources and \code{tbl_xdf} objects as created by dplyrXdf. The \code{is_composite_xdf} function returns TRUE if \code{x} is a \emph{composite} Xdf data source.
+The \code{is_xdf} function returns TRUE if \code{x} is an Xdf data source object; ie, it inherits from the \code{RxXdfData} class. This includes both raw Xdf data sources and \code{tbl_xdf} objects as created by dplyrXdf. The \code{is_composite_xdf} function returns TRUE if \code{x} is a \emph{composite} Xdf data source, and \code{is_standard_xdf} returns TRUE if \code{x} is an Xdf but not a composite Xdf.
 
 Detecting whether an object is a composite Xdf can be tricky and \code{is_composite_xdf} goes through a few steps to do this. If \code{x} has a non-NULL \code{createCompositeSet} slot, then that value is returned. Otherwise, it checks whether the \code{file} slot refers to an existing directory, whose name does \emph{not} have an extension (that is, \code{"foo"} qualifies as a valid filename for a composite Xdf, but not \code{"foo.xdf"}). This is necessary because of the semantics of \code{rxDataStep}.
 

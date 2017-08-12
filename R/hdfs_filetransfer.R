@@ -39,7 +39,7 @@ hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
             if(isDir)
                 hdfs_dir_remove(file.path(dest, basename(src), fsep="/"))
         }
-        else stop(sprintf("target %s exists; set overwrite=TRUE to replace it",
+        else stop(sprintf("destination %s exists; set overwrite=TRUE to replace it",
                           if(isDir) "directory" else "file"))
     }
 
@@ -104,7 +104,7 @@ hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
                 unlink(file.path(dest, basename(src)), recursive=TRUE)
             else unlink(dest)
         }
-        else stop(sprintf("target %s exists; set overwrite=TRUE to replace it",
+        else stop(sprintf("destination %s exists; set overwrite=TRUE to replace it",
                           if(isDir) "directory" else "file"))
     }
 

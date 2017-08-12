@@ -28,7 +28,7 @@ hdfs_dir_create(path, ..., convert_backslashes = TRUE)
 
 hdfs_dir_remove(path, ..., convert_backslashes = TRUE)
 
-hdfs_file_copy(src, dest, ..., overwrite = TRUE, convert_backslashes = TRUE)
+hdfs_file_copy(src, dest, ..., convert_backslashes = TRUE)
 
 hdfs_file_move(src, dest, ..., convert_backslashes = TRUE)
 

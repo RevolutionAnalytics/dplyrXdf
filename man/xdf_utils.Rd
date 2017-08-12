@@ -7,9 +7,9 @@
 \alias{delete_xdf}
 \title{Utility functions for working with Xdf files}
 \usage{
-copy_xdf(src, dest, overwrite = TRUE)
+copy_xdf(src, dest, overwrite = FALSE)
 
-move_xdf(src, dest, overwrite = TRUE)
+move_xdf(src, dest, overwrite = FALSE)
 
 rename_xdf(src, dest)
 

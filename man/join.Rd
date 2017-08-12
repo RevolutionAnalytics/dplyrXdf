@@ -39,7 +39,7 @@
 
 \item{by}{Character vector of variables to join by. See \code{\link[dplyr]{join}} for details.}
 
-\item{copy}{If the data sources are not stored in the same filesystem, whether to copy y to x's location. Not currently implemented.}
+\item{copy}{If the data sources are not stored in the same filesystem, whether to copy y to x's location.}
 
 \item{.outFile}{Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.}
 

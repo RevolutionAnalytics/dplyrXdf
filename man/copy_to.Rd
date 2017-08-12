@@ -6,8 +6,7 @@
 \alias{copy_to_hdfs}
 \title{Upload a dataset to HDFS}
 \usage{
-\method{copy_to}{RxHdfsFileSystem}(dest, df, path = NULL, overwrite = FALSE,
-  force_composite = TRUE, ...)
+\method{copy_to}{RxHdfsFileSystem}(dest, df, name = NULL, ...)
 
 copy_to_hdfs(...)
 }
@@ -16,13 +15,9 @@ copy_to_hdfs(...)
 
 \item{df}{A dataset: can be a filename, an Xdf data source object, another RevoScaleR data source, or anything that can be coerced to a data frame.}
 
-\item{path}{The HDFS directory in which to store the uploaded dataset. Defaults to the user's HDFS home directory.}
+\item{name}{The filename, optionally including the path, for the uploaded Xdf file. Defaults to the name of the source dataset, in the user's HDFS home directory.}
 
-\item{overwrite}{Whether to overwrite any existing file.}
-
-\item{...}{For \code{copy_to}, further arguments to \code{\link{rxHadoopCommand}}.}
-
-\item{force_composite:}{Whether to force the uploaded dataset to be a composite Xdf file. See details below.}
+\item{...}{Further arguments to \code{\link{rxHadoopCommand}}.}
 }
 \value{
 An Xdf data source object pointing to the uploaded data.
@@ -35,11 +30,15 @@ This is the RevoScaleR HDFS method for the dplyr \code{\link[dplyr]{copy_to}} fu
 
 The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the uploading is a two-stage process: the data is first transferred to the native filesystem of the edge node, and then copied from the edge node into HDFS.
 
-The \code{force_composite} argument sets whether an existing Xdf file should be converted to composite format before uploading, if it is not already so. Xdf files stored in HDFS must be composite to work properly. Datasets that are not in Xdf format (data frames and other RevoScaleR data sources, such as text files) are always uploaded as composite.
-
 The \code{copy_to_hdfs} function is a simple wrapper that avoids having to create an explicit filesystem object.
 }
+\section{Note on composite Xdf}{
+
+There are actually two kinds of Xdf files: standard and _composite_. A composite Xdf file is a directory containing multiple data and metadata files, which the RevoScaleR functions treat as a single dataset. Xdf files in HDFS must be composite in order to work properly; \code{copy_to} will convert an existing Xdf file into composite, if it's not already in that format. Non-Xdf datasets (data frames and other RevoScaleR data sources, such as text files) will similarly be uploaded as composite.
+}
+
 \seealso{
 \code{\link{rxHadoopCopyFromClient}}, \code{\link{rxHadoopCopyFromLocal}},
-\code{\link{collect}} and \code{\link{compute}} for downloading data from HDFS
+\code{\link{collect}} and \code{\link{compute}} for downloading data from HDFS,
+\code{\link{as_xdf}}, \code{\link{as_composite_xdf}}
 }
