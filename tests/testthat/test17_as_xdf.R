@@ -20,148 +20,148 @@ verifyCompositeData <- function(xdf, expectedClass)
 
 test_that("as_xdf works",
 {
-    tbl <- as_xdf(mtx)
+    tbl <- as_xdf(mtx, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
     expect_identical(mtx@file, tbl@file)
 
-    tbl <- as_xdf(mtx, file="test17.xdf")
+    tbl <- as_xdf(mtx, file="test17.xdf", overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 
-    tbl <- as_xdf(mtx, file="test17", composite=TRUE)
+    tbl <- as_xdf(mtx, file="test17", composite=TRUE, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
 test_that("as_standard_xdf works",
 {
-    tbl <- as_standard_xdf(mtx)
+    tbl <- as_standard_xdf(mtx, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
     expect_identical(mtx@file, tbl@file)
 
-    tbl <- as_standard_xdf(mtx, file="test17.xdf")
+    tbl <- as_standard_xdf(mtx, file="test17.xdf", overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 })
 
 test_that("as_composite_xdf works",
 {
-    tbl <- as_composite_xdf(mtx)
+    tbl <- as_composite_xdf(mtx, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    tbl <- as_composite_xdf(mtx, file="test17")
+    tbl <- as_composite_xdf(mtx, file="test17", overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 })
 
 test_that("as_xdf works, composite input",
 {
-    tbl <- as_xdf(mtc)
+    tbl <- as_xdf(mtc, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
     expect_identical(mtc@file, tbl@file)
 
-    tbl <- as_xdf(mtc, file="test17")
+    tbl <- as_xdf(mtc, file="test17", overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    tbl <- as_xdf(mtc, file="test17.xdf", composite=FALSE)
+    tbl <- as_xdf(mtc, file="test17.xdf", composite=FALSE, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 })
 
 test_that("as_standard_xdf works, composite input",
 {
-    tbl <- as_standard_xdf(mtc)
+    tbl <- as_standard_xdf(mtc, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 
-    tbl <- as_standard_xdf(mtc, file="test17.xdf")
+    tbl <- as_standard_xdf(mtc, file="test17.xdf", overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 })
 
 test_that("as_composite_xdf works, composite input",
 {
-    tbl <- as_composite_xdf(mtc)
+    tbl <- as_composite_xdf(mtc, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
     expect_identical(mtc@file, tbl@file)
 
-    tbl <- as_composite_xdf(mtc, file="test17")
+    tbl <- as_composite_xdf(mtc, file="test17", overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 })
 
 test_that("as_xdf works, tbl input",
 {
-    tbl0 <- mutate(mtx)
-    tbl <- as_xdf(tbl0)
+    tbl0 <- as(mtx, "tbl_xdf")
+    tbl <- as_xdf(tbl0, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
     expect_identical(tbl0@file, tbl@file)
 
-    tbl <- as_xdf(tbl0, "test17.xdf")
+    tbl <- as_xdf(tbl0, "test17.xdf", overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 
-    tbl <- as_xdf(tbl0, "test17", composite=TRUE)
+    tbl <- as_xdf(tbl0, "test17", composite=TRUE, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
 test_that("as_standard_xdf works, tbl input",
 {
-    tbl0 <- mutate(mtx)
-    tbl <- as_standard_xdf(tbl0)
+    tbl0 <- as(mtx, "tbl_xdf")
+    tbl <- as_standard_xdf(tbl0, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
     expect_identical(tbl0@file, tbl@file)
 
-    tbl <- as_standard_xdf(tbl0, "test17.xdf")
+    tbl <- as_standard_xdf(tbl0, "test17.xdf", overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 })
 
 test_that("as_composite_xdf works, tbl input",
 {
-    tbl0 <- mutate(mtx)
-    tbl <- as_composite_xdf(tbl0)
+    tbl0 <- as(mtx, "tbl_xdf")
+    tbl <- as_composite_xdf(tbl0, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    tbl <- as_composite_xdf(tbl0, "test17")
+    tbl <- as_composite_xdf(tbl0, "test17", overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
 test_that("as_xdf works, text input",
 {
-    tbl <- as_xdf(mtt)
+    tbl <- as_xdf(mtt, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 
-    tbl <- as_xdf(mtt, "test17.xdf")
+    tbl <- as_xdf(mtt, "test17.xdf", overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 
-    tbl <- as_xdf(mtt, "test17", composite=TRUE)
+    tbl <- as_xdf(mtt, "test17", composite=TRUE, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
 test_that("as_standard_xdf works, text input",
 {
-    tbl <- as_standard_xdf(mtt)
+    tbl <- as_standard_xdf(mtt, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 })
 
 test_that("as_composite_xdf works, text input",
 {
-    tbl <- as_composite_xdf(mtt)
+    tbl <- as_composite_xdf(mtt, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
 test_that("as_xdf works, data frame input",
 {
-    tbl <- as_xdf(mtcars)
+    tbl <- as_xdf(mtcars, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 
-    tbl <- as_xdf(mtcars, "test17.xdf")
+    tbl <- as_xdf(mtcars, "test17.xdf", overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 
-    tbl <- as_xdf(mtcars, "test17", composite=TRUE)
+    tbl <- as_xdf(mtcars, "test17", composite=TRUE, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
 test_that("as_standard_xdf works, data frame input",
 {
-    tbl <- as_standard_xdf(mtcars)
+    tbl <- as_standard_xdf(mtcars, overwrite=TRUE)
     expect_true(verifyData(tbl, "RxXdfData"))
 })
 
 test_that("as_composite_xdf works, data frame input",
 {
-    tbl <- as_composite_xdf(mtcars)
+    tbl <- as_composite_xdf(mtcars, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
