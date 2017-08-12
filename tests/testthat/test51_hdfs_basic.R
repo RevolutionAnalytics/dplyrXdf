@@ -4,14 +4,13 @@ context("HDFS functionality")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("mtcarsc", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
-
-
 verifyHdfsData <- function(xdf, expectedClass)
 {
     isTRUE(xdf@createCompositeSet) && rxHadoopFileExists(xdf@file) && class(xdf) == expectedClass # test for exact class
 }
 
+if(hdfs_dir_exists("mtcars")) hdfs_dir_remove("mtcars")
+mthc <- copy_to_hdfs(tibble::remove_rownames(mtcars), name="mtcars")
 
 test_that("filter works",
 {
@@ -78,6 +77,12 @@ test_that("factorise works",
     expect_true(verifyHdfsData(tbl, "tbl_xdf") && varTypes(tbl)["cyl"] == "factor")
 })
 
+test_that("rename works",
+{
+    tbl <- mthc %>% rename(mpg2=mpg)
+    expect_true(verifyHdfsData(tbl, "tbl_xdf") && names(tbl)[1] == "mpg2")
+})
+
 test_that("output to data frame works",
 {
     tbl <- mthc %>% filter(mpg > 15, cyl <= 6, .outFile=NULL)
@@ -119,4 +124,4 @@ test_that("output to xdf works",
 })
 
 
-rxHadoopRemoveDir("test16")
+hdfs_dir_remove(c("mtcars", "test16"))

@@ -56,7 +56,7 @@ make_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
         if(!.dxOptions$hdfsWorkDirCreated)
         {
             message("Creating HDFS working directory")
-            res <- rxHadoopMakeDir(path)
+            res <- hdfs_dir_create(path)
 
             if(res)
                 .dxOptions$hdfsWorkDirCreated <- TRUE
@@ -83,22 +83,20 @@ make_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
 clean_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
 {
     fileSystem <- validateFileSystem(fileSystem)
+    path <- get_dplyrxdf_dir(fileSystem)
 
     if(inherits(fileSystem, "RxNativeFileSystem"))
     {
-        path <- get_dplyrxdf_dir("native")
         files <- dir(path, full.names=TRUE)
         unlink(files, recursive=TRUE)
     }
     else if(inherits(fileSystem, "RxHdfsFileSystem"))
     {
-        path <- get_dplyrxdf_dir("hdfs")
-
         pathExists <- hdfs_dir_exists(path)
         if(pathExists)
         {
             files <- hdfs_dir(path, full_path=TRUE)
-            rxHadoopRemoveDir(files, skipTrash=TRUE)
+            hdfs_dir_remove(files, skipTrash=TRUE)
         }
     }
 

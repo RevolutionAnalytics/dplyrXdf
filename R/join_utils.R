@@ -117,9 +117,9 @@ alignInputs <- function(x, y, by, yOrig)
     {
         if(inherits(data, c("data.frame", "RxXdfData")))
             data
-        else if(inherits(data, "RxFileData"))
+        else if(inherits(data, "RxDataSource"))
             as(data, "tbl_xdf")
-        else stop("not a local data source format", call.=FALSE)
+        else stop("not a valid data source format", call.=FALSE)
     }
 
     # data must be in xdf or data frame format, import if not
@@ -207,6 +207,37 @@ commonBy <- function(by = NULL, x, y)
 }
 
 
+mergeFsCheck <- function(x, y, copy)
+{
+    if(in_hdfs(x) != in_hdfs(y))
+    {
+        if(!copy)
+            stop("x and y must both be in the same filesystem; use copy=TRUE to join", call.=FALSE)
+        if(in_hdfs(x))
+        {
+            xFs <- rxGetFileSystem(x)
+            y <- copy_to(xFs, y, get_dplyrxdf_dir(Xfs))
+        }
+        else y <- compute(y)
+    }
+
+    # nothing in HDFS: return early
+    if(!in_hdfs(x) && !in_hdfs(y))
+        return(list(x=x, y=y))
+
+    xSupported <- inherits(x, c("RxSparkData", "RxXdfData"))
+    ySupported <- inherits(y, c("RxSparkData", "RxXdfData"))
+    if(!xSupported || !ySupported)
+        stop("unsupported HDFS file type for merge", call.=FALSE)
+
+    cc <- rxGetComputeContext()
+    if(!inherits(cc, "RxSpark"))
+        stop("files in HDFS can only be merged in the Spark compute context", call.=FALSE)
+
+    list(x=x, y=y)
+}
+
+
 mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxArgs, suffix=c(".x", ".y"))
 {
     newxy <- mergeFsCheck(x, y, copy)
@@ -259,34 +290,4 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
     simpleRegroup(output, grps)
 }
 
-
-mergeFsCheck <- function(x, y, copy)
-{
-    if(in_hdfs(x) != in_hdfs(y))
-    {
-        if(!copy)
-            stop("x and y must both be in the same filesystem; use copy=TRUE to join", call.=FALSE)
-        if(in_hdfs(x))
-        {
-            xFs <- rxGetFileSystem(x)
-            y <- copy_to(xFs, path=get_dplyrxdf_dir(Xfs), overwrite=TRUE)
-        }
-        else y <- compute(y)
-    }
-
-    # nothing in HDFS: return early
-    if(!in_hdfs(x) && !in_hdfs(y))
-        return(list(x=x, y=y))
-
-    xSupported <- inherits(x, c("RxSparkData", "RxXdfData"))
-    ySupported <- inherits(y, c("RxSparkData", "RxXdfData"))
-    if(!xSupported || !ySupported)
-        stop("unsupported HDFS file type for merge", call.=FALSE)
-
-    cc <- rxGetComputeContext()
-    if(!inherits(cc, "RxSpark"))
-        stop("files in HDFS can only be merged in the Spark compute context", call.=FALSE)
-
-    list(x=x, x=y)
-}
 

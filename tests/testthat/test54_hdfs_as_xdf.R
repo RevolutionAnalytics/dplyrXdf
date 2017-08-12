@@ -29,7 +29,7 @@ test_that("copy_to works",
 {
     if(hdfs_dir_exists("mtcarsc"))
         rxHadoopRemoveDir("mtcarsc", skipTrash=TRUE)
-    copy_to(RxHdfsFileSystem(), mtc, overwrite=TRUE)
+    copy_to(RxHdfsFileSystem(), mtc)
     verifyCompositeData(mthc, "RxXdfData")
 })
 
@@ -39,7 +39,7 @@ test_that("as_xdf works",
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
     expect_identical(mthc@file, tbl@file)
 
-    tbl <- as_xdf(mthc, file="test53", composite=TRUE)
+    tbl <- as_xdf(mthc, file="test54", composite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
     expect_error(tbl <- as_xdf(mthc, composite=FALSE))
@@ -55,7 +55,7 @@ test_that("as_composite_xdf works",
     tbl <- as_composite_xdf(mthc)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    tbl <- as_composite_xdf(mthc, file="test53")
+    tbl <- as_composite_xdf(mthc, file="test54")
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
@@ -67,10 +67,10 @@ test_that("as_xdf works, tbl input",
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
     expect_identical(tbl0@file, tbl@file)
 
-    tbl <- as_xdf(tbl0, "test53")
+    tbl <- as_xdf(tbl0, "test54")
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    expect_error(tbl <- as_xdf(tbl0, "test53.xdf", composite=FALSE))
+    expect_error(tbl <- as_xdf(tbl0, "test54.xdf", composite=FALSE))
 })
 
 test_that("as_standard_xdf works, tbl input",
@@ -85,7 +85,7 @@ test_that("as_composite_xdf works, tbl input",
     tbl <- as_composite_xdf(tbl0)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    tbl <- as_composite_xdf(tbl0, "test53")
+    tbl <- as_composite_xdf(tbl0, "test54")
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
@@ -94,10 +94,10 @@ test_that("as_xdf works, text input",
     tbl <- as_xdf(mtt)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    tbl <- as_xdf(mtt, "test53", composite=TRUE)
+    tbl <- as_xdf(mtt, "test54", composite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    expect_error(tbl <- as_xdf(mtt, "test53.xdf", composite=FALSE))
+    expect_error(tbl <- as_xdf(mtt, "test54.xdf", composite=FALSE))
 })
 
 test_that("as_standard_xdf works, text input",
@@ -113,9 +113,9 @@ test_that("as_composite_xdf works, text input",
 
 
 testFiles <- hdfs_dir(pattern="^file")
-lapply(c("mtcarsc", "mttext", "test53"), hdfs_dir_remove, skipTrash=TRUE)
+hdfs_dir_remove(c("mtcarsc", "mttext", "test54"), skipTrash=TRUE)
 hdfs_file_remove("mttext.csv", skipTrash=TRUE)
 
-unlink(c("mtcarsc", "mttext.csv"), recursive=TRUE)
+unlink(c("mtcarsc", "mttext.csv", "test54"), recursive=TRUE)
 
 

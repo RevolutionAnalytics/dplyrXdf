@@ -4,17 +4,19 @@ context("HDFS joins, left source = xdf")
 
 detectHdfsConnection()
 
-xdf1 <- data.frame(a=letters[1:20], b=1:20, c=11:30, stringsAsFactors=FALSE)
-xdf2 <- data.frame(a=letters[7:26], d=as.character(1:20), e=11:30, stringsAsFactors=FALSE)
+df1 <- data.frame(a=letters[1:20], b=1:20, c=11:30, stringsAsFactors=FALSE)
+df2 <- data.frame(a=letters[7:26], d=as.character(1:20), e=11:30, stringsAsFactors=FALSE)
 
-xdf1f <- data.frame(a=factor(letters[1:20]), b=1:20, c=11:30, stringsAsFactors=FALSE)
-xdf2f <- data.frame(a=factor(letters[7:26]), d=as.character(1:20), e=11:30, stringsAsFactors=FALSE)
+df1f <- data.frame(a=factor(letters[1:20]), b=1:20, c=11:30, stringsAsFactors=FALSE)
+df2f <- data.frame(a=factor(letters[7:26]), d=as.character(1:20), e=11:30, stringsAsFactors=FALSE)
 
-xdf1 <- copy_to_hdfs(xdf1, overwrite=TRUE)
-xdf2 <- copy_to_hdfs(xdf2, overwrite=TRUE)
+hdfs_dir_remove(c("xdf1", "xdf2", "xdf1f", "xdf2f"))
 
-xdf1f <- copy_to_hdfs(xdf1f, overwrite=TRUE)
-xdf2f <- copy_to_hdfs(xdf2f, overwrite=TRUE)
+xdf1 <- copy_to_hdfs(df1, name="xdf1")
+xdf2 <- copy_to_hdfs(df2, name="xdf2")
+
+xdf1f <- copy_to_hdfs(df1f, name="xdf1f")
+xdf2f <- copy_to_hdfs(df2f, name="xdf2f")
 
 
 verifyHdfsData <- function(xdf, expectedClass)
@@ -63,21 +65,21 @@ test_that("xdf to xdf joining -> data frame works",
 
 test_that("xdf to xdf joining -> xdf works",
 {
-    expect_true(verifyHdfsData(left_join(xdf1, xdf2, .outFile="test09.xdf"), "RxXdfData"))
-    expect_true(verifyHdfsData(right_join(xdf1, xdf2, .outFile="test09.xdf"), "RxXdfData"))
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, .outFile="test09.xdf"), "RxXdfData"))
-    expect_true(verifyHdfsData(full_join(xdf1, xdf2, .outFile="test09.xdf"), "RxXdfData"))
+    expect_true(verifyHdfsData(left_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
+    expect_true(verifyHdfsData(right_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
+    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
+    expect_true(verifyHdfsData(full_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
 
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="d"), .outFile="test09.xdf"), "RxXdfData"))
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="e"), .outFile="test09.xdf"), "RxXdfData"))
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("c"="d"), .outFile="test09.xdf"), "RxXdfData"))
+    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="d"), .outFile="test52"), "RxXdfData"))
+    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="e"), .outFile="test52"), "RxXdfData"))
+    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("c"="d"), .outFile="test52"), "RxXdfData"))
 
-    #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2f, .outFile="test09.xdf"), "RxXdfData"))
-    #expect_true(verifyHdfsData(inner_join(xdf1, xdf2f, .outFile="test09.xdf"), "RxXdfData"))
-    #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2, .outFile="test09.xdf"), "RxXdfData"))
+    #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2f, .outFile="test52.xdf"), "RxXdfData"))
+    #expect_true(verifyHdfsData(inner_join(xdf1, xdf2f, .outFile="test52.xdf"), "RxXdfData"))
+    #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2, .outFile="test52.xdf"), "RxXdfData"))
 })
 
 # clean up
-hdfs_dir_remove(c("xdf1", "xdf2", "xdf1f", "xdf2f"))
+hdfs_dir_remove(c("xdf1", "xdf2", "xdf1f", "xdf2f", "test52"), skipTrash=TRUE)
 
 

@@ -139,7 +139,7 @@ makeSmryOutputHdfs <- function(smry, .outFile, .data)
             on.exit(deleteIfTbl(localXdf))
             local_exec(rxDataStep(smry, localXdf, rowsPerRead=.dxOptions$rowsPerRead))
 
-            output <- copy_to(rxGetFileSystem(.data), localXdf, dirname(.outFile), overwrite=TRUE)
+            output <- copy_to(rxGetFileSystem(.data), localXdf, dirname(.outFile))
         }
         else
         {

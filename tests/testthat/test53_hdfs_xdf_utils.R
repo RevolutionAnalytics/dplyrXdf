@@ -36,9 +36,9 @@ test_that("local_exec works",
 
 test_that("copy_to works",
 {
-    if(hdfs_dir_exists("mtcarsc"))
-        rxHadoopRemoveDir("mtcarsc", skipTrash=TRUE)
-    copy_to(RxHdfsFileSystem(), mtc, overwrite=TRUE)
+    if(hdfs_dir_exists("mtcars"))
+        hdfs_dir_remove("mtcars")
+    copy_to_hdfs(mtc, name="mtcars")
     verifyCompositeData(mthc, "RxXdfData")
 })
 
@@ -58,15 +58,15 @@ test_that("rename works",
 test_that("copy and move work",
 {
     # copy to same dir = working dir
-    tbl <- copy_xdf(mthc, "test52")
+    tbl <- copy_xdf(mthc, "test53")
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
-    expect_identical(.path(tbl@file), .path("test52"))
+    expect_identical(.path(tbl@file), .path("test53"))
 
     # move to same dir = working dir (rename)
-    tbl2 <- move_xdf(tbl, "test52a")
+    tbl2 <- move_xdf(tbl, "test53a")
     expect_true(verifyCompositeData(tbl2, "RxXdfData"))
     expect_false(hdfs_dir_exists(tbl@file))
-    expect_identical(.path(tbl2@file), .path("test52a"))
+    expect_identical(.path(tbl2@file), .path("test53a"))
 
     # copy to different dir
     tbl <- copy_xdf(mthc, test2)
@@ -76,10 +76,10 @@ test_that("copy and move work",
     # move to different dir
     tbl2 <- move_xdf(tbl2, test2)
     expect_true(verifyCompositeData(tbl2, "RxXdfData"))
-    expect_identical(.path(tbl2@file), .path(file.path(test2, "test52a")))
+    expect_identical(.path(tbl2@file), .path(file.path(test2, "test53a")))
 
     # copy to same explicit dir
-    dest <- .path("test52")
+    dest <- .path("test53")
     if(hdfs_dir_exists(dest))
         hdfs_dir_remove(dest)
     tbl <- copy_xdf(mthc, dest)
@@ -87,7 +87,7 @@ test_that("copy and move work",
     expect_identical(.path(tbl@file), dest)
 
     # move to same explicit dir
-    dest2 <- .path("test52a")
+    dest2 <- .path("test53a")
     if(hdfs_dir_exists(dest2))
         hdfs_dir_remove(dest2)
     tbl2 <- move_xdf(tbl, dest2)
@@ -96,7 +96,7 @@ test_that("copy and move work",
     expect_identical(.path(tbl2@file), dest2)
 
     # copy to different dir + rename
-    dest <- .path(file.path(test2, "test52"))
+    dest <- .path(file.path(test2, "test53"))
     if(hdfs_dir_exists(dest))
         hdfs_dir_remove(dest)
     tbl <- copy_xdf(mthc, dest)
@@ -104,7 +104,7 @@ test_that("copy and move work",
     expect_identical(.path(tbl@file), dest)
 
     # move to different dir + rename
-    dest2 <- .path(file.path(test2, "test52a"))
+    dest2 <- .path(file.path(test2, "test53a"))
     if(hdfs_dir_exists(dest2))
         hdfs_dir_remove(dest2)
     tbl2 <- move_xdf(mthc, dest2)
@@ -118,14 +118,14 @@ test_that("copy and move work",
 
 test_that("persist works",
 {
-    expect_warning(persist(mthc, "test52"))
-    tbl <- as(mthc, "tbl_xdf") %>% persist("test52", move=FALSE)
+    expect_warning(persist(mthc, "test53"))
+    tbl <- as(mthc, "tbl_xdf") %>% persist("test53", move=FALSE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
-    tbl2 <- as(tbl, "tbl_xdf") %>% persist("test52a", move=TRUE)
+    tbl2 <- as(tbl, "tbl_xdf") %>% persist("test53a", move=TRUE)
     expect_true(verifyCompositeData(tbl2, "RxXdfData"))
     expect_false(hdfs_dir_exists(tbl@file))
 
-    expect_warning(tbl <- as(mthc, "tbl_xdf") %>% persist("test52.xdf", composite=FALSE, move=FALSE))
+    expect_warning(tbl <- as(mthc, "tbl_xdf") %>% persist("test53.xdf", composite=FALSE, move=FALSE))
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
@@ -140,6 +140,6 @@ test_that("collect and compute work",
 })
 
 
-lapply(c("test52", "test52a", test2), hdfs_dir_remove, skipTrash=TRUE)
-unlink("mtcarsc", recursive=TRUE)
+hdfs_dir_remove(c("mtcars", "mtcarsc", "test53", "test53a", test2), skipTrash=TRUE)
+unlink(c("mtcars", "mtcarsc"), recursive=TRUE)
 

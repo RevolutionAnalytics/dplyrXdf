@@ -89,7 +89,7 @@ varTypes <- function(x, vars=NULL)
 varLevels <- function(x, vars=NULL)
 {
     if(!is.null(vars) && length(vars) == 0) # handle no-variable input
-        return(character(0))
+        return(list(0))
 
     info <- if(is.data.frame(x))
         local_exec(rxGetVarInfo(x, varsToKeep=vars, computeInfo=FALSE))

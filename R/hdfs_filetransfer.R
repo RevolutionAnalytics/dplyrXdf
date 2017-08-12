@@ -98,7 +98,7 @@ hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
     }
     if(destExists)
     {
-        if(!overwrite)
+        if(overwrite)
         {
             if(isDir || isDestDir)
                 unlink(file.path(dest, basename(src)), recursive=TRUE)
