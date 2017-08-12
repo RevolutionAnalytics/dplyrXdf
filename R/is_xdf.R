@@ -5,7 +5,7 @@
 #' @param x An R object.
 #'
 #' @details
-#' The \code{is_xdf} function returns TRUE if \code{x} is an Xdf data source object; ie, it inherits from the \code{RxXdfData} class. This includes both raw Xdf data sources and \code{tbl_xdf} objects as created by dplyrXdf. The \code{is_composite_xdf} function returns TRUE if \code{x} is a \emph{composite} Xdf data source.
+#' The \code{is_xdf} function returns TRUE if \code{x} is an Xdf data source object; ie, it inherits from the \code{RxXdfData} class. This includes both raw Xdf data sources and \code{tbl_xdf} objects as created by dplyrXdf. The \code{is_composite_xdf} function returns TRUE if \code{x} is a \emph{composite} Xdf data source, and \code{is_standard_xdf} returns TRUE if \code{x} is an Xdf but not a composite Xdf.
 #'
 #' Detecting whether an object is a composite Xdf can be tricky and \code{is_composite_xdf} goes through a few steps to do this. If \code{x} has a non-NULL \code{createCompositeSet} slot, then that value is returned. Otherwise, it checks whether the \code{file} slot refers to an existing directory, whose name does \emph{not} have an extension (that is, \code{"foo"} qualifies as a valid filename for a composite Xdf, but not \code{"foo.xdf"}). This is necessary because of the semantics of \code{rxDataStep}.
 #'
@@ -34,4 +34,11 @@ is_composite_xdf <- function(x)
     if(in_hdfs(x))
         return(tools::file_ext(file) == "" && hdfs_dir_exists(file))
     else return(tools::file_ext(file) == "" && dir.exists(file))
+}
+
+#' @rdname as_xdf
+#' @export
+is_standard_xdf <- function(x)
+{
+    is_xdf(x) && !is_composite_xdf(x)
 }
