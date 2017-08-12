@@ -6,10 +6,9 @@ detectHdfsConnection()
 
 mthc <- RxXdfData("mtcars", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
 mtt <- RxTextData("mttext.csv", fileSystem=RxHdfsFileSystem())
-mtc <- RxXdfData("mtcars", createCompositeSet=TRUE)
 
 write.csv(mtcars, "mttext.csv", row.names=FALSE)
-if(isRemoteHdfsClient()) rxHadoopCopyFromClient("mttext.csv", hdfsDest=".") else rxHadoopCopyFromLocal("mttext.csv", ".")
+hdfs_upload("mttext.csv", ".", overwrite=TRUE)
 
 
 # check actual data -- slow but necessary to check that non-Revo file ops succeeded
@@ -19,43 +18,37 @@ verifyCompositeData <- function(xdf, expectedClass)
 }
 
 
-test_that("local_exec works",
-{
-    local_exec(rxDataStep(mtcars, mtc, overwrite=TRUE))
-    local_exec(verifyCompositeData(mtc, "RxXdfData"))
-})
-
 test_that("copy_to works",
 {
     if(hdfs_dir_exists("mtcars"))
-        rxHadoopRemoveDir("mtcars", skipTrash=TRUE)
-    copy_to_hdfs(mtc, name="mtcars")
+        hdfs_dir_remove("mtcars", skipTrash=TRUE)
+    copy_to_hdfs(mtcars)
     verifyCompositeData(mthc, "RxXdfData")
 })
 
 test_that("as_xdf works",
 {
-    tbl <- as_xdf(mthc)
+    tbl <- as_xdf(mthc, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
     expect_identical(mthc@file, tbl@file)
 
-    tbl <- as_xdf(mthc, file="test54", composite=TRUE)
+    tbl <- as_xdf(mthc, file="test54", composite=TRUE, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    expect_error(tbl <- as_xdf(mthc, composite=FALSE))
+    expect_error(tbl <- as_xdf(mthc, composite=FALSE, overwrite=TRUE))
 })
 
 test_that("as_standard_xdf works",
 {
-    expect_error(tbl <- as_standard_xdf(mthc))
+    expect_error(tbl <- as_standard_xdf(mthc, overwrite=TRUE))
 })
 
 test_that("as_composite_xdf works",
 {
-    tbl <- as_composite_xdf(mthc)
+    tbl <- as_composite_xdf(mthc, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    tbl <- as_composite_xdf(mthc, file="test54")
+    tbl <- as_composite_xdf(mthc, file="test54", overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
@@ -63,59 +56,58 @@ test_that("as_composite_xdf works",
 test_that("as_xdf works, tbl input",
 {
     tbl0 <- as(mthc, "tbl_xdf")
-    tbl <- as_xdf(tbl0)
+    tbl <- as_xdf(tbl0, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
     expect_identical(tbl0@file, tbl@file)
 
-    tbl <- as_xdf(tbl0, "test54")
+    tbl <- as_xdf(tbl0, "test54", overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    expect_error(tbl <- as_xdf(tbl0, "test54.xdf", composite=FALSE))
+    expect_error(tbl <- as_xdf(tbl0, "test54.xdf", composite=FALSE, overwrite=TRUE))
 })
 
 test_that("as_standard_xdf works, tbl input",
 {
     tbl0 <- as(mthc, "tbl_xdf")
-    expect_error(tbl <- as_standard_xdf(tbl0))
+    expect_error(tbl <- as_standard_xdf(tbl0, overwrite=TRUE))
 })
 
 test_that("as_composite_xdf works, tbl input",
 {
     tbl0 <- as(mthc, "tbl_xdf")
-    tbl <- as_composite_xdf(tbl0)
+    tbl <- as_composite_xdf(tbl0, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    tbl <- as_composite_xdf(tbl0, "test54")
+    tbl <- as_composite_xdf(tbl0, "test54", overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
 test_that("as_xdf works, text input",
 {
-    tbl <- as_xdf(mtt)
+    tbl <- as_xdf(mtt, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    tbl <- as_xdf(mtt, "test54", composite=TRUE)
+    tbl <- as_xdf(mtt, "test54", composite=TRUE, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 
-    expect_error(tbl <- as_xdf(mtt, "test54.xdf", composite=FALSE))
+    expect_error(tbl <- as_xdf(mtt, "test54.xdf", composite=FALSE, overwrite=TRUE))
 })
 
 test_that("as_standard_xdf works, text input",
 {
-    expect_error(tbl <- as_standard_xdf(mtt))
+    expect_error(tbl <- as_standard_xdf(mtt, overwrite=TRUE))
 })
 
 test_that("as_composite_xdf works, text input",
 {
-    tbl <- as_composite_xdf(mtt)
+    tbl <- as_composite_xdf(mtt, overwrite=TRUE)
     expect_true(verifyCompositeData(tbl, "RxXdfData"))
 })
 
 
-testFiles <- hdfs_dir(pattern="^file")
-hdfs_dir_remove(c("mtcarsc", "mttext", "test54"), skipTrash=TRUE)
+hdfs_dir_remove(c("mtcars", "mttext", "test54"), skipTrash=TRUE)
 hdfs_file_remove("mttext.csv", skipTrash=TRUE)
 
-unlink(c("mtcarsc", "mttext.csv", "test54"), recursive=TRUE)
+unlink(c("mttext.csv", "test54"), recursive=TRUE)
 
 
