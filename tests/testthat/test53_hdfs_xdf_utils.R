@@ -4,7 +4,6 @@ context("Xdf file utilities in HDFS")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("mtcars", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
 mtc <- RxXdfData("mtcars", fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE)
 
 
@@ -38,9 +37,39 @@ test_that("copy_to works",
 {
     if(hdfs_dir_exists("mtcars"))
         hdfs_dir_remove("mtcars")
-    copy_to_hdfs(mtc, name="mtcars")
-    verifyCompositeData(mthc, "RxXdfData")
+    if(hdfs_dir_exists("mtc"))
+        hdfs_dir_remove("mtc")
+    out <- copy_to_hdfs(mtcars)
+    expect_true(hdfs_dir_exists("mtcars"))
+    expect_true(verifyCompositeData(out, "RxXdfData"))
+    hdfs_dir_remove("mtcars")
+
+    out <- copy_to_hdfs(mtc)
+    expect_true(hdfs_dir_exists("mtcars"))
+    expect_true(verifyCompositeData(out, "RxXdfData"))
+    hdfs_dir_remove("mtcars")
+
+    out <- copy_to_hdfs(mtc, "mtc")
+    expect_true(hdfs_dir_exists("mtc"))
+    expect_true(verifyCompositeData(out, "RxXdfData"))
+    hdfs_dir_remove("mtc")
+
+    if(hdfs_dir_exists("testdir"))
+        hdfs_dir_remove("testdir")
+    hdfs_dir_create("testdir")
+    out <- copy_to_hdfs(mtcars, "testdir")
+    expect_true(hdfs_dir_exists("testdir/mtcars"))
+    expect_true(verifyCompositeData(out, "RxXdfData"))
+    hdfs_dir_remove("testdir/mtcars")
+
+    out <- copy_to_hdfs(mtcars, "testdir/mtc")
+    expect_true(hdfs_dir_exists("testdir/mtc"))
+    expect_true(verifyCompositeData(out, "RxXdfData"))
+    hdfs_dir_remove("testdir/mtc")
+    hdfs_dir_remove("testdir")
 })
+
+mthc <- copy_to_hdfs(mtcars)
 
 test_that("rename works",
 {

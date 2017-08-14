@@ -27,6 +27,22 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
 {
     detectHdfsConnection() # fail early if no HDFS found
 
+    if(is.null(name))
+        path <- getHdfsUserDir()
+    else
+    {
+        if(hdfs_dir_exists(name))
+        {
+            path <- name
+            name <- NULL
+        }
+        else
+        {
+            path <- dirname(name)
+            name <- basename(name)
+        }
+    }
+
     if(is.character(df))
         df <- RxXdfData(df, fileSystem=RxNativeFileSystem())
 
@@ -56,19 +72,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
     }
 
     if(is.null(name))
-        name <- getHdfsUserDir()
-
-    nameIsPath <- hdfs_dir_exists(name)
-    if(nameIsPath)
-    {
-        path <- name
         name <- basename(df@file)
-    }
-    else
-    {
-        path <- dirname(name)
-        name <- basename(name)
-    }
 
     hdfs_upload(df@file, path, overwrite=TRUE, ...)
 

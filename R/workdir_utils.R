@@ -42,7 +42,10 @@ get_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
 {
     fileSystem <- validateFileSystem(fileSystem)
     if(in_hdfs(fileSystem))
+    {
+        make_dplyrxdf_dir(fileSystem)
         .dxOptions$hdfsWorkDir
+    }
     else .dxOptions$localWorkDir
 }
 

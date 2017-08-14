@@ -79,7 +79,16 @@ test_that("xdf to xdf joining -> xdf works",
     #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2, .outFile="test52.xdf"), "RxXdfData"))
 })
 
+
+test_that("copy arg works",
+{
+    expect_true(verifyHdfsData(left_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
+    expect_true(verifyHdfsData(right_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
+    expect_true(verifyHdfsData(inner_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
+    expect_true(verifyHdfsData(full_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
+})
+
+
 # clean up
 hdfs_dir_remove(c("xdf1", "xdf2", "xdf1f", "xdf2f", "test52"), skipTrash=TRUE)
-
 

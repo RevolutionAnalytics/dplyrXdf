@@ -209,21 +209,24 @@ commonBy <- function(by = NULL, x, y)
 
 mergeFsCheck <- function(x, y, copy)
 {
+    copied <- FALSE
     if(in_hdfs(x) != in_hdfs(y))
     {
         if(!copy)
             stop("x and y must both be in the same filesystem; use copy=TRUE to join", call.=FALSE)
+
         if(in_hdfs(x))
         {
             xFs <- rxGetFileSystem(x)
-            y <- copy_to(xFs, y, get_dplyrxdf_dir(Xfs))
+            y <- as(copy_to(xFs, y, get_dplyrxdf_dir(xFs)), "tbl_xdf")
         }
         else y <- compute(y)
+        copied <- TRUE
     }
 
     # nothing in HDFS: return early
     if(!in_hdfs(x) && !in_hdfs(y))
-        return(list(x=x, y=y))
+        return(list(y=y, copied=copied))
 
     xSupported <- inherits(x, c("RxSparkData", "RxXdfData"))
     ySupported <- inherits(y, c("RxSparkData", "RxXdfData"))
@@ -233,29 +236,28 @@ mergeFsCheck <- function(x, y, copy)
     cc <- rxGetComputeContext()
     if(!inherits(cc, "RxSpark"))
         stop("files in HDFS can only be merged in the Spark compute context", call.=FALSE)
-
-    list(x=x, y=y)
+    list(y=y, copied=copied)
 }
 
 
 mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxArgs, suffix=c(".x", ".y"))
 {
-    newxy <- mergeFsCheck(x, y, copy)
-    x <- newxy$x
-    y <- newxy$y
+    yNew <- mergeFsCheck(x, y, copy)
+    y <- yNew$y
+    copied <- yNew$copied
 
     grps <- group_vars(x)
     yOrig <- if(inherits(y, "RxFileData")) y@file else NULL
-    newxy <- alignInputs(x, y, by, yOrig)
-    x <- newxy$x
-    y <- newxy$y
+    xyNew <- alignInputs(x, y, by, yOrig)
+    x <- xyNew$x
+    y <- xyNew$y
 
     # cleanup on exit is asymmetric wrt x, y
     on.exit(
     {
         deleteIfTbl(x)
         # make sure not to delete original y by accident after factoring
-        if(!is.null(yOrig) && y@file != yOrig)
+        if(copied || (!is.null(yOrig) && y@file != yOrig))
             deleteIfTbl(y)
     })
 
