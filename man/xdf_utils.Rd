@@ -7,9 +7,9 @@
 \alias{delete_xdf}
 \title{Utility functions for working with Xdf files}
 \usage{
-copy_xdf(src, dest, overwrite = FALSE)
+copy_xdf(src, dest)
 
-move_xdf(src, dest, overwrite = FALSE)
+move_xdf(src, dest)
 
 rename_xdf(src, dest)
 
@@ -19,8 +19,6 @@ delete_xdf(xdf)
 \item{src}{For \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf}, an Xdf data source object (\emph{not} a filename).}
 
 \item{dest}{For \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf}, a character string giving the destination file. Note that for \code{rename_xdf}, this should only be a base name, not a full path.}
-
-\item{overwrite}{Logical; for \code{copy_xdf} and \code{move_xdf}, whether to overwrite any existing file.}
 
 \item{xdf}{For \code{delete_xdf}, an Xdf data source object.}
 }

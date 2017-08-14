@@ -295,8 +295,8 @@
 
     rxver <- packageVersion("RevoScaleR")
     suppressWarnings({
-        if(rxver < package_version("9.0"))
-            assignInNamespace("rxExecInDataHadoop", value=h, ns="RevoScaleR", pos="package:RevoScaleR")
+        #if(rxver < package_version("9.0"))
+            #assignInNamespace("rxExecInDataHadoop", value=h, ns="RevoScaleR", pos="package:RevoScaleR")
         #if(rxver <= package_version("9.1"))
             #assignInNamespace("rxCheckSupportForDataSource", value=sup, ns="RevoScaleR", pos="package:RevoScaleR")
     })
@@ -333,7 +333,7 @@
 .dxFinal <- function(e)
 {
     # remove the HDFS working directory, if we are still connected
-    if(e$hdfsWorkDirCreated && !is.na(isRemoteHdfsClient(stopIfNotConnected=FALSE)))
+    if(e$hdfsWorkDirCreated && !is.na(detectHdfsConnection(stopIfNotConnected=FALSE)))
     {
         message("Removing HDFS working directory")
         rxHadoopRemoveDir(e$hdfsWorkDir, skipTrash=TRUE, intern=TRUE)

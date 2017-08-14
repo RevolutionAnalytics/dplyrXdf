@@ -4,7 +4,6 @@
 #'
 #' @param src For \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf}, an Xdf data source object (\emph{not} a filename).
 #' @param dest For \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf}, a character string giving the destination file. Note that for \code{rename_xdf}, this should only be a base name, not a full path.
-#' @param overwrite Logical; for \code{copy_xdf} and \code{move_xdf}, whether to overwrite any existing file.
 #'
 #' @details
 #' The \code{copy_xdf} function copies the Xdf file given by \code{src} to the location specified by \code{dest}, possibly renaming it as well; \code{move_xdf} moves the file. \code{rename_xdf} does a strict rename (the location of the file is unchanged, only its name). \code{delete_xdf} deletes the file given by \code{xdf}.
@@ -19,17 +18,17 @@
 #' \code{\link{rxHadoopCopy}}, \code{\link{rxHadoopMove}}, \code{\link{rxHadoopRemove}}, \code{\link{rxHadoopRemoveDir}}
 #' @rdname xdf_utils
 #' @export
-copy_xdf <- function(src, dest, overwrite=TRUE)
+copy_xdf <- function(src, dest)
 {
-    copyOrMove(src, dest, overwrite, move=FALSE)
+    copyOrMove(src, dest, move=FALSE)
 }
 
 
 #' @rdname xdf_utils
 #' @export
-move_xdf <- function(src, dest, overwrite=TRUE)
+move_xdf <- function(src, dest)
 {
-    copyOrMove(src, dest, overwrite, move=TRUE)
+    copyOrMove(src, dest, move=TRUE)
 }
 
 
