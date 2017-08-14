@@ -69,7 +69,7 @@ as_xdf.RxXdfData <- function(.data, file=NULL, composite=is_composite_xdf(.data)
             return(as(.data, "RxXdfData"))
 
         asXdfOverwriteCheck(file, overwrite, in_hdfs(.data))
-        return(copy_xdf(.data, file, overwrite=overwrite))
+        return(copy_xdf(.data, file))
     }
 
     asXdfOverwriteCheck(file, overwrite, in_hdfs(.data))
