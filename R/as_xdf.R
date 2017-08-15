@@ -136,7 +136,7 @@ asXdfOverwriteCheck <- function(file, overwrite, inHdfs)
         if(file.exists(file))
         {
             if(overwrite)
-                unlink(file)
+                unlink(file, recursive=TRUE)
             else stop("destination file exists; set overwrite=TRUE to replace it")
         }
     }
