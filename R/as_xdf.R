@@ -88,9 +88,9 @@ as_xdf.RxDataSource <- function(.data, file=NULL, composite=in_hdfs(.data), over
 
     if(is.null(file))
     {
-        file <- if(inherits(.data, "RxFileData", "RxOrcData", "RxParquetData"))
+        file <- if(inherits(.data, c("RxFileData", "RxOrcData", "RxParquetData")))
             .data@file
-        else if(inherits(.data, "RxOdbcData", "RxTeradata", "RxHiveData") && !is.null(.data@table))
+        else if(inherits(.data, c("RxOdbcData", "RxTeradata", "RxHiveData")) && !is.null(.data@table))
             .data@table
         else URLencode(deparse(substitute(.data)), reserved=TRUE)
     }
