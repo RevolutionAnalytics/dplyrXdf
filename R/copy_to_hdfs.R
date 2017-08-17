@@ -57,7 +57,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
             URLencode(deparse(substitute(df)), reserved=TRUE)
         else basename(name))
         on.exit(delete_xdf(df))
-        df <- local_exec(as_composite_xdf(df, localName))
+        df <- local_exec(as_composite_xdf(df, localName, overwrite=TRUE))
     }
 
     if(!is_composite_xdf(df))

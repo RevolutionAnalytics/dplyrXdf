@@ -80,7 +80,7 @@ rename_xdf <- function(src, dest)
 delete_xdf <- function(xdf)
 {
     if(!is_xdf(xdf))
-        stop("only for deleting Xdf files")
+        stop("only for deleting Xdf files: input is of class ", class(xdf)[1])
     if(in_hdfs(xdf))
     {
         out <- if(is_composite_xdf(xdf))
