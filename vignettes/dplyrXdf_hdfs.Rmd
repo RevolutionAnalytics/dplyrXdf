@@ -51,7 +51,7 @@ library(nycflights13)
 hd <- RxHdfsFileSystem()
 
 # copy a data frame into an Xdf file in HDFS
-flightsHd <- copy_to(hd, flights, path=".")
+flightsHd <- copy_to(hd, flights)
 
 flightsHd
 
@@ -64,7 +64,7 @@ You can also use `copy_to_hdfs`, which is a shortcut that saves having to create
 
 ```{r, eval=FALSE}
 # same as above
-flightsHd <- copy_to_hdfs(flights, path=".")
+flightsHd <- copy_to_hdfs(flights)
 ```
 
 To download an Xdf file from HDFS to the native filesystem, use `collect` and `compute`. Again, these are the standard dplyr verbs for copying data from a remote src. For dplyrXdf, the difference between `collect` and `compute` is that the former by default will return a data frame, whereas the latter will save the copied data in an Xdf file and return a `tbl_xdf` object pointing to that file.
