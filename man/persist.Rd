@@ -40,5 +40,5 @@ The \code{persist} verb is a simple routine that either copies or moves the data
 Calling this verb on a non-tbl data source (eg a raw \code{RxXdfData} object) will give a warning and return the data source unchanged.
 }
 \seealso{
-\code{\link{as.data.frame.RxXdfData}}, \code{\link[RevoScaleR]{rxDataStep}}
+\code{\link{as_xdf}}, \code{\link{as.data.frame.RxXdfData}}, \code{\link[RevoScaleR]{rxDataStep}}
 }

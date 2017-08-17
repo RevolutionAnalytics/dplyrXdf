@@ -16,7 +16,7 @@
 #' An \code{RxXdfData} object pointing to the new xdf file.
 #'
 #' @seealso
-#' \code{\link{as.data.frame.RxXdfData}}, \code{\link[RevoScaleR]{rxDataStep}}
+#' \code{\link{as_xdf}}, \code{\link{as.data.frame.RxXdfData}}, \code{\link[RevoScaleR]{rxDataStep}}
 #' @rdname persist
 #' @export
 persist <- function(.data, ...)

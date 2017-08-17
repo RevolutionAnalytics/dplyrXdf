@@ -53,7 +53,7 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
                 dupNameWarn <- any(names(lst[[i]]) %in% names(output))
         }
         arglst$inData <- lst[[i]]
-        output <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+        output <- callRx("rxDataStep", arglst)
     }
 
     if(dupNameWarn)

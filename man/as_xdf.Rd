@@ -61,7 +61,7 @@ The \code{as_standard_xdf} and \code{as_composite_xdf} functions are shorthand f
 
 Passing a \code{tbl_xdf} object to an \code{as} function will strip off the tbl information, returning a raw Xdf data source. This can be useful for resetting the beginning of a pipeline.
 
-The \code{file} argument gives the name of the Xdf file to create. If not specified, this is taken from the input data source where possible (for Xdf and file data sources, including text). Otherwise, it is taken from the name of R input object. If no directory is specified, the file is created in the current working directory (if in the native filesystem) or in the user's home directory (in HDFS).
+The \code{file} argument gives the name of the Xdf file to create. If not specified, this is taken from the input data source where possible (for Xdf and file data sources, including text). Otherwise, it is taken from the name of the input R object. If no directory is specified, the file is created in the current working directory (if in the native filesystem) or in the user's home directory (in HDFS).
 
 You can use the \code{as} functions with any RevoScaleR data source, or otherwise with any R object that can be turned into a data frame. The resulting Xdf file will be created in the same filesystem as the input data source. If the input does not have a filesystem, for example if it is an in-database table or a data frame, the file is created in the native filesystem.
 
@@ -73,5 +73,5 @@ To remove any ambiguity, it's recommended that you always explicitly specify the
 }
 \seealso{
 \code{\link{as}}, \code{\link{is}}, \code{\link{inherits}},
-\code{\link{rxDataStep}}, \code{\link{rxImport}}
+\code{\link{persist}}, \code{\link{rxDataStep}}, \code{\link{rxImport}}
 }
