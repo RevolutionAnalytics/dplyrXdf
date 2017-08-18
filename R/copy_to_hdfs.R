@@ -56,7 +56,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
     {
         # create a composite copy of non-composite src
         # this happens on client if remote
-        message("Creating composite Xdf from non-composite data source ", name)
+        message("Creating composite Xdf from non-composite data source")
 
         localName <- tbl_xdf(fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE)@file
         on.exit(delete_xdf(df))
