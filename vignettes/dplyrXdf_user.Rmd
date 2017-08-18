@@ -12,6 +12,8 @@ vignette: >
 ```{r, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
+
+rxSetComputeContext("local")
 ```
 
 This vignette goes into more details on using dplyrXdf. Most of dplyrXdf works the same way as dplyr, so if you know how to use the latter, then you also (mostly) know how to use the former. However, there are some places in which the two packages are different. These will be described below.
@@ -118,7 +120,7 @@ The second way of creating a persistent Xdf file is with the `persist` verb. Thi
 ```{r, eval=FALSE}
 # pipeline 1 -- use persist to save the data
 output1 <- flightsXdf %>%
-    mutate(delay=(arr_delay + dep_delay)/2) %>% persist("output1_persist.xdf")
+    mutate(delay=(arr_delay + dep_delay)/2) %>% persist("output1.xdf")
 
 # use the output from pipeline 1
 output2 <- output1 %>%
@@ -358,4 +360,9 @@ dplyrXdf includes a number of convenience functions for exporting data from Xdf 
 - Methods for `$` and `[[` that will extract a given column as a vector in memory.
 
 These are simple wrappers around RevoScaleR's `rxDataStep` function that turn off the default size check. Make sure you have enough memory to hold the data before using them!
+
+```{r}
+unlink(c("flights.xdf", "output1.xdf"))
+clean_dplyrxdf_dir("native")
+```
 

@@ -2,7 +2,12 @@
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
 
-# set compute context prior to building this vignette
+# to build this vignette as part of installation:
+# - copy it to the /vignettes directory
+# - ensure you have access to a Spark or Hadoop cluster (a remote connection via 
+#   the RxSpark or RxHadoopMR compute context works)
+# - run devtools::install(build_vignettes=TRUE)
+dplyrXdf:::detectHdfsConnection()
 
 ## ------------------------------------------------------------------------
 library(dplyrXdf)
@@ -11,7 +16,7 @@ library(nycflights13)
 hd <- RxHdfsFileSystem()
 
 # copy a data frame into an Xdf file in HDFS
-flightsHd <- copy_to(hd, flights, path=".")
+flightsHd <- copy_to(hd, flights)
 
 flightsHd
 
@@ -19,7 +24,7 @@ as_data_frame(flightsHd)
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  # same as above
-#  flightsHd <- copy_to_hdfs(flights, path=".")
+#  flightsHd <- copy_to_hdfs(flights)
 
 ## ------------------------------------------------------------------------
 flightsLocal <- compute(flightsHd)
@@ -71,4 +76,6 @@ local_exec(names(flightsLocal))
 
 ## ---- echo=FALSE, message=FALSE, results="hide"--------------------------
 hdfs_dir_remove(c("flights", "flights2", "/tmp/mydata", "/tmp/flights.csv"))
+clean_dplyrxdf_dir("hdfs")
+clean_dplyrxdf_dir("native")
 

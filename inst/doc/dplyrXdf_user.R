@@ -2,6 +2,8 @@
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
 
+rxSetComputeContext("local")
+
 ## ------------------------------------------------------------------------
 library(dplyrXdf) # also loads dplyr
 library(nycflights13)
@@ -58,7 +60,7 @@ output3 <- output1 %>%
 ## ---- eval=FALSE---------------------------------------------------------
 #  # pipeline 1 -- use persist to save the data
 #  output1 <- flightsXdf %>%
-#      mutate(delay=(arr_delay + dep_delay)/2) %>% persist("output1_persist.xdf")
+#      mutate(delay=(arr_delay + dep_delay)/2) %>% persist("output1.xdf")
 #  
 #  # use the output from pipeline 1
 #  output2 <- output1 %>%
@@ -169,4 +171,8 @@ get_dplyrxdf_dir()
 ## ---- eval=FALSE---------------------------------------------------------
 #  # set the tbl directory to a network drive (on Windows)
 #  set_dplyrxdf_dir("n:/Rtemp")
+
+## ------------------------------------------------------------------------
+unlink(c("flights.xdf", "output1.xdf"))
+clean_dplyrxdf_dir("native")
 

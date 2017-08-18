@@ -95,11 +95,12 @@ clean_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
     else if(inherits(fileSystem, "RxHdfsFileSystem"))
     {
         pathExists <- hdfs_dir_exists(path)
-        if(pathExists)
-        {
-            files <- hdfs_dir(path, full_path=TRUE)
-            hdfs_dir_remove(files, skipTrash=TRUE)
-        }
+        if(!pathExists)
+            return(NULL)
+        files <- hdfs_dir(path, full_path=TRUE)
+        if(length(files) == 0)
+            return(NULL)
+        hdfs_dir_remove(files, skipTrash=TRUE)
     }
 
     invisible(NULL)

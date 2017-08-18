@@ -2,6 +2,8 @@
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
 
+rxSetComputeContext("local")
+
 ## ------------------------------------------------------------------------
 library(dplyrXdf)  # also loads dplyr
 library(nycflights13)
@@ -61,4 +63,8 @@ flightsJoin <- left_join(
     airportsXdf,
     by=c("dest"="faa"))
 head(flightsJoin)
+
+## ----echo=FALSE, message=FALSE, results="hide"---------------------------
+unlink(c("airports.xdf", "flights.xdf", "flights_rx1.xdf", "flights_rx2.xdf", "flights_rx3.xdf"))
+clean_dplyrxdf_dir("native")
 

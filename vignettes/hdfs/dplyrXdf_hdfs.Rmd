@@ -13,7 +13,12 @@ vignette: >
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
 
-# set compute context prior to building this vignette
+# to build this vignette as part of installation:
+# - copy it to the /vignettes directory
+# - ensure you have access to a Spark or Hadoop cluster (a remote connection via 
+#   the RxSpark or RxHadoopMR compute context works)
+# - run devtools::install(build_vignettes=TRUE)
+dplyrXdf:::detectHdfsConnection()
 ```
 Microsoft R Server includes the ability to work with Hadoop and Spark clusters. As part of this, it also lets you work with datasets, in particular Xdf files, that are stored in HDFS.
 
@@ -170,6 +175,8 @@ Support for two-table verbs is more limited for datasets in HDFS than in the nat
 
 ```{r, echo=FALSE, message=FALSE, results="hide"}
 hdfs_dir_remove(c("flights", "flights2", "/tmp/mydata", "/tmp/flights.csv"))
+clean_dplyrxdf_dir("hdfs")
+clean_dplyrxdf_dir("native")
 ```
 
 

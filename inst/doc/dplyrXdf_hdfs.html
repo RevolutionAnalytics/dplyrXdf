@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2017-08-09" />
+<meta name="date" content="2017-08-18" />
 
 <title>Working with HDFS</title>
 
@@ -70,10 +70,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Working with HDFS</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2017-08-09</em></h4>
+<h4 class="date"><em>2017-08-18</em></h4>
 
 
 
+<pre><code>## [1] TRUE</code></pre>
 <p>Microsoft R Server includes the ability to work with Hadoop and Spark clusters. As part of this, it also lets you work with datasets, in particular Xdf files, that are stored in HDFS.</p>
 <p>As of version 0.10.0, dplyrXdf also supports Xdf files in HDFS. Most verbs will work exactly the same as with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark. You will need to have Microsoft R Server version 9.0 or later to use dplyrXdf with HDFS, and ideally version 9.1 for grouped functionality.</p>
 <div id="basics-hadoop-spark-and-hdfs" class="section level2">
@@ -97,11 +98,16 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 hd &lt;-<span class="st"> </span><span class="kw">RxHdfsFileSystem</span>()
 
 <span class="co"># copy a data frame into an Xdf file in HDFS</span>
-flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to</span>(hd, flights, <span class="dt">path=</span><span class="st">&quot;.&quot;</span>)
+flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to</span>(hd, flights)
+<span class="co">#&gt; Creating composite Xdf from non-composite data source</span>
+<span class="co">#&gt; 17/08/18 08:17:41 WARN azure.AzureFileSystemThreadPoolExecutor: Disabling threads for Rename operation as thread count 0 is &lt;= 1</span>
+<span class="co">#&gt; 17/08/18 08:17:41 INFO azure.AzureFileSystemThreadPoolExecutor: Time taken for Rename operation is: 141 ms with threads: 0</span>
+<span class="co">#&gt; mv: `/user/sshuser/flights/data/flights_1.xdfd': File exists</span>
+<span class="co">#&gt; mv: `/user/sshuser/flights/metadata/flights.xdfm': File exists</span>
 
 flightsHd
 <span class="co">#&gt; RxXdfData Source</span>
-<span class="co">#&gt; &quot;./flights&quot;</span>
+<span class="co">#&gt; &quot;/user/sshuser/flights&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: hdfs</span>
 <span class="co">#&gt;     hostName: default</span>
@@ -126,13 +132,13 @@ flightsHd
 <p>This will copy the flights table into HDFS, returning an Xdf data source object pointing to the file. If the path isn’t specified, the data is saved as an Xdf file in your HDFS home directory, normally <code>/user/&lt;username&gt;</code>.</p>
 <p>You can also use <code>copy_to_hdfs</code>, which is a shortcut that saves having to create an explicit filesystem object:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># same as above</span>
-flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to_hdfs</span>(flights, <span class="dt">path=</span><span class="st">&quot;.&quot;</span>)</code></pre></div>
+flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to_hdfs</span>(flights)</code></pre></div>
 <p>To download an Xdf file from HDFS to the native filesystem, use <code>collect</code> and <code>compute</code>. Again, these are the standard dplyr verbs for copying data from a remote src. For dplyrXdf, the difference between <code>collect</code> and <code>compute</code> is that the former by default will return a data frame, whereas the latter will save the copied data in an Xdf file and return a <code>tbl_xdf</code> object pointing to that file.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flightsLocal &lt;-<span class="st"> </span><span class="kw">compute</span>(flightsHd)
 
 flightsLocal
 <span class="co">#&gt; tbl_xdf Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\Rtmpgb6Y5q\dxTmpa7ac3bd54d46/flights&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpSkVJ1w\dxTmp604c17161afc/flights&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: TRUE</span>

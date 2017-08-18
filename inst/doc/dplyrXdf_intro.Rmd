@@ -12,6 +12,8 @@ vignette: >
 ```{r, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
+
+rxSetComputeContext("local")
 ```
 ## Introduction
 
@@ -186,6 +188,10 @@ Similarly, all verbs will work transparently with both standard and _composite_ 
 
 This article has been a quick executive-summary introduction to dplyrXdf. If you have any suggestions on features to add (including bits of dplyr that have been left out) or bugs that need fixing, please [file an issue on the repo](https://github.com/RevolutionAnalytics/dplyrXdf/issues), or contact me at [hongooi@microsoft.com](hongooi@microsoft.com).
 
+```{r echo=FALSE, message=FALSE, results="hide"}
+unlink(c("airports.xdf", "flights.xdf", "flights_rx1.xdf", "flights_rx2.xdf", "flights_rx3.xdf"))
+clean_dplyrxdf_dir("native")
+```
 
 
 

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2017-08-09" />
+<meta name="date" content="2017-08-18" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2017-08-09</em></h4>
+<h4 class="date"><em>2017-08-18</em></h4>
 
 
 
@@ -153,7 +153,7 @@ output3 &lt;-<span class="st"> </span>output1 %&gt;%
 <p>The second way of creating a persistent Xdf file is with the <code>persist</code> verb. This is a simple function that moves or copies its input to the specified location. Like the <code>.outFile</code> argument described above, it will also reset the status of the pipeline.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># pipeline 1 -- use persist to save the data</span>
 output1 &lt;-<span class="st"> </span>flightsXdf %&gt;%
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>) %&gt;%<span class="st"> </span><span class="kw">persist</span>(<span class="st">&quot;output1_persist.xdf&quot;</span>)
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">delay=</span>(arr_delay +<span class="st"> </span>dep_delay)/<span class="dv">2</span>) %&gt;%<span class="st"> </span><span class="kw">persist</span>(<span class="st">&quot;output1.xdf&quot;</span>)
 
 <span class="co"># use the output from pipeline 1</span>
 output2 &lt;-<span class="st"> </span>output1 %&gt;%
@@ -173,7 +173,7 @@ output3 &lt;-<span class="st"> </span>output1 %&gt;%
 
 output3
 <span class="co">#&gt; tbl_xdf Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\Rtmpgb6Y5q\dxTmpa7ac3bd54d46\filea7ac39d62921.xdf&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpSkVJ1w\dxTmp604c17161afc\file604c6d4e4746.xdf&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: FALSE</span>
@@ -181,7 +181,7 @@ output3
 <span class="co"># no longer a tbl_xdf</span>
 outputXdf
 <span class="co">#&gt; RxXdfData Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\Rtmpgb6Y5q\dxTmpa7ac3bd54d46\filea7ac39d62921.xdf&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpSkVJ1w\dxTmp604c17161afc\file604c6d4e4746.xdf&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: FALSE</span></code></pre></div>
@@ -371,7 +371,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     d:\misc\Rtemp\Rtmpgb6Y5q\tmpPartitionsa7ac7d3a2f55\data\tmpPartitionsa7ac7d3a2f55_8198236150526572797.xdf</span>
+<span class="co">#&gt;     d:\misc\Rtemp\RtmpSkVJ1w\tmpPartitions604c5c171a6\data\tmpPartitions604c5c171a6_8198236150526572797.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 57782</span>
@@ -387,7 +387,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <h2>Setting the tbl directory</h2>
 <p>By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large Xdf files. You can view the location of the current Xdf tbl directory with <code>get_dplyrxdf_dir</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_dplyrxdf_dir</span>()
-<span class="co">#&gt; [1] &quot;d:\\misc\\Rtemp\\Rtmpgb6Y5q\\dxTmpa7ac3bd54d46&quot;</span></code></pre></div>
+<span class="co">#&gt; [1] &quot;d:\\misc\\Rtemp\\RtmpSkVJ1w\\dxTmp604c17161afc&quot;</span></code></pre></div>
 <p>Similarly, you can change the location of the Xdf tbl directory with the <code>set_dplyrxdf_dir</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># set the tbl directory to a network drive (on Windows)</span>
 <span class="kw">set_dplyrxdf_dir</span>(<span class="st">&quot;n:/Rtemp&quot;</span>)</code></pre></div>
@@ -401,6 +401,8 @@ flightsMods$model[[<span class="dv">1</span>]]
 <li>Methods for <code>$</code> and <code>[[</code> that will extract a given column as a vector in memory.</li>
 </ul>
 <p>These are simple wrappers around RevoScaleR’s <code>rxDataStep</code> function that turn off the default size check. Make sure you have enough memory to hold the data before using them!</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unlink</span>(<span class="kw">c</span>(<span class="st">&quot;flights.xdf&quot;</span>, <span class="st">&quot;output1.xdf&quot;</span>))
+<span class="kw">clean_dplyrxdf_dir</span>(<span class="st">&quot;native&quot;</span>)</code></pre></div>
 </div>
 
 
