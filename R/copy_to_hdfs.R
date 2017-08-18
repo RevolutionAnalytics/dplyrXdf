@@ -27,56 +27,45 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
 {
     detectHdfsConnection() # fail early if no HDFS found
 
-    if(is.null(name))
-        path <- getHdfsUserDir()
-    else
-    {
-        if(hdfs_dir_exists(name))
-        {
-            path <- name
-            name <- NULL
-        }
-        else
-        {
-            path <- dirname(name)
-            name <- basename(name)
-        }
-    }
-
     if(is.character(df))
         df <- RxXdfData(df, fileSystem=RxNativeFileSystem())
 
-    if(inherits(df, "RxXdfData"))
+    if(in_hdfs(df))
+        stop("source is already in HDFS")
+
+    if(is.null(name))
+        name <- getHdfsUserDir()
+
+    # assume if name refers to a dir, we want to put it inside that dir
+    if(hdfs_dir_exists(name))
     {
-        if(in_hdfs(df))
-            stop("source is already in HDFS")
+        path <- name
+        name <- if(inherits(df, "RxFileData"))
+            basename(df@file)
+        else if(inherits(df, c("RxOdbcData", "RxTeradata")) && !is.null(df@table))
+            df@table
+        else basename(URLencode(deparse(substitute(df)), reserved=TRUE))
     }
-    else # if not an Xdf, create an Xdf
+    else
     {
-        localName <- file.path(get_dplyrxdf_dir("native"), if(is.null(name))
-            URLencode(deparse(substitute(df)), reserved=TRUE)
-        else basename(name))
-        on.exit(delete_xdf(df))
-        df <- local_exec(as_composite_xdf(df, localName, overwrite=TRUE))
+        path <- dirname(name)
+        name <- basename(name)
     }
 
     if(!is_composite_xdf(df))
     {
         # create a composite copy of non-composite src
         # this happens on client if remote
-        message("Creating composite copy of non-composite Xdf ", df@file)
+        message("Creating composite Xdf from non-composite data source ", name)
 
-        localName <- file.path(get_dplyrxdf_dir("native"), basename(df@file))
+        localName <- tbl_xdf(fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE)@file
         on.exit(delete_xdf(df))
-        df <- local_exec(as_composite_xdf(df, localName))
+        df <- local_exec(as_composite_xdf(df, localName, overwrite=TRUE))
     }
 
-    if(is.null(name))
-        name <- basename(df@file)
-
     hdfs_upload(df@file, path, overwrite=TRUE, ...)
-
     xdf <- RxXdfData(file.path(path, basename(df@file), fsep="/"), fileSystem=dest, createCompositeSet=TRUE)
+
     if(basename(xdf@file) != name)
         rename_xdf(xdf, name)
     else xdf

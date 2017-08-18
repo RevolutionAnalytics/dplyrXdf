@@ -78,7 +78,7 @@ distinctBase <- function(.data, vars, keep_all, outFile, rxArgs, grps=NULL, ...)
         bind_rows %>%
         distinct
 
-    if(is.character(outFile) || inherits(outFile, "RxXdfData") || !is.null(rxArgs))
+    if(is.character(outFile) || is_xdf(outFile) || !is.null(rxArgs))
     {
         # explicit namespace reference to allow for parallel/execBy backends: requires dplyrXdf to be installed on nodes
         arglst <- dplyrXdf:::doExtraArgs(list(output), .data, rxArgs, outFile)
