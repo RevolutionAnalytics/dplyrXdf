@@ -8,8 +8,8 @@ callGroupedExec <- function(.data, .output, ...)
     fs <- rxGetFileSystem(.data)
     cc <- rxGetComputeContext()
 
-    # must use rxExecBy if data is on HDFS, or compute context is distributed
-    outlst <- if(.dxOptions$useExecBy || inherits(fs, "RxHdfsFileSystem") || inherits(cc, "RxHadoopMR"))
+    # must use rxExecBy if compute context is distributed
+    outlst <- if(.dxOptions$useExecBy || inherits(cc, "RxHadoopMR"))
         callExecBy(.data, ...)
     else callSplit(.data, ...)
 
@@ -43,8 +43,8 @@ callExecBy <- function(.data, .func, ..., .captures=list())
 
 callSplit <- function(.data, .func, ..., .captures=list())
 {
-    if(in_hdfs(.data))
-        stop("cannot use manual splitting for data in HDFS")
+    if(inherits(rxGetComputeContext(), "RxHadoopMR"))
+        stop("cannot use manual splitting in Hadoop/Spark compute context")
 
     .captures$.composite <- is_composite_xdf(.data)
     .captures$.tblDir <- get_dplyrxdf_dir(rxGetFileSystem(.data))

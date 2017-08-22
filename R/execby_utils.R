@@ -15,8 +15,8 @@ execByResult <- function(.data, ...)
     on.exit(rxSetComputeContext(cc))
 
     # rxExecBy fails in local CC with relative path for HDFS data
-    if(!inherits(cc, "RxDistributedHpa") && in_hdfs(.data) && substr(.data@file, 1, 1) != "/")
-        .data <- modifyXdf(file=normalizeHdfsPath(.data@file))
+    if(!inherits(cc, "RxHadoopMR") && in_hdfs(.data) && substr(.data@file, 1, 1) != "/")
+        .data <- modifyXdf(.data, file=normalizeHdfsPath(.data@file))
 
     execLst <- rxExecBy(.data, ...)
     execByCheck(execLst)

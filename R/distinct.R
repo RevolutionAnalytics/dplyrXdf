@@ -40,12 +40,6 @@ distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_x
         NULL
     else rlang::enexpr(.rxArgs)
 
-    # must create explicit data source object if raw Xdf output specified, because callFunc will return df
-    if(is.character(.outFile))
-    {
-        composite <- is_composite_xdf(.data)
-        .outFile <- RxXdfData(validateXdfFile(.outFile, composite), createCompositeSet=composite)
-    }
     grps <- group_vars(.data)
 
     callGroupedExec(.data, .outFile, distinctBase,

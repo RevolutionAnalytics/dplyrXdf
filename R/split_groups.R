@@ -1,28 +1,25 @@
-splitGroups <- function(data, outXdf=data)
+splitGroups <- function(data)
 {
     grps <- group_vars(data)
     on.exit(deleteIfTbl(data))
-    # no splitting on Hdfs
-    if(inherits(rxGetFileSystem(data), "RxHdfsFileSystem"))
-        stop("splitting groups not supported on HDFS")
 
-    fname <- tools::file_path_sans_ext(rxXdfFileName(outXdf))
-    fname <- file.path(get_dplyrxdf_dir(), basename(fname))
+    fs <- rxGetFileSystem(data)
+    fname <- tools::file_path_sans_ext(data@file)
+    fname <- file.path(get_dplyrxdf_dir(fs), basename(fname))
     composite <- is_composite_xdf(data)
 
     # if files exist that could interfere with splitting output, delete them
-    # should never be necessary because base filename is a randomly generated tempfile
-    # and each split should be followed by a combine
-    deleteSplitOutput(fname, grps)
+    # this can happen, eg if a previous splitting op failed
+    cleanSplitOutput(fname, grps)
 
     # mimic behaviour of rxSplit: rxDataStep that splits each chunk, calls rxDataStep on each split
     filelst <- rxDataStep(data, transformFunc=function(varlst) {
-            datlst <- split(as.data.frame(varlst, stringsAsFactors=FALSE), varlst[.grps], drop=TRUE, sep="_&&_")
+            datlst <- split(as.data.frame(varlst, stringsAsFactors=FALSE), varlst[.grps], drop=TRUE, sep="--")
             # fix problematic characters in filenames: ?*<>|+ etc
             names(datlst) <- sapply(names(datlst), URLencode, reserved=TRUE)
 
             filelst <- paste(.fname, paste(.grps, collapse="#"), names(datlst), sep="##")
-            outlst <- lapply(filelst, RxXdfData, createCompositeSet=.composite)
+            outlst <- lapply(filelst, RxXdfData, fileSystem=.fs, createCompositeSet=.composite)
 
             for(i in seq_along(datlst))
             {
@@ -33,38 +30,23 @@ splitGroups <- function(data, outXdf=data)
             .outFiles <<- base::union(.outFiles, filelst)
             NULL
         },
-        transformObjects=list(.grps=grps, .fname=fname, .outFiles=character(0), .composite=composite),
+        transformObjects=list(.grps=grps, .fname=fname, .outFiles=character(0), .fs=fs, .composite=composite),
         returnTransformObjects=TRUE)$.outFiles
 
-    sapply(sort(filelst), function(f) tbl_xdf(file=f, createCompositeSet=composite))
+    sapply(sort(filelst), function(f) tbl_xdf(file=f, fileSystem=fs, createCompositeSet=composite))
 }
 
 
-createSplitOutput <- function(datalst, output, tblDir=get_dplyrxdf_dir())
-{
-    n <- length(datalst)
-    if(!missing(output) && is.null(output)) # data frame
-        out <- vector("list", n) # n NULLs
-    else out <- lapply(datalst, function(data)
-    {
-        # tbl_xdf
-        tbl_xdf(data)
-    })
-    out
-}
-
-
-deleteSplitOutput <- function(fname, grps)
+cleanSplitOutput <- function(fname, grps)
 {
     dname <- dirname(fname)
     fname <- basename(fname)
-    pattern <- paste(fname, paste(grps, collapse="_"), sep="__")
+    pattern <- paste(fname, paste(grps, collapse="#"), sep="##")
     existingFiles <- grep(pattern, dir(dname), value=TRUE, fixed=TRUE)
 
     if(length(existingFiles) > 0)
     {
-        # should never happen, warn if it does
-        warning("target files for splitting currently exist, will be overwritten")
+        message("removing old temporary files from splitting")
         unlink(file.path(dname, existingFiles))
     }
 }
