@@ -31,7 +31,7 @@ transmute.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 #' @export
 transmute.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
-    stopIfHdfs(.data, "mutate on grouped data not supported on HDFS")
+    stopIfDistribCC("mutate on grouped data not supported in Hadoop/Spark compute context")
 
     dots <- rlang::quos(..., .named=TRUE)
     transforms <- lapply(dots, rlang::get_expr)

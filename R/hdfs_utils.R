@@ -272,6 +272,14 @@ stopIfHdfs <- function(.data, ...)
 }
 
 
+# counterpart to stopIfHdfs: some ops work with HDFS data but not in Hadoop/Spark CC
+stopIfDistribCC <- function(...)
+{
+    if(inherits(rxGetComputeContext(), "RxHadoopMR"))
+        stop(..., call.=FALSE)
+}
+
+
 getHdfsUserDir <- function(fs)
 {
     # fail early if no HDFS found

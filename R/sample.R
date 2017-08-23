@@ -50,7 +50,7 @@ sample_frac.grouped_tbl_xdf <- function(tbl, size=1, replace=FALSE, weight=NULL,
 
 sampleGrouped <- function(.data, size, replace=FALSE, weight=NULL, frac)
 {
-    stopIfHdfs(.data, "grouped sampling not supported for data in HDFS")
+    stopIfDistribCC("grouped sampling not supported in Hadoop/Spark compute context")
     if(replace)
         warning("sampling with replacement not supported for Xdf files")
     if(!is.null(weight))
@@ -62,7 +62,7 @@ sampleGrouped <- function(.data, size, replace=FALSE, weight=NULL, frac)
 
 sampleUngrouped <- function(.data, size, replace=FALSE, weight=NULL, frac)
 {
-    stopIfHdfs(.data, "sampling not supported for data in HDFS")
+    stopIfDistribCC("sampling not supported in Hadoop/Spark compute context")
     if(replace)
         warning("sampling with replacement not supported for Xdf files")
     if(!is.null(weight))

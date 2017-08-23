@@ -27,7 +27,7 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
     if(length(lst) < 1)
         return(NULL)
 
-    stopIfHdfs(lst[[1]], "cbind for Rx source objects not supported on HDFS")
+    stopIfDistribCC("cbind for Rx source objects not supported in Hadoop/Spark compute context")
 
     # wart: specifying .rxArgs will fail if called from the generic, because of how cbind/rbind dispatch
     arglst <- doExtraArgs(list(), lst[[1]], rlang::enexpr(.rxArgs), .outFile)
@@ -80,7 +80,7 @@ rbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
     if(length(lst) < 1)
         return(NULL)
 
-    stopIfHdfs(lst[[1]], "rbind for Rx source objects not supported on HDFS")
+    stopIfDistribCC("rbind for Rx source objects not supported in Hadoop/Spark compute context")
 
     # wart: specifying .rxArgs will fail if called from the generic, because of how cbind/rbind dispatch
     arglst <- doExtraArgs(list(), lst[[1]], rlang::enexpr(.rxArgs), .outFile)

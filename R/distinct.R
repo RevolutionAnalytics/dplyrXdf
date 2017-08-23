@@ -34,7 +34,7 @@ distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.d
 #' @export
 distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.data), .rxArgs)
 {
-    stopIfHdfs(.data, "distinct not supported on HDFS")
+    stopIfDistribCC("distinct not supported in Hadoop/Spark compute context")
     args <- rlang::quos(...)
     .rxArgs <- if(missing(.rxArgs))
         NULL

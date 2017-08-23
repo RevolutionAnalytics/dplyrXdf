@@ -46,8 +46,6 @@ do.RxFileData <- function(.data, ...)
 #' @export
 do.grouped_tbl_xdf <- function(.data, ...)
 {
-    #stopIfHdfs(.data, "do on grouped data not supported on HDFS")
-
     args <- rlang::quos(...)
     if(".rxArgs" %in% names(args))
     {
@@ -131,8 +129,6 @@ do_xdf.RxFileData <- function(.data, ...)
 #' @export
 do_xdf.grouped_tbl_xdf <- function(.data, ...)
 {
-    #stopIfHdfs(.data, "do_xdf on grouped data not supported on HDFS")
-
     args <- rlang::quos(...)
     if(".rxArgs" %in% names(args))
     {
