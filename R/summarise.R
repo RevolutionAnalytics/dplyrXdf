@@ -147,7 +147,7 @@ makeSmryOutputHdfs <- function(smry, .outFile, .data)
             if(is.character(.outFile))
                 .outFile <- RxXdfData(.outFile, fileSystem=rxGetFileSystem(.data), createCompositeSet=TRUE)
 
-            output <- rxDataStep(smry, unTbl(.outFile), rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
+            output <- local_exec(rxDataStep(smry, unTbl(.outFile), rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE))
         }
 
         if(returnTbl)
