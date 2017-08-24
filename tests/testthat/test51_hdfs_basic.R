@@ -71,6 +71,18 @@ test_that("ungrouped do works",
     expect_true(is.data.frame(tbl))
 })
 
+# only for local compute context
+if(!inherits(rxGetComputeContext(), "RxHadoopMR"))
+{
+    test_that("distinct works",
+    {
+        tbl <- mthc %>% distinct()
+        expect_true(verifyData(tbl, "tbl_xdf"))
+        tbl <- mthc %>% distinct(cyl, gear)
+        expect_true(verifyData(tbl, "tbl_xdf"))
+    })
+}
+
 test_that("factorise works",
 {
     tbl <- mthc %>% factorise(cyl, gear)

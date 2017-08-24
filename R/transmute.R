@@ -51,7 +51,7 @@ transmute.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxAr
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
     arglst <- setTransmuteVars(arglst, names(.data), grps)
 
-    callGroupedExec(.data, .outFile, transmutateGrouped, arglst=arglst) %>% 
+    callGroupedExec(.data, .outFile, transmutateGrouped, .fs=rxGetFileSystem(.data), arglst=arglst) %>%
         simpleRegroup(grps)
 }
 

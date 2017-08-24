@@ -32,18 +32,21 @@ test_that("subset works",
     expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
 })
 
-#test_that("mutate works",
-#{
-    #tbl <- mthc %>% group_by(gear) %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt))
-    #expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
-#})
+# only for local compute context
+if(!inherits(rxGetComputeContext(), "RxHadoopMR"))
+{
+    test_that("mutate works",
+    {
+        tbl <- mthc %>% group_by(gear) %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt))
+        expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
+    })
 
-#test_that("transmute works",
-#{
-    #tbl <- mthc %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt))
-    #expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
-#})
-
+    test_that("transmute works",
+    {
+        tbl <- mthc %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt))
+        expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
+    })
+}
 
 # summarise and do
 
@@ -84,19 +87,17 @@ test_that("factorise xdf works",
     expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf") && varTypes(tbl)["cyl"] == "factor")
 })
 
-#test_that("arrange xdf works",
-#{
-    #tbl <- mthc %>% group_by(gear) %>% arrange(cyl, gear)
-    #expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
-#})
-
-#test_that("distinct works",
-#{
-    #tbl <- mthc %>% group_by(gear) %>% distinct()
-    #expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
-    #tbl <- mthc %>% group_by(gear) %>% distinct(cyl, gear)
-    #expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
-#})
+# only for local compute context
+if(!inherits(rxGetComputeContext(), "RxHadoopMR"))
+{
+    test_that("distinct works",
+    {
+        tbl <- mthc %>% group_by(gear) %>% distinct()
+        expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
+        tbl <- mthc %>% group_by(gear) %>% distinct(cyl, gear)
+        expect_true(verifyHdfsData(tbl, "grouped_tbl_xdf"))
+    })
+}
 
 test_that("rename works",
 {
@@ -114,18 +115,24 @@ test_that("output to data.frame works",
     expect_true(is.data.frame(tbl))
     tbl <- mthc %>% group_by(gear) %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile=NULL)
     expect_true(is.data.frame(tbl))
-    #tbl <- mthc %>% group_by(gear) %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile=NULL)
-    #expect_true(is.data.frame(tbl))
-    #tbl <- mthc %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile=NULL)
-    #expect_true(is.data.frame(tbl))
+
+    # only for local compute context
+    if(!inherits(rxGetComputeContext(), "RxHadoopMR"))
+    {
+        tbl <- mthc %>% group_by(gear) %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile=NULL)
+        expect_true(is.data.frame(tbl))
+        tbl <- mthc %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile=NULL)
+        expect_true(is.data.frame(tbl))
+
+        tbl <- mthc %>% group_by(gear) %>% distinct(cyl, gear, .outFile=NULL)
+        expect_true(is.data.frame(tbl))
+    }
 
     tbl <- mthc %>% group_by(gear) %>% summarise(n=n(), mpg2=mean(mpg), .outFile=NULL)
     expect_true(is.data.frame(tbl))
 
     tbl <- mthc %>% group_by(gear) %>% factorise(cyl, gear, .outFile=NULL)
     expect_true(is.data.frame(tbl) && varTypes(tbl)["cyl"] == "factor")
-    #tbl <- mthc %>% group_by(gear) %>% distinct(cyl, gear, .outFile=NULL)
-    #expect_true(is.data.frame(tbl))
     #tbl <- mthc %>% group_by(gear) %>% rename(mpg2=mpg, .outFile=NULL)
     #expect_true(is.data.frame(tbl) && names(tbl)[1] == "mpg2")
 })
@@ -138,18 +145,24 @@ test_that("output to xdf works",
     expect_true(verifyHdfsData(tbl, "RxXdfData"))
     tbl <- mthc %>% group_by(gear) %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile="test51a")
     expect_true(verifyHdfsData(tbl, "RxXdfData"))
-    #tbl <- mthc %>% group_by(gear) %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test51a")
-    #expect_true(verifyHdfsData(tbl, "RxXdfData"))
-    #tbl <- mthc %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test51a")
-    #expect_true(verifyHdfsData(tbl, "RxXdfData"))
+
+    # only for local compute context
+    if(!inherits(rxGetComputeContext(), "RxHadoopMR"))
+    {
+        tbl <- mthc %>% group_by(gear) %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test51a")
+        expect_true(verifyHdfsData(tbl, "RxXdfData"))
+        tbl <- mthc %>% group_by(gear) %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test51a")
+        expect_true(verifyHdfsData(tbl, "RxXdfData"))
+
+        tbl <- mthc %>% group_by(gear) %>% distinct(cyl, gear, .outFile="test51a")
+        expect_true(verifyHdfsData(tbl, "RxXdfData"))
+    }
 
     tbl <- mthc %>% group_by(gear) %>% summarise(n=n(), mpg2=mean(mpg), .outFile="test51a")
     expect_true(verifyHdfsData(tbl, "RxXdfData"))
 
     tbl <- mthc %>% group_by(gear) %>% factorise(cyl, gear, .outFile="test51a")
     expect_true(verifyHdfsData(tbl, "RxXdfData") && varTypes(tbl)["cyl"] == "factor")
-    #tbl <- mthc %>% group_by(gear) %>% distinct(cyl, gear, .outFile="test51a")
-    #expect_true(verifyHdfsData(tbl, "RxXdfData"))
     #tbl <- mthc %>% group_by(gear) %>% rename(mpg2=mpg, .outFile="test51a")
     #expect_true(verifyHdfsData(tbl, "RxXdfData") && names(tbl)[1] == "mpg2")
 })

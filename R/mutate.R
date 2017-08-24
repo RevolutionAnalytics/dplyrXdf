@@ -61,18 +61,18 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     arglst <- list(.data, transforms=transforms)
     arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
 
-    callGroupedExec(.data, .outFile, transmutateGrouped, arglst=arglst) %>%
+    callGroupedExec(.data, .outFile, transmutateGrouped, .fs=rxGetFileSystem(.data), arglst=arglst) %>%
         simpleRegroup(grps)
 }
 
 
-transmutateGrouped <- function(.data, arglst, ...)
+transmutateGrouped <- function(.data, .fs, arglst, ...)
 {
     arglst[[1]] <- .data
     file <- tempfile(tmpdir=.tblDir)
     # explicit namespace reference to allow for parallel/execBy backends: requires dplyrXdf to be installed on nodes
     if(!is.null(arglst$outFile))
-        arglst$outFile <- dplyrXdf:::tbl_xdf(.data, file=file, createCompositeSet=.composite)
+        arglst$outFile <- dplyrXdf:::tbl_xdf(.data, file=file, fileSystem=.fs, createCompositeSet=.composite)
 
     dplyrXdf:::callRx("rxDataStep", arglst)
 }
