@@ -25,68 +25,72 @@ verifyHdfsData <- function(xdf, expectedClass)
 }
 
 
-test_that("xdf to xdf joining works",
+# only for Spark CC
+if(inherits(rxGetComputeContext(), "RxSpark"))
 {
-    expect_true(verifyHdfsData(left_join(xdf1, xdf2), "tbl_xdf"))
-    expect_true(verifyHdfsData(right_join(xdf1, xdf2), "tbl_xdf"))
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2), "tbl_xdf"))
-    expect_true(verifyHdfsData(full_join(xdf1, xdf2), "tbl_xdf"))
-    expect_error(semi_join(xdf1, xdf2))
-    expect_error(anti_join(xdf1, xdf2))
-    expect_error(union(xdf1, xdf1))
-    expect_error(union_all(xdf1, xdf1))
+    test_that("xdf to xdf joining works",
+    {
+        expect_true(verifyHdfsData(left_join(xdf1, xdf2), "tbl_xdf"))
+        expect_true(verifyHdfsData(right_join(xdf1, xdf2), "tbl_xdf"))
+        expect_true(verifyHdfsData(inner_join(xdf1, xdf2), "tbl_xdf"))
+        expect_true(verifyHdfsData(full_join(xdf1, xdf2), "tbl_xdf"))
+        expect_error(semi_join(xdf1, xdf2))
+        expect_error(anti_join(xdf1, xdf2))
+        expect_error(union(xdf1, xdf1))
+        expect_error(union_all(xdf1, xdf1))
 
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="d")), "tbl_xdf"))
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="e")), "tbl_xdf"))
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("c"="d")), "tbl_xdf"))
+        expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="d")), "tbl_xdf"))
+        expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="e")), "tbl_xdf"))
+        expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("c"="d")), "tbl_xdf"))
 
-    #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2f), "tbl_xdf"))
-    #expect_true(verifyHdfsData(inner_join(xdf1, xdf2f), "tbl_xdf"))
-    #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2), "tbl_xdf"))
-})
-
-
-test_that("xdf to xdf joining -> data frame works",
-{
-    expect_true(inherits(left_join(xdf1, xdf2, .outFile=NULL), "data.frame"))
-    expect_true(inherits(right_join(xdf1, xdf2, .outFile=NULL), "data.frame"))
-    expect_true(inherits(inner_join(xdf1, xdf2, .outFile=NULL), "data.frame"))
-    expect_true(inherits(full_join(xdf1, xdf2, .outFile=NULL), "data.frame"))
-
-    expect_true(inherits(inner_join(xdf1, xdf2, by=c("b"="d"), .outFile=NULL), "data.frame"))
-    expect_true(inherits(inner_join(xdf1, xdf2, by=c("b"="e"), .outFile=NULL), "data.frame"))
-    expect_true(inherits(inner_join(xdf1, xdf2, by=c("c"="d"), .outFile=NULL), "data.frame"))
-
-    #expect_true(inherits(inner_join(xdf1f, xdf2f, .outFile=NULL), "data.frame"))
-    #expect_true(inherits(inner_join(xdf1, xdf2f, .outFile=NULL), "data.frame"))
-    #expect_true(inherits(inner_join(xdf1f, xdf2, .outFile=NULL), "data.frame"))
-})
+        #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2f), "tbl_xdf"))
+        #expect_true(verifyHdfsData(inner_join(xdf1, xdf2f), "tbl_xdf"))
+        #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2), "tbl_xdf"))
+    })
 
 
-test_that("xdf to xdf joining -> xdf works",
-{
-    expect_true(verifyHdfsData(left_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
-    expect_true(verifyHdfsData(right_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
-    expect_true(verifyHdfsData(full_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
+    test_that("xdf to xdf joining -> data frame works",
+    {
+        expect_true(inherits(left_join(xdf1, xdf2, .outFile=NULL), "data.frame"))
+        expect_true(inherits(right_join(xdf1, xdf2, .outFile=NULL), "data.frame"))
+        expect_true(inherits(inner_join(xdf1, xdf2, .outFile=NULL), "data.frame"))
+        expect_true(inherits(full_join(xdf1, xdf2, .outFile=NULL), "data.frame"))
 
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="d"), .outFile="test52"), "RxXdfData"))
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="e"), .outFile="test52"), "RxXdfData"))
-    expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("c"="d"), .outFile="test52"), "RxXdfData"))
+        expect_true(inherits(inner_join(xdf1, xdf2, by=c("b"="d"), .outFile=NULL), "data.frame"))
+        expect_true(inherits(inner_join(xdf1, xdf2, by=c("b"="e"), .outFile=NULL), "data.frame"))
+        expect_true(inherits(inner_join(xdf1, xdf2, by=c("c"="d"), .outFile=NULL), "data.frame"))
 
-    #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2f, .outFile="test52.xdf"), "RxXdfData"))
-    #expect_true(verifyHdfsData(inner_join(xdf1, xdf2f, .outFile="test52.xdf"), "RxXdfData"))
-    #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2, .outFile="test52.xdf"), "RxXdfData"))
-})
+        #expect_true(inherits(inner_join(xdf1f, xdf2f, .outFile=NULL), "data.frame"))
+        #expect_true(inherits(inner_join(xdf1, xdf2f, .outFile=NULL), "data.frame"))
+        #expect_true(inherits(inner_join(xdf1f, xdf2, .outFile=NULL), "data.frame"))
+    })
 
 
-test_that("copy arg works",
-{
-    expect_true(verifyHdfsData(left_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
-    expect_true(verifyHdfsData(right_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
-    expect_true(verifyHdfsData(inner_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
-    expect_true(verifyHdfsData(full_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
-})
+    test_that("xdf to xdf joining -> xdf works",
+    {
+        expect_true(verifyHdfsData(left_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
+        expect_true(verifyHdfsData(right_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
+        expect_true(verifyHdfsData(inner_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
+        expect_true(verifyHdfsData(full_join(xdf1, xdf2, .outFile="test52"), "RxXdfData"))
+
+        expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="d"), .outFile="test52"), "RxXdfData"))
+        expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("b"="e"), .outFile="test52"), "RxXdfData"))
+        expect_true(verifyHdfsData(inner_join(xdf1, xdf2, by=c("c"="d"), .outFile="test52"), "RxXdfData"))
+
+        #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2f, .outFile="test52.xdf"), "RxXdfData"))
+        #expect_true(verifyHdfsData(inner_join(xdf1, xdf2f, .outFile="test52.xdf"), "RxXdfData"))
+        #expect_true(verifyHdfsData(inner_join(xdf1f, xdf2, .outFile="test52.xdf"), "RxXdfData"))
+    })
+
+
+    test_that("copy arg works",
+    {
+        expect_true(verifyHdfsData(left_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
+        expect_true(verifyHdfsData(right_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
+        expect_true(verifyHdfsData(inner_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
+        expect_true(verifyHdfsData(full_join(xdf1, df2, copy=TRUE), "tbl_xdf"))
+    })
+}
 
 
 # clean up

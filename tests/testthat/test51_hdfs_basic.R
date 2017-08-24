@@ -77,9 +77,9 @@ if(!inherits(rxGetComputeContext(), "RxHadoopMR"))
     test_that("distinct works",
     {
         tbl <- mthc %>% distinct()
-        expect_true(verifyData(tbl, "tbl_xdf"))
+        expect_true(verifyHdfsData(tbl, "tbl_xdf"))
         tbl <- mthc %>% distinct(cyl, gear)
-        expect_true(verifyData(tbl, "tbl_xdf"))
+        expect_true(verifyHdfsData(tbl, "tbl_xdf"))
     })
 }
 
