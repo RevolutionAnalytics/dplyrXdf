@@ -9,6 +9,8 @@
 #' @details
 #' The underlying RevoScaleR function is \code{rxSort}. This has many sorting options, including removing duplicated keys, adding a column of frequency counts, and so on.
 #'
+#' Due to limitations in \code{rxSort}, this verb does not support data stored in HDFS.
+#'
 #' @return
 #' An object representing the sorted data. This depends on the \code{.outFile} argument: by default, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'

@@ -38,6 +38,8 @@ There are 5 possible methods for doing the summarisation. To choose which method
 The default method is 1 if the data is grouped and the requested summary statistics are supported by \code{rxCube}; otherwise 2 if the requested statistics are supported by \code{rxSummary}; otherwise 4. Method 3 is supplied for the case where the product of factor levels for the grouping variables exceeds 2^32 - 1, a known limitation of \code{rxCube} and \code{rxSummary}.
 
 Supplying custom functions to summarise is supported, but they must be \emph{named} functions (and will automatically cause \code{.method=4} to be selected). Anonymous functions will cause an error.
+
+Due to the way in which \code{rxSummary} and \code{rxCube} work, when used with data in HDFS, the result of the summarisation will be streamed to the client (either the edge node or a remote client) before being written to disk.
 }
 \seealso{
 \code{\link[dplyr]{summarise}} in package dplyr, \code{\link[RevoScaleR]{rxCube}}, \code{\link[RevoScaleR]{rxSummary}}

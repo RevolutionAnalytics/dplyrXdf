@@ -10,6 +10,8 @@
 #'
 #' These methods also have some limitations compared to \code{cbind} and \code{rbind} for data frames. The \code{cbind.RxXdfData} method will drop columns that have duplicate names, with a warning; this behaviour is different to \code{cbind} with data frames, which will create an output df with duplicated names; and to \code{dplyr::bind_cols}, which will rename columns to be unique. The \code{rbind.RxXdfData} method will give an error if the columns in all the objects don't match, rather than creating new columns.
 #'
+#' These methods support HDFS data in the local compute compute context, but not the Hadoop or Spark compute contexts.
+#'
 #' @seealso
 #' \code{\link[base]{cbind}} and \code{\link[base]{rbind}} in base R,
 #' \code{\link[dplyr]{bind_cols}} and \code{\link[dplyr]{bind_rows}} in package dplyr
@@ -20,14 +22,13 @@
 #' @export
 cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .rxArgs)
 {
+    stopIfDistribCC("cbind for Rx source objects not supported in Hadoop/Spark compute context")
     if(!missing(deparse.level))
         warn("cbind for Rx source objects doesn't use deparse.level")
 
     lst <- list(...)
     if(length(lst) < 1)
         return(NULL)
-
-    stopIfDistribCC("cbind for Rx source objects not supported in Hadoop/Spark compute context")
 
     # wart: specifying .rxArgs will fail if called from the generic, because of how cbind/rbind dispatch
     arglst <- doExtraArgs(list(), lst[[1]], rlang::enexpr(.rxArgs), .outFile)
@@ -73,14 +74,13 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
 #' @export
 rbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .rxArgs)
 {
+    stopIfDistribCC("rbind for Rx source objects not supported in Hadoop/Spark compute context")
     if(!missing(deparse.level))
         warn("rbind for Rx source objects doesn't use deparse.level")
 
     lst <- list(...)
     if(length(lst) < 1)
         return(NULL)
-
-    stopIfDistribCC("rbind for Rx source objects not supported in Hadoop/Spark compute context")
 
     # wart: specifying .rxArgs will fail if called from the generic, because of how cbind/rbind dispatch
     arglst <- doExtraArgs(list(), lst[[1]], rlang::enexpr(.rxArgs), .outFile)

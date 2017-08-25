@@ -74,7 +74,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<pre><code>## [1] TRUE</code></pre>
 <p>Microsoft R Server includes the ability to work with Hadoop and Spark clusters. As part of this, it also lets you work with datasets, in particular Xdf files, that are stored in HDFS.</p>
 <p>As of version 0.10.0, dplyrXdf also supports Xdf files in HDFS. Most verbs will work exactly the same as with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark. You will need to have Microsoft R Server version 9.0 or later to use dplyrXdf with HDFS, and ideally version 9.1 for grouped functionality.</p>
 <div id="basics-hadoop-spark-and-hdfs" class="section level2">
@@ -100,10 +99,8 @@ hd &lt;-<span class="st"> </span><span class="kw">RxHdfsFileSystem</span>()
 <span class="co"># copy a data frame into an Xdf file in HDFS</span>
 flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to</span>(hd, flights)
 <span class="co">#&gt; Creating composite Xdf from non-composite data source</span>
-<span class="co">#&gt; 17/08/18 08:17:41 WARN azure.AzureFileSystemThreadPoolExecutor: Disabling threads for Rename operation as thread count 0 is &lt;= 1</span>
-<span class="co">#&gt; 17/08/18 08:17:41 INFO azure.AzureFileSystemThreadPoolExecutor: Time taken for Rename operation is: 141 ms with threads: 0</span>
-<span class="co">#&gt; mv: `/user/sshuser/flights/data/flights_1.xdfd': File exists</span>
-<span class="co">#&gt; mv: `/user/sshuser/flights/metadata/flights.xdfm': File exists</span>
+<span class="co">#&gt; 17/08/18 09:24:31 WARN azure.AzureFileSystemThreadPoolExecutor: Disabling threads for Rename operation as thread count 0 is &lt;= 1</span>
+<span class="co">#&gt; 17/08/18 09:24:31 INFO azure.AzureFileSystemThreadPoolExecutor: Time taken for Rename operation is: 143 ms with threads: 0</span>
 
 flightsHd
 <span class="co">#&gt; RxXdfData Source</span>

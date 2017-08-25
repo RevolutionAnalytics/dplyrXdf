@@ -34,6 +34,8 @@ Select distinct/unique rows
 }
 \details{
 This verb calls \code{dplyr::distinct} on each chunk in an Xdf file. The individual data frames are \code{rbind}ed together and \code{dplyr::distinct} is called on the overall result. This may be slow if there are many chunks in the file; and the operation will be limited by memory if the number of distinct rows is large.
+
+This verb can be used on HDFS data in the local compute context (on the edge node), but not in the Hadoop or Spark compute contexts.
 }
 \seealso{
 \code{\link[dplyr]{distinct}} in package dplyr

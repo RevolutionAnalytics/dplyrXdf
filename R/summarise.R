@@ -19,6 +19,8 @@
 #'
 #' Supplying custom functions to summarise is supported, but they must be \emph{named} functions (and will automatically cause \code{.method=4} to be selected). Anonymous functions will cause an error.
 #'
+#' Due to the way in which \code{rxSummary} and \code{rxCube} work, when used with data in HDFS, the result of the summarisation will be streamed to the client (either the edge node or a remote client) before being written to disk.
+#'
 #' @return
 #' An object representing the summary. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'

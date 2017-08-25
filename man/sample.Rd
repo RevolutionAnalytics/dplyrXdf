@@ -34,6 +34,8 @@ Do random sampling from an Xdf file
 }
 \details{
 Sampling from Xdf files is slightly more limited than the data frame case. Only unweighted sampling without replacement is supported, and attempts to specify otherwise will result in a warning. Unlike the other single-table dplyr verbs, \code{sample_n} and \code{sample_frac} do not delete tbl inputs; this is because it's unlikely that a sample is intended to replace the input data entirely.
+
+Currently sampling on HDFS data works in the local compute context (on the edge node) but not in the Hadoop or Spark compute contexts.
 }
 \seealso{
 \code{\link[dplyr]{sample_frac}}, \code{\link[dplyr]{sample_n}}, \code{\link{sample}}

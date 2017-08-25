@@ -12,7 +12,7 @@
 #'
 #' For best performance, avoid merging on factor variables or on variables with mismatched types, especially in Spark. This is because \code{rxMerge} is picky about its inputs, and dplyrXdf may have to transform the data to ensure that the merge succeeds.
 #'
-#' Currently, merging in Spark has a few limitations. Only Xdf (in HDFS) and Spark data sources (\code{RxHiveData}, \code{RxOrcData} and \code{RxParquetData}) can be merged, and only the "standard" join operations are supported: \code{left_join}, \code{right_join}, \code{inner_join} and \code{full join}.
+#' Currently, merging in Spark has a few limitations. Only Xdf (in HDFS) and Spark data sources (\code{RxHiveData}, \code{RxOrcData} and \code{RxParquetData}) can be merged, and only the "standard" join operations are supported: \code{left_join}, \code{right_join}, \code{inner_join} and \code{full join}. Moreover, Xdf files in HDFS can \emph{only} be merged in the Spark compute context (not in the local compute context).
 #'
 #' @return
 #' An object representing the joined data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.

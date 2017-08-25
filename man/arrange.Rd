@@ -30,6 +30,8 @@ Arrange the rows in an Xdf file
 }
 \details{
 The underlying RevoScaleR function is \code{rxSort}. This has many sorting options, including removing duplicated keys, adding a column of frequency counts, and so on.
+
+Due to limitations in \code{rxSort}, this verb does not support data stored in HDFS.
 }
 \seealso{
 \code{\link{rxSort}}, \code{\link[dplyr]{arrange}} in package dplyr
