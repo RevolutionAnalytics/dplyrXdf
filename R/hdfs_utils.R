@@ -340,7 +340,7 @@ makeHdfsUri <- function(host, path, convert=TRUE)
         host <- host$hostName
     path <- convertBS(path, convert)
     if(hasUriScheme(host) && !hasUriScheme(path))
-        file.path(host, sub("^/", "", path), fsep="/")
+        gsub("(?<!:)//", "/", file.path(host, path, fsep="/"), perl=TRUE)
     else path
 }
 
