@@ -61,8 +61,6 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
 
     # if path is not specific, and host points to ADLS storage, save file there instead of native HDFS
     path <- makeHdfsUri(host, path)
-    print(path)
-    print(name)
 
     if(!is_composite_xdf(df))
     {
@@ -80,7 +78,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
         basename(df@file)
     else file.path(path, basename(df@file), fsep="/")
     xdf <- RxXdfData(hdfsFile, fileSystem=dest, createCompositeSet=TRUE)
-    print(hdfsFile)
+
     if(basename(xdf@file) != name)
         rename_xdf(xdf, name)
     else xdf
