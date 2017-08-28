@@ -13,6 +13,7 @@ copyOrMove <- function(src, dest, overwrite=TRUE, move)
 
 copyOrMoveHdfs <- function(src, dest, overwrite, move, composite)
 {
+    host <- src@fileSystem$hostName
     if(composite)
     {
         srcDir <- dirname(src@file)
@@ -36,7 +37,7 @@ copyOrMoveHdfs <- function(src, dest, overwrite, move, composite)
                 return(rename_xdf(src, basename(dest)))
 
             # otherwise copy individual files/dirs within src
-            ret <- hdfs_file_copy(src@file, dest)
+            ret <- hdfs_file_copy(src@file, dest, host=host)
         }
         else
         {
@@ -45,15 +46,15 @@ copyOrMoveHdfs <- function(src, dest, overwrite, move, composite)
                 # making an xdf at given dir
                 dest <- validateXdfFile(dest, composite)
                 ret <- if(move)
-                    hdfs_file_move(src@file, dest)
-                else hdfs_file_copy(src@file, dest)
+                    hdfs_file_move(src@file, dest, host=host)
+                else hdfs_file_copy(src@file, dest, host=host)
             }
             else
             {
                 # making an xdf underneath given dir (will have same name)
                 ret <- if(move)
-                    hdfs_file_move(src@file, file.path(dest, srcFile))
-                else hdfs_file_copy(src@file, dest)
+                    hdfs_file_move(src@file, file.path(dest, srcFile), host=host)
+                else hdfs_file_copy(src@file, dest, host=host)
             }
         }
 
@@ -61,11 +62,11 @@ copyOrMoveHdfs <- function(src, dest, overwrite, move, composite)
         {
             if(renameAfterCopy)
             {
-                pat <- sprintf("^%s", srcFile)
-                dataFiles <- hdfs_dir(dest, full_path=TRUE, recursive=TRUE)
+                pat <- paste0("^", srcFile)
+                dataFiles <- hdfs_dir(dest, full_path=TRUE, recursive=TRUE, host=host)
                 dataDirs <- dirname(dataFiles)
                 newDataFiles <- file.path(dataDirs, sub(pat, destFile, basename(dataFiles)))
-                ret <- all(mapply(hdfs_file_move, dataFiles, newDataFiles))
+                ret <- all(mapply(hdfs_file_move, dataFiles, newDataFiles, MoreArgs=list(host=host)))
             }
             else dest <- file.path(dest, srcFile)
 
@@ -153,7 +154,7 @@ copyOrMoveNative <- function(src, dest, overwrite, move, composite)
         {
             if(renameAfterCopy)
             {
-                pat <- sprintf("^%s", srcFile)
+                pat <- paste0("^", srcFile)
                 dataFiles <- dir(dest, full.names=TRUE, recursive=TRUE)
                 dataDirs <- dirname(dataFiles)
                 newDataFiles <- file.path(dataDirs, sub(pat, destFile, basename(dataFiles)))
