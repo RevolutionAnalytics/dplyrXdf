@@ -58,7 +58,13 @@ collect.RxXdfData <- function(x, as_data_frame=TRUE, ...)
         composite <- is_composite_xdf(x)
         file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
         localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
-        hdfs_download(x@file, localXdf@file, overwrite=TRUE)
+
+        host <- x@fileSystem$hostName
+        hdfsFile <- if(hasUriScheme(host))
+            file.path(host, x@file, fsep="/")
+        else x@file
+
+        hdfs_download(hdfsFile, localXdf@file, overwrite=TRUE)
     }
     else localXdf <- x
 
@@ -82,7 +88,13 @@ compute.RxXdfData <- function(x, as_data_frame=!in_hdfs(x), ...)
         composite <- is_composite_xdf(x)
         file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
         localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
-        hdfs_download(x@file, localXdf@file, overwrite=TRUE)
+
+        host <- x@fileSystem$hostName
+        hdfsFile <- if(hasUriScheme(host))
+            file.path(host, x@file, fsep="/")
+        else x@file
+
+        hdfs_download(hdfsFile, localXdf@file, overwrite=TRUE)
     }
     else localXdf <- x
 

@@ -29,9 +29,10 @@
 #' @rdname hdfs
 #' @export
 hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursive=FALSE,
-    dirs_only=FALSE, pattern=NULL, convert_backslashes=TRUE)
+    dirs_only=FALSE, pattern=NULL, host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
 {
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, path, convert_backslashes)
+
     arguments <- c("fs", "-ls", if(recursive) "-R", ..., path)
 
     # modified from rxHadoopListFiles
@@ -73,7 +74,8 @@ hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursi
 print.dplyrXdf_hdfs_dir <- function(x, ...)
 {
     path <- attr(x, "path")
-    if(substr(path, 1, 1) != "/")
+
+    if(!hasUriScheme(path) && substr(path, 1, 1) != "/")
         message("HDFS user directory assumed to be ", getHdfsUserDir())
     cat("Directory listing of", path, "\n")
     print.default(c(x), ...)
@@ -88,10 +90,10 @@ print.dplyrXdf_hdfs_dir <- function(x, ...)
 #' \code{hdfs_dir_exists} and \code{hdfs_file_exists} return TRUE or FALSE depending on whether the directory or file exists.
 #' @rdname hdfs
 #' @export
-hdfs_dir_exists <- function(path, convert_backslashes=TRUE)
+hdfs_dir_exists <- function(path, host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, path, convert_backslashes)
     out <- suppressWarnings(try(hdfs_dir(path, "-d", dirs_only=TRUE), silent=TRUE))
     !inherits(out, "try-error") && length(out) > 0 && out == basename(path)
 }
@@ -99,10 +101,10 @@ hdfs_dir_exists <- function(path, convert_backslashes=TRUE)
 
 #' @rdname hdfs
 #' @export
-hdfs_file_exists <- function(path, convert_backslashes=TRUE)
+hdfs_file_exists <- function(path, host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, path, convert_backslashes)
     rxHadoopFileExists(path)
 }
 
@@ -114,20 +116,20 @@ hdfs_file_exists <- function(path, convert_backslashes=TRUE)
 #' The other \code{hdfs_*} functions return TRUE or FALSE depending on whether the operation succeeded.
 #' @rdname hdfs
 #' @export
-hdfs_dir_create <- function(path, ..., convert_backslashes=TRUE)
+hdfs_dir_create <- function(path, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, path, convert_backslashes)
     rxHadoopMakeDir(path, ...)
 }
 
 
 #' @rdname hdfs
 #' @export
-hdfs_dir_remove <- function(path, ..., convert_backslashes=TRUE)
+hdfs_dir_remove <- function(path, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, path, convert_backslashes)
     rxHadoopRemoveDir(path, ...)
 }
 
@@ -136,11 +138,11 @@ hdfs_dir_remove <- function(path, ..., convert_backslashes=TRUE)
 #' \code{hdfs_file_copy} and \code{hdfs_file_move} copy and move files. They are analogous to \code{file.copy} and \code{file.rename} for the native filesystem. Unlike \code{\link{rxHadoopCopy}} and \code{\link{rxHadoopMove}}, they are vectorised in both \code{src} and \code{dest}.
 #' @rdname hdfs
 #' @export
-hdfs_file_copy <- function(src, dest, ..., convert_backslashes=TRUE)
+hdfs_file_copy <- function(src, dest, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
-    src <- convertBS(src, convert_backslashes)
-    dest <- convertBS(dest, convert_backslashes)
+    src <- makeHdfsUri(host, src, convert_backslashes)
+    dest <- makeHdfsUri(host, dest, convert_backslashes)
     nSrc <- length(src)
     nDest <- length(dest)
 
@@ -154,11 +156,11 @@ hdfs_file_copy <- function(src, dest, ..., convert_backslashes=TRUE)
 
 #' @rdname hdfs
 #' @export
-hdfs_file_move <- function(src, dest, ..., convert_backslashes=TRUE)
+hdfs_file_move <- function(src, dest, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
-    src <- convertBS(src, convert_backslashes)
-    dest <- convertBS(dest, convert_backslashes)
+    src <- makeHdfsUri(host, src, convert_backslashes)
+    dest <- makeHdfsUri(host, dest, convert_backslashes)
     nSrc <- length(src)
     nDest <- length(dest)
 
@@ -174,10 +176,10 @@ hdfs_file_move <- function(src, dest, ..., convert_backslashes=TRUE)
 #' \code{hdfs_file_remove} deletes files. It is analogous to \code{file.remove} and \code{unlink} for the native filesystem.
 #' @rdname hdfs
 #' @export
-hdfs_file_remove <- function(path, ..., convert_backslashes=TRUE)
+hdfs_file_remove <- function(path, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, path, convert_backslashes)
     rxHadoopRemove(path, ...)
 }
 
@@ -293,15 +295,47 @@ getHdfsUserDir <- function(fs)
 }
 
 
+# get the HDFS host: needed to differentiate between "native" and Azure Data Lake storage
+getHdfsHost <- function(fs=NULL)
+{
+    if(inherits(fs, "RxHdfsFileSystem"))
+        return(fs$hostName)
+
+    host <- try(rxGetComputeContext()@nameNode, silent=TRUE)
+    if(!inherits(host, "try-error"))
+        return(host)
+
+    host <- rxGetFileSystem()$hostName
+    if(!is.null(host))
+        return(host)
+
+    rxGetOption("hdfsHost")
+}
+
+
 normalizeHdfsPath <- function(path)
 {
-    userDir <- getHdfsUserDir()
     path <- gsub("/\\./", "/", convertBS(path, TRUE))
     path <- sub("^\\./", "", path)
+
+    # if path contains a scheme, don't change it
+    if(hasUriScheme(path))
+        return(path)
+
+    userDir <- getHdfsUserDir()
     if(path == ".")
         userDir
     else if(substr(path, 1, 1) != "/")
         file.path(userDir, path, fsep="/")
+    else path
+}
+
+
+makeHdfsUri <- function(host, path, convert=TRUE)
+{
+    path <- convertBS(path, convert)
+    if(hasUriScheme(host) && !hasUriScheme(path))
+        file.path(host, sub("^/", "", path), fsep="/")
     else path
 }
 
@@ -312,3 +346,12 @@ convertBS <- function(path, convert)
         gsub("\\\\", "/", path)
     else path
 }
+
+
+hasUriScheme <- function(path)
+{
+    if(length(path) > 0)
+        grepl("^([[:alpha:]+.-]+):", path)
+    else FALSE
+}
+
