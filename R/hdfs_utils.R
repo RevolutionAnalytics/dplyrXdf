@@ -9,6 +9,7 @@
 #' @param dirs_only For \code{hdfs_dir} if \emph{only} subdirectory names should be included.
 #' @param pattern For \code{hdfs_dir}, an optional \link{regular expression}. Only file names that match will be returned.
 #' @param ... For \code{hdfs_dir}, further switches, prefixed by \code{"-"}, to pass to the Hadoop \code{fs -ls} command. For other functions, further arguments to pass to \code{\link{rxHadoopCommand.}}
+#' @param host The HDFS hostname as a URI string, in the form \code{adl://host.name}. You should need to set this only if you have an attached Azure Data Lake Store that you are accessing via HDFS. Can also be specified as an \code{RxHdfsFileSystem} object, in which case the hostname will be taken from the object.
 #' @param convert_backslashes Whether to convert any backslashes found in the input to forward slashes.
 #' @param src,dest For \code{hdfs_file_copy} and \code{hdfs_file_move}, the source and destination paths.
 #'
@@ -29,7 +30,7 @@
 #' @rdname hdfs
 #' @export
 hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursive=FALSE,
-    dirs_only=FALSE, pattern=NULL, host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
+    dirs_only=FALSE, pattern=NULL, host=getHdfsHost(), convert_backslashes=TRUE)
 {
     path <- makeHdfsUri(host, path, convert_backslashes)
 
@@ -90,7 +91,7 @@ print.dplyrXdf_hdfs_dir <- function(x, ...)
 #' \code{hdfs_dir_exists} and \code{hdfs_file_exists} return TRUE or FALSE depending on whether the directory or file exists.
 #' @rdname hdfs
 #' @export
-hdfs_dir_exists <- function(path, host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
+hdfs_dir_exists <- function(path, host=getHdfsHost(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -101,7 +102,7 @@ hdfs_dir_exists <- function(path, host=rxGetOption("hdfsHost"), convert_backslas
 
 #' @rdname hdfs
 #' @export
-hdfs_file_exists <- function(path, host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
+hdfs_file_exists <- function(path, host=getHdfsHost(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -116,7 +117,7 @@ hdfs_file_exists <- function(path, host=rxGetOption("hdfsHost"), convert_backsla
 #' The other \code{hdfs_*} functions return TRUE or FALSE depending on whether the operation succeeded.
 #' @rdname hdfs
 #' @export
-hdfs_dir_create <- function(path, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
+hdfs_dir_create <- function(path, ..., host=getHdfsHost(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -126,7 +127,7 @@ hdfs_dir_create <- function(path, ..., host=rxGetOption("hdfsHost"), convert_bac
 
 #' @rdname hdfs
 #' @export
-hdfs_dir_remove <- function(path, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
+hdfs_dir_remove <- function(path, ..., host=getHdfsHost(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -136,9 +137,11 @@ hdfs_dir_remove <- function(path, ..., host=rxGetOption("hdfsHost"), convert_bac
 
 #' @details
 #' \code{hdfs_file_copy} and \code{hdfs_file_move} copy and move files. They are analogous to \code{file.copy} and \code{file.rename} for the native filesystem. Unlike \code{\link{rxHadoopCopy}} and \code{\link{rxHadoopMove}}, they are vectorised in both \code{src} and \code{dest}.
+#'
+#' Currently, RevoScaleR has only limited support for accessing multiple HDFS filesystems simultaneously. In particular, \code{src} and \code{dest} should both be on the same HDFS filesystem, whether host or ADLS.
 #' @rdname hdfs
 #' @export
-hdfs_file_copy <- function(src, dest, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
+hdfs_file_copy <- function(src, dest, ..., host=getHdfsHost(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     src <- makeHdfsUri(host, src, convert_backslashes)
@@ -156,7 +159,7 @@ hdfs_file_copy <- function(src, dest, ..., host=rxGetOption("hdfsHost"), convert
 
 #' @rdname hdfs
 #' @export
-hdfs_file_move <- function(src, dest, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
+hdfs_file_move <- function(src, dest, ..., host=getHdfsHost(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     src <- makeHdfsUri(host, src, convert_backslashes)
@@ -176,7 +179,7 @@ hdfs_file_move <- function(src, dest, ..., host=rxGetOption("hdfsHost"), convert
 #' \code{hdfs_file_remove} deletes files. It is analogous to \code{file.remove} and \code{unlink} for the native filesystem.
 #' @rdname hdfs
 #' @export
-hdfs_file_remove <- function(path, ..., host=rxGetOption("hdfsHost"), convert_backslashes=TRUE)
+hdfs_file_remove <- function(path, ..., host=getHdfsHost(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -333,6 +336,8 @@ normalizeHdfsPath <- function(path)
 
 makeHdfsUri <- function(host, path, convert=TRUE)
 {
+    if(inherits(host, "RxHdfsFileSystem"))
+        host <- host$hostName
     path <- convertBS(path, convert)
     if(hasUriScheme(host) && !hasUriScheme(path))
         file.path(host, sub("^/", "", path), fsep="/")

@@ -85,7 +85,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
 }
 
 
-#' @param host,port HDFS hostname and port number to connect to. Generally used only if you have an attached Azure Data Lake Store that you are accessing via HDFS.
+#' @param host,port HDFS hostname and port number to connect to. You should need to set these only if you have an attached Azure Data Lake Store that you are accessing via HDFS.
 #' @details
 #' The \code{copy_to_hdfs} function is a simple wrapper for \code{copy_to} that avoids having to create an explicit filesystem object.
 #' @rdname copy_to
