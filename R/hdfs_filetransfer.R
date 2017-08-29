@@ -91,7 +91,7 @@ hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
         dir.exists(file.path(dest, basename(src)))
     else
     {
-        isDestDir <- hdfs_dir_exists(dest)
+        isDestDir <- dir.exists(dest)
         if(isDestDir)
             file.exists(file.path(dest, basename(src)))
         else file.exists(dest)
