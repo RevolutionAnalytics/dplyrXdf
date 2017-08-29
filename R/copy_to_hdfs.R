@@ -73,7 +73,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
         df <- local_exec(as_composite_xdf(df, localName, overwrite=TRUE))
     }
 
-    hdfs_upload(df@file, path, overwrite=TRUE, ...)
+    hdfs_upload(df@file, path, overwrite=TRUE, host=host, ...)
     hdfsFile <- if(path == ".")
         basename(df@file)
     else file.path(path, basename(df@file), fsep="/")

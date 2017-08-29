@@ -17,19 +17,19 @@
 #' \code{\link{download.file}}, \code{\link{rxHadoopCopyFromLocal}}, \code{\link{rxHadoopCopyFromClient}}
 #' @rdname hdfs_filetransfer
 #' @export
-hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
+hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=getHdfsHost(), ...)
 {
     detectHdfsConnection()
     isDir <- dir.exists(src)
 
     destExists <- if(isDir)
-        hdfs_dir_exists(file.path(dest, basename(src), fsep="/"))
+        hdfs_dir_exists(file.path(dest, basename(src), fsep="/"), host)
     else
     {
-        isDestDir <- hdfs_dir_exists(dest)
+        isDestDir <- hdfs_dir_exists(dest, host)
         if(isDestDir)
-            hdfs_file_exists(file.path(dest, basename(src), fsep="/"))
-        else hdfs_file_exists(dest)
+            hdfs_file_exists(file.path(dest, basename(src), fsep="/"), host)
+        else hdfs_file_exists(dest, host)
     }
     if(destExists)
     {
@@ -37,7 +37,7 @@ hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
         {
             # copyFromLocal can overwrite files
             if(isDir)
-                hdfs_dir_remove(file.path(dest, basename(src), fsep="/"))
+                hdfs_dir_remove(file.path(dest, basename(src), fsep="/"), host=host)
         }
         else stop(sprintf("destination %s exists; set overwrite=TRUE to replace it",
                           if(isDir) "directory" else "file"))
@@ -68,7 +68,7 @@ hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
     cmd <- "fs -copyFromLocal"
     if(overwrite)
         cmd <- paste(cmd, "-f")
-    cmd <- paste(cmd, src, dest)
+    cmd <- paste(cmd, src, makeHdfsUri(host, dest))
 
     ret <- rxHadoopCommand(cmd, ...)
     if(ret && isRemoteHdfsClient())
@@ -82,10 +82,10 @@ hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
 
 #' @rdname hdfs_filetransfer
 #' @export
-hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
+hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=getHdfsHost(), ...)
 {
     detectHdfsConnection()
-    isDir <- hdfs_dir_exists(src)
+    isDir <- hdfs_dir_exists(src, host)
 
     destExists <- if(isDir)
         dir.exists(file.path(dest, basename(src)))
@@ -110,7 +110,7 @@ hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", ...)
 
     localDest <- if(isRemoteHdfsClient()) nativeTarget else dest
 
-    cmd <- paste("fs -copyToLocal", src, localDest)
+    cmd <- paste("fs -copyToLocal", makeHdfsUri(host, src), localDest)
     ret <- rxHadoopCommand(cmd, ...)
 
     if(ret && isRemoteHdfsClient())
