@@ -59,12 +59,7 @@ collect.RxXdfData <- function(x, as_data_frame=TRUE, ...)
         file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
         localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
 
-        host <- x@fileSystem$hostName
-        hdfsFile <- if(hasUriScheme(host))
-            file.path(host, x@file, fsep="/")
-        else x@file
-
-        hdfs_download(hdfsFile, localXdf@file, overwrite=TRUE)
+        hdfs_download(x@file, localXdf@file, overwrite=TRUE, host=x@fileSystem$hostName)
     }
     else localXdf <- x
 
@@ -89,12 +84,7 @@ compute.RxXdfData <- function(x, as_data_frame=!in_hdfs(x), ...)
         file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
         localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
 
-        host <- x@fileSystem$hostName
-        hdfsFile <- if(hasUriScheme(host))
-            file.path(host, x@file, fsep="/")
-        else x@file
-
-        hdfs_download(hdfsFile, localXdf@file, overwrite=TRUE)
+        hdfs_download(x@file, localXdf@file, overwrite=TRUE, host=x@fileSystem$hostName)
     }
     else localXdf <- x
 

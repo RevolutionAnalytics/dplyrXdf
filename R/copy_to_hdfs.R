@@ -44,7 +44,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
     }
 
     # assume if name refers to a dir, we want to put it inside that dir
-    if(hdfs_dir_exists(name))
+    if(hdfs_dir_exists(name, host=host))
     {
         path <- name
         name <- if(inherits(df, "RxFileData"))
