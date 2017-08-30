@@ -90,7 +90,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
 #' The \code{copy_to_hdfs} function is a simple wrapper for \code{copy_to} that avoids having to create an explicit filesystem object.
 #' @rdname copy_to
 #' @export
-copy_to_hdfs <- function(..., host=getHdfsHost(), port=rxGetOption("hdfsPort"))
+copy_to_hdfs <- function(..., host=hdfs_host(), port=rxGetOption("hdfsPort"))
 {
     copy_to(RxHdfsFileSystem(hostName=host, port=port), ...)
 }

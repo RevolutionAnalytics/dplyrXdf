@@ -17,7 +17,7 @@
 #' \code{\link{download.file}}, \code{\link{rxHadoopCopyFromLocal}}, \code{\link{rxHadoopCopyFromClient}}
 #' @rdname hdfs_filetransfer
 #' @export
-hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=getHdfsHost(), ...)
+hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=hdfs_host(), ...)
 {
     detectHdfsConnection()
     isDir <- dir.exists(src)
@@ -82,7 +82,7 @@ hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=ge
 
 #' @rdname hdfs_filetransfer
 #' @export
-hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=getHdfsHost(), ...)
+hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=hdfs_host(), ...)
 {
     detectHdfsConnection()
     isDir <- hdfs_dir_exists(src, host)

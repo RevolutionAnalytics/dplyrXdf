@@ -8,16 +8,18 @@
 \usage{
 \method{copy_to}{RxHdfsFileSystem}(dest, df, name = NULL, ...)
 
-copy_to_hdfs(...)
+copy_to_hdfs(..., host = hdfs_host(), port = rxGetOption("hdfsPort"))
 }
 \arguments{
 \item{dest}{The destination source: an object of class \code{\link{RxHdfsFileSystem}}.}
 
 \item{df}{A dataset: can be a filename, an Xdf data source object, another RevoScaleR data source, or anything that can be coerced to a data frame.}
 
-\item{name}{The filename, optionally including the path, for the uploaded Xdf file. Defaults to the name of the source dataset, in the user's HDFS home directory.}
+\item{name}{The filename, optionally including the path, for the uploaded Xdf file. The default upload location for the host HDFS filesystem is the user's home directory, and for an attached Azure Data Lake Store, the root directory.}
 
 \item{...}{Further arguments to \code{\link{rxHadoopCommand}}.}
+
+\item{host, port}{HDFS hostname and port number to connect to. You should need to set these only if you have an attached Azure Data Lake Store that you are accessing via HDFS.}
 }
 \value{
 An Xdf data source object pointing to the uploaded data.
@@ -28,9 +30,11 @@ Upload a dataset to HDFS
 \details{
 This is the RevoScaleR HDFS method for the dplyr \code{\link[dplyr]{copy_to}} function, for uploading data to a remote database/src. The method should work with any RevoScaleR data source, or with any R object that can be converted into a data frame. If the data is not already in Xdf format, it is first imported into Xdf, and then uploaded.
 
-The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the uploading is a two-stage process: the data is first transferred to the native filesystem of the edge node, and then copied from the edge node into HDFS.
+The function will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the uploading is a two-stage process: the data is first transferred to the native filesystem of the edge node, and then copied from the edge node into HDFS.
 
-The \code{copy_to_hdfs} function is a simple wrapper that avoids having to create an explicit filesystem object.
+Similarly, it can handle uploading both to the host HDFS filesystem, and to an attached Azure Data Lake Store. If \code{dest} points to an ADLS host, the file will be uploaded to that filesystem, by default in the root directory. You can override this by supplying an explicit an explicit URI for the uploaded file, in the form \code{adl://azure.host.name/path}. The name for the host HDFS filesystem is \code{adl://host/}.
+
+The \code{copy_to_hdfs} function is a simple wrapper for \code{copy_to} that avoids having to create an explicit filesystem object.
 }
 \section{Note on composite Xdf}{
 

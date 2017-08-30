@@ -5,9 +5,11 @@
 \alias{hdfs_download}
 \title{Transfer files and directories to and from HDFS}
 \usage{
-hdfs_upload(src, dest, overwrite = FALSE, nativeTarget = "/tmp", ...)
+hdfs_upload(src, dest, overwrite = FALSE, nativeTarget = "/tmp",
+  host = hdfs_host(), ...)
 
-hdfs_download(src, dest, overwrite = FALSE, nativeTarget = "/tmp", ...)
+hdfs_download(src, dest, overwrite = FALSE, nativeTarget = "/tmp",
+  host = hdfs_host(), ...)
 }
 \arguments{
 \item{src, dest}{Character strings giving the source and destination paths.}

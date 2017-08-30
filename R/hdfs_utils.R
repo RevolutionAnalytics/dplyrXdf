@@ -30,7 +30,7 @@
 #' @rdname hdfs
 #' @export
 hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursive=FALSE,
-    dirs_only=FALSE, pattern=NULL, host=getHdfsHost(), convert_backslashes=TRUE)
+    dirs_only=FALSE, pattern=NULL, host=hdfs_host(), convert_backslashes=TRUE)
 {
     path <- makeHdfsUri(host, path, convert_backslashes)
 
@@ -91,7 +91,7 @@ print.dplyrXdf_hdfs_dir <- function(x, ...)
 #' \code{hdfs_dir_exists} and \code{hdfs_file_exists} return TRUE or FALSE depending on whether the directory or file exists.
 #' @rdname hdfs
 #' @export
-hdfs_dir_exists <- function(path, host=getHdfsHost(), convert_backslashes=TRUE)
+hdfs_dir_exists <- function(path, host=hdfs_host(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -102,7 +102,7 @@ hdfs_dir_exists <- function(path, host=getHdfsHost(), convert_backslashes=TRUE)
 
 #' @rdname hdfs
 #' @export
-hdfs_file_exists <- function(path, host=getHdfsHost(), convert_backslashes=TRUE)
+hdfs_file_exists <- function(path, host=hdfs_host(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -117,7 +117,7 @@ hdfs_file_exists <- function(path, host=getHdfsHost(), convert_backslashes=TRUE)
 #' The other \code{hdfs_*} functions return TRUE or FALSE depending on whether the operation succeeded.
 #' @rdname hdfs
 #' @export
-hdfs_dir_create <- function(path, ..., host=getHdfsHost(), convert_backslashes=TRUE)
+hdfs_dir_create <- function(path, ..., host=hdfs_host(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -127,7 +127,7 @@ hdfs_dir_create <- function(path, ..., host=getHdfsHost(), convert_backslashes=T
 
 #' @rdname hdfs
 #' @export
-hdfs_dir_remove <- function(path, ..., host=getHdfsHost(), convert_backslashes=TRUE)
+hdfs_dir_remove <- function(path, ..., host=hdfs_host(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -141,7 +141,7 @@ hdfs_dir_remove <- function(path, ..., host=getHdfsHost(), convert_backslashes=T
 #' Currently, RevoScaleR has only limited support for accessing multiple HDFS filesystems simultaneously. In particular, \code{src} and \code{dest} should both be on the same HDFS filesystem, whether host or ADLS.
 #' @rdname hdfs
 #' @export
-hdfs_file_copy <- function(src, dest, ..., host=getHdfsHost(), convert_backslashes=TRUE)
+hdfs_file_copy <- function(src, dest, ..., host=hdfs_host(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     src <- makeHdfsUri(host, src, convert_backslashes)
@@ -159,7 +159,7 @@ hdfs_file_copy <- function(src, dest, ..., host=getHdfsHost(), convert_backslash
 
 #' @rdname hdfs
 #' @export
-hdfs_file_move <- function(src, dest, ..., host=getHdfsHost(), convert_backslashes=TRUE)
+hdfs_file_move <- function(src, dest, ..., host=hdfs_host(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     src <- makeHdfsUri(host, src, convert_backslashes)
@@ -179,7 +179,7 @@ hdfs_file_move <- function(src, dest, ..., host=getHdfsHost(), convert_backslash
 #' \code{hdfs_file_remove} deletes files. It is analogous to \code{file.remove} and \code{unlink} for the native filesystem.
 #' @rdname hdfs
 #' @export
-hdfs_file_remove <- function(path, ..., host=getHdfsHost(), convert_backslashes=TRUE)
+hdfs_file_remove <- function(path, ..., host=hdfs_host(), convert_backslashes=TRUE)
 {
     detectHdfsConnection()
     path <- makeHdfsUri(host, path, convert_backslashes)
@@ -198,16 +198,40 @@ hdfs_expunge <- function()
 }
 
 
-#' @param obj For \code{in_hdfs}, An R object, typically a RevoScaleR data source object.
+#' @param object For \code{in_hdfs} and \code{hdfs_host}, An R object, typically a RevoScaleR data source object.
 #'
 #' @return
-#' \code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}. If no argument is specified, it returns whether the default filesystem is HDFS.
+#' \code{hdfs_host} returns the hostname of the HDFS filesystem for the given object. If no object is specified, or if the object is not in HDFS, it returns the hostname of the currently active HDFS filesystem. This is generally "default" unless you are in the \code{RxHadoopMR} or \code{RxSpark} compute context and using an Azure Data Lake Store, in which case it returns the ADLS name node.
 #' @rdname hdfs
 #' @export
-in_hdfs <- function(obj=NULL)
+hdfs_host <- function(object=NULL)
 {
-    fs <- rxGetFileSystem(obj)
-    inherits(fs, "RxHdfsFileSystem") || inherits(obj, "RxSparkData")
+    if(inherits(object, "RxDataSource"))
+        object <- rxGetFileSystem(object)
+
+    if(inherits(object, "RxHdfsFileSystem"))
+        return(object$hostName)
+
+    cc <- rxGetComputeContext()
+    if(inherits(cc, "RxHadoopMR"))
+        return(cc@nameNode)
+
+    fs <- rxGetFileSystem()
+    if(inherits(fs, "RxHdfsFileSystem"))
+        return(fs$hostName)
+
+    rxGetOption("hdfsHost")
+}
+
+
+#' @return
+#' \code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}.
+#' @rdname hdfs
+#' @export
+in_hdfs <- function(object)
+{
+    fs <- rxGetFileSystem(object)
+    inherits(fs, "RxHdfsFileSystem") || inherits(object, "RxSparkData")
 }
 
 
@@ -295,24 +319,6 @@ getHdfsUserDir <- function(fs)
     else Sys.info()["user"]
 
     paste0("/user/", user)
-}
-
-
-# get the HDFS host: needed to differentiate between "native" and Azure Data Lake storage
-getHdfsHost <- function(fs=NULL)
-{
-    if(inherits(fs, "RxHdfsFileSystem"))
-        return(fs$hostName)
-
-    host <- try(rxGetComputeContext()@nameNode, silent=TRUE)
-    if(!inherits(host, "try-error"))
-        return(host)
-
-    host <- rxGetFileSystem()$hostName
-    if(!is.null(host))
-        return(host)
-
-    rxGetOption("hdfsHost")
 }
 
 
