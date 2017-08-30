@@ -75,7 +75,7 @@ print.dplyrXdf_hdfs_dir <- function(x, ...)
 {
     #if(!hasUriScheme(path) && substr(path, 1, 1) != "/")
         #message("HDFS user directory assumed to be ", getHdfsUserDir())
-    cat("Directory listing of", attr(x, path), "\n")
+    cat("Directory listing of", attr(x, "path"), "\n")
     print.default(c(x), ...)
     invisible(x)
 }
