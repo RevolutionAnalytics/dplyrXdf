@@ -2,8 +2,7 @@
 #'
 #' @param dest The destination source: an object of class \code{\link{RxHdfsFileSystem}}.
 #' @param df A dataset: can be a filename, an Xdf data source object, another RevoScaleR data source, or anything that can be coerced to a data frame.
-#' @param name The filename, optionally including the path, for the uploaded Xdf file. The default upload location for the host HDFS filesystem is the user's home directory, and for an attached Azure Data Lake Store, the root directory.
-#' @param ... Further arguments to \code{\link{rxHadoopCommand}}.
+#' @param name The filename, optionally including the path, for the uploaded Xdf file. The default upload location is the user's home directory (\code{user/<username>}) in the filesystem pointed to by \code{dest}.
 #'
 #' @details
 #' This is the RevoScaleR HDFS method for the dplyr \code{\link[dplyr]{copy_to}} function, for uploading data to a remote database/src. The method should work with any RevoScaleR data source, or with any R object that can be converted into a data frame. If the data is not already in Xdf format, it is first imported into Xdf, and then uploaded.
@@ -37,11 +36,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
 
     host <- dest$hostName
     if(is.null(name))
-    {
-        name <- if(host == "default")
-            getHdfsUserDir()
-        else "/"
-    }
+        name <- getHdfsUserDir()
 
     # assume if name refers to a dir, we want to put it inside that dir
     if(hdfs_dir_exists(name, host=host))
@@ -60,7 +55,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
     }
 
     # if path is not specific, and host points to ADLS storage, save file there instead of native HDFS
-    path <- makeHdfsUri(host, path)
+    path <- makeHdfsUri(host, normalizeHdfsPath(path))
 
     if(!is_composite_xdf(df))
     {

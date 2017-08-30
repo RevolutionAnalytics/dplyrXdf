@@ -9,7 +9,7 @@ mtc <- RxXdfData("mtcars", fileSystem=RxNativeFileSystem(), createCompositeSet=T
 
 verifyHdfsData <- function(xdf, expectedClass)
 {
-    isTRUE(xdf@createCompositeSet) && rxHadoopFileExists(xdf@file) && class(xdf) == expectedClass # test for exact class
+    isTRUE(xdf@createCompositeSet) && hdfs_dir_exists(xdf@file) && class(xdf) == expectedClass # test for exact class
 }
 
 # check actual data -- slow but necessary to check that non-Revo file ops succeeded

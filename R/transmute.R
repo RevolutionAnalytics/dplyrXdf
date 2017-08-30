@@ -1,7 +1,3 @@
-#' @include mutate.R
-NULL
-
-
 #' @rdname mutate
 #' @export
 transmute.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)

@@ -68,7 +68,7 @@ hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=hd
     cmd <- "fs -copyFromLocal"
     if(overwrite)
         cmd <- paste(cmd, "-f")
-    cmd <- paste(cmd, src, makeHdfsUri(host, dest))
+    cmd <- paste(cmd, src, makeHdfsUri(host, normalizeHdfsPath(dest)))
 
     ret <- rxHadoopCommand(cmd, ...)
     if(ret && isRemoteHdfsClient())
@@ -110,7 +110,7 @@ hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=
 
     localDest <- if(isRemoteHdfsClient()) nativeTarget else dest
 
-    cmd <- paste("fs -copyToLocal", makeHdfsUri(host, src), localDest)
+    cmd <- paste("fs -copyToLocal", makeHdfsUri(host, normalizeHdfsPath(src)), localDest)
     ret <- rxHadoopCommand(cmd, ...)
 
     if(ret && isRemoteHdfsClient())

@@ -17,25 +17,23 @@
 \usage{
 hdfs_dir(path = ".", ..., full_path = FALSE, include_dirs = FALSE,
   recursive = FALSE, dirs_only = FALSE, pattern = NULL,
-  host = hdfs_host(), convert_backslashes = TRUE)
+  host = hdfs_host())
 
 \method{print}{dplyrXdf_hdfs_dir}(x, ...)
 
-hdfs_dir_exists(path, host = hdfs_host(), convert_backslashes = TRUE)
+hdfs_dir_exists(path, host = hdfs_host())
 
-hdfs_file_exists(path, host = hdfs_host(), convert_backslashes = TRUE)
+hdfs_file_exists(path, host = hdfs_host())
 
-hdfs_dir_create(path, ..., host = hdfs_host(), convert_backslashes = TRUE)
+hdfs_dir_create(path, ..., host = hdfs_host())
 
-hdfs_dir_remove(path, ..., host = hdfs_host(), convert_backslashes = TRUE)
+hdfs_dir_remove(path, ..., host = hdfs_host())
 
-hdfs_file_copy(src, dest, ..., host = hdfs_host(),
-  convert_backslashes = TRUE)
+hdfs_file_copy(src, dest, ..., host = hdfs_host())
 
-hdfs_file_move(src, dest, ..., host = hdfs_host(),
-  convert_backslashes = TRUE)
+hdfs_file_move(src, dest, ..., host = hdfs_host())
 
-hdfs_file_remove(path, ..., host = hdfs_host(), convert_backslashes = TRUE)
+hdfs_file_remove(path, ..., host = hdfs_host())
 
 hdfs_expunge()
 
@@ -59,8 +57,6 @@ in_hdfs(object)
 \item{pattern}{For \code{hdfs_dir}, an optional \link{regular expression}. Only file names that match will be returned.}
 
 \item{host}{The HDFS hostname as a URI string, in the form \code{adl://host.name}. You should need to set this only if you have an attached Azure Data Lake Store that you are accessing via HDFS. Can also be specified as an \code{RxHdfsFileSystem} object, in which case the hostname will be taken from the object.}
-
-\item{convert_backslashes}{Whether to convert any backslashes found in the input to forward slashes.}
 
 \item{src, dest}{For \code{hdfs_file_copy} and \code{hdfs_file_move}, the source and destination paths.}
 

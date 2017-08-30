@@ -35,7 +35,7 @@
     if(e$hdfsWorkDirCreated && !is.na(detectHdfsConnection(stopIfNotConnected=FALSE)))
     {
         message("Removing HDFS working directory")
-        rxHadoopRemoveDir(e$hdfsWorkDir, skipTrash=TRUE, intern=TRUE)
+        hdfs_dir_remove(e$hdfsWorkDir, skipTrash=TRUE, host=e$hdfsHost)
     }
 
     # remove local working directory

@@ -6,7 +6,7 @@ detectHdfsConnection()
 
 verifyHdfsData <- function(xdf, expectedClass)
 {
-    isTRUE(xdf@createCompositeSet) && rxHadoopFileExists(xdf@file) && class(xdf) == expectedClass # test for exact class
+    isTRUE(xdf@createCompositeSet) && hdfs_dir_exists(xdf@file) && class(xdf) == expectedClass # test for exact class
 }
 
 if(hdfs_dir_exists("mtcars")) hdfs_dir_remove("mtcars")

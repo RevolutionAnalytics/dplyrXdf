@@ -4,11 +4,11 @@ context("Coerce to Xdf, HDFS")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("mtcars", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
-mtt <- RxTextData("mttext.csv", fileSystem=RxHdfsFileSystem())
+mthc <- RxXdfData("/user/sshuser/mtcars", fileSystem=RxHdfsFileSystem(hostName=hdfs_host()), createCompositeSet=TRUE)
+mtt <- RxTextData("/user/sshuser/mttext.csv", fileSystem=RxHdfsFileSystem(hostName=hdfs_host()))
 
 write.csv(mtcars, "mttext.csv", row.names=FALSE)
-hdfs_upload("mttext.csv", ".", overwrite=TRUE)
+hdfs_upload("mttext.csv", "/user/sshuser", overwrite=TRUE)
 
 
 # check actual data -- slow but necessary to check that non-Revo file ops succeeded

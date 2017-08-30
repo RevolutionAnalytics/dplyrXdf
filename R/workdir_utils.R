@@ -49,7 +49,7 @@ get_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
     {
         if(!is.na(detectHdfsConnection(FALSE)))
             make_dplyrxdf_dir(fileSystem)
-        makeHdfsUri(.dxOptions$hdfsHost, .dxOptions$hdfsWorkDir)
+        makeHdfsUri(.dxOptions$hdfsHost, normalizeHdfsPath(.dxOptions$hdfsWorkDir))
     }
     else .dxOptions$localWorkDir
 }
