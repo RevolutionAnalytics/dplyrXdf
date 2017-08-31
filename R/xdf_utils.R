@@ -44,17 +44,19 @@ rename_xdf <- function(src, dest)
     composite <- is_composite_xdf(src)
     if(in_hdfs(src))
     {
-        destPath <- file.path(dirname(src@file), dest, fsep="/")
-        rxHadoopMove(src@file, destPath)
-        if(composite)
-        {
-            # rename all files in data and metadata subdirs
-            pat <- sprintf("^%s", basename(src@file))
-            dataFiles <- hdfs_dir(destPath, full_path=TRUE, recursive=TRUE)
-            dataDirs <- dirname(dataFiles)
-            newDataFiles <- file.path(dataDirs, sub(pat, dest, basename(dataFiles)))
-            mapply(rxHadoopMove, dataFiles, newDataFiles)
-        }
+        if(!composite)
+            stop("only composite Xdf files supported in HDFS")
+
+        destPath <- normalizeHdfsPath(file.path(dirname(src@file), dest))
+        host <- hdfs_host(src)
+        hdfs_file_move(src@file, destPath, host=host)
+
+        # rename all files in data and metadata subdirs
+        pat <- sprintf("^%s", basename(src@file))
+        dataFiles <- hdfs_dir(destPath, full_path=TRUE, recursive=TRUE, host=host)
+        dataDirs <- dirname(dataFiles)
+        newDataFiles <- file.path(dataDirs, sub(pat, dest, basename(dataFiles)))
+        hdfs_file_move(dataFiles, newDataFiles, host=host)
     }
     else
     {
@@ -70,7 +72,7 @@ rename_xdf <- function(src, dest)
             file.rename(dataFiles, newDataFiles)
         }
     }
-    modifyXdf(src, file=destPath)
+    modifyXdf(src, file=destPath, createCompositeSet=composite)
 }
 
 
@@ -83,9 +85,7 @@ delete_xdf <- function(xdf)
         stop("only for deleting Xdf files: input is of class ", class(xdf)[1])
     if(in_hdfs(xdf))
     {
-        out <- if(is_composite_xdf(xdf))
-            rxHadoopRemoveDir(xdf@file, intern=TRUE)
-        else rxHadoopRemove(xdf@file, intern=TRUE)
+        out <- hdfs_dir_remove(xdf@file, host=xdf@fileSystem, intern=TRUE)
         attr(out, "status")
     }
     else unlink(xdf@file, recursive=TRUE)
