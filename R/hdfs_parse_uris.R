@@ -53,7 +53,6 @@ hasUriScheme <- function(path)
 }
 
 
-
 # based on httr::parse_url and httr::build_url
 parseUrl <- function(url)
 {
