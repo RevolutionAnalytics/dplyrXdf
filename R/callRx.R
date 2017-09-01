@@ -2,6 +2,7 @@
 # afterwards, convert back
 callRx <- function(func="rxDataStep", arglst, asTbl=inherits(arglst$outFile, "tbl_xdf"))
 {
+    force(asTbl)
     arglst <- lapply(arglst, unTbl)
     out <- do.call(func, arglst, envir=parent.frame(2))
 
