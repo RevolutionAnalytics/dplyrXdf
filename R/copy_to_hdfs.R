@@ -64,8 +64,9 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
         message("Creating composite Xdf from non-composite data source")
 
         localName <- tbl_xdf(fileSystem=RxNativeFileSystem(), createCompositeSet=TRUE)@file
-        on.exit(delete_xdf(df))
         df <- local_exec(as_composite_xdf(df, localName, overwrite=TRUE))
+        name <- validateXdfFile(name, TRUE)
+        on.exit(delete_xdf(df))
     }
 
     hdfs_upload(df@file, path, overwrite=TRUE, host=host, ...)
