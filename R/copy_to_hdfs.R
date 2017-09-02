@@ -3,9 +3,10 @@
 #' @param dest The destination source: an object of class \code{\link{RxHdfsFileSystem}}.
 #' @param df A dataset: can be a filename, an Xdf data source object, another RevoScaleR data source, or anything that can be coerced to a data frame.
 #' @param name The filename, optionally including the path, for the uploaded Xdf file. The default upload location is the user's home directory (\code{user/<username>}) in the filesystem pointed to by \code{dest}.
+#' @param ... Further arguments; see below.
 #'
 #' @details
-#' This is the RevoScaleR HDFS method for the dplyr \code{\link[dplyr]{copy_to}} function, for uploading data to a remote database/src. The method should work with any RevoScaleR data source, or with any R object that can be converted into a data frame. If the data is not already in Xdf format, it is first imported into Xdf, and then uploaded.
+#' This is the RevoScaleR HDFS method for the dplyr \code{\link[dplyr]{copy_to}} function, for uploading data to a remote database/src. The method should work with any RevoScaleR data source, or with any R object that can be converted into a data frame. If the data is not already in Xdf format, it is first imported into Xdf, and then uploaded. Any arguments in \code{...} are passed to \code{\link{hdfs_download}}, and ultimately to the Hadoop \code{fs -copytoLocal} command.
 #'
 #' The function will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the uploading is a two-stage process: the data is first transferred to the native filesystem of the edge node, and then copied from the edge node into HDFS.
 #'
@@ -83,7 +84,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
 
 #' @param host,port HDFS hostname and port number to connect to. You should need to set these only if you have an attached Azure Data Lake Store that you are accessing via HDFS.
 #' @details
-#' The \code{copy_to_hdfs} function is a simple wrapper for \code{copy_to} that avoids having to create an explicit filesystem object.
+#' The \code{copy_to_hdfs} function is a simple wrapper that avoids having to create an explicit filesystem object. Its arguments other than \code{host} and \code{port} are simply passed as-is to \code{copy_to}.
 #' @rdname copy_to
 #' @export
 copy_to_hdfs <- function(..., host=hdfs_host(), port=rxGetOption("hdfsPort"))

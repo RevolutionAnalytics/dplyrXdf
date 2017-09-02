@@ -93,10 +93,8 @@ union_all.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs)
 }
 
 
-## need explicit @method directive to force this to be treated as an S3 method
 #' @rdname setops
 #' @export
-#' @method union RxFileData
 union.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     stopIfHdfs(x, "union not supported on HDFS")
