@@ -87,16 +87,14 @@ union_all.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs)
 
     arglst <- list(y, append="rows")
     arglst <- doExtraArgs(arglst, x, rlang::enexpr(.rxArgs), x)
-    x <- rlang::invoke("rxDataStep", arglst, .env=parent.frame(), .bury=NULL)
+    x <- callRx("rxDataStep", arglst)
 
     simpleRegroup(x, grps)
 }
 
 
-## need explicit @method directive to force this to be treated as an S3 method
 #' @rdname setops
 #' @export
-#' @method union RxFileData
 union.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     stopIfHdfs(x, "union not supported on HDFS")

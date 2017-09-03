@@ -9,7 +9,7 @@
 #' @param dirs_only For \code{hdfs_dir} if \emph{only} subdirectory names should be included.
 #' @param pattern For \code{hdfs_dir}, an optional \link{regular expression}. Only file names that match will be returned.
 #' @param ... For \code{hdfs_dir}, further switches, prefixed by \code{"-"}, to pass to the Hadoop \code{fs -ls} command. For other functions, further arguments to pass to \code{\link{rxHadoopCommand.}}
-#' @param convert_backslashes Whether to convert any backslashes found in the input to forward slashes.
+#' @param host The HDFS hostname as a URI string, in the form \code{adl://host.name}. You should need to set this only if you have an attached Azure Data Lake Store that you are accessing via HDFS. Can also be specified as an \code{RxHdfsFileSystem} object, in which case the hostname will be taken from the object.
 #' @param src,dest For \code{hdfs_file_copy} and \code{hdfs_file_move}, the source and destination paths.
 #'
 #' @details
@@ -29,9 +29,10 @@
 #' @rdname hdfs
 #' @export
 hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursive=FALSE,
-    dirs_only=FALSE, pattern=NULL, convert_backslashes=TRUE)
+    dirs_only=FALSE, pattern=NULL, host=hdfs_host())
 {
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, normalizeHdfsPath(path))
+
     arguments <- c("fs", "-ls", if(recursive) "-R", ..., path)
 
     # modified from rxHadoopListFiles
@@ -72,10 +73,9 @@ hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursi
 #' @export
 print.dplyrXdf_hdfs_dir <- function(x, ...)
 {
-    path <- attr(x, "path")
-    if(substr(path, 1, 1) != "/")
-        message("HDFS user directory assumed to be ", getHdfsUserDir())
-    cat("Directory listing of", path, "\n")
+    #if(!hasUriScheme(path) && substr(path, 1, 1) != "/")
+        #message("HDFS user directory assumed to be ", getHdfsUserDir())
+    cat("Directory listing of", attr(x, "path"), "\n")
     print.default(c(x), ...)
     invisible(x)
 }
@@ -88,10 +88,10 @@ print.dplyrXdf_hdfs_dir <- function(x, ...)
 #' \code{hdfs_dir_exists} and \code{hdfs_file_exists} return TRUE or FALSE depending on whether the directory or file exists.
 #' @rdname hdfs
 #' @export
-hdfs_dir_exists <- function(path, convert_backslashes=TRUE)
+hdfs_dir_exists <- function(path, host=hdfs_host())
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, normalizeHdfsPath(path))
     out <- suppressWarnings(try(hdfs_dir(path, "-d", dirs_only=TRUE), silent=TRUE))
     !inherits(out, "try-error") && length(out) > 0 && out == basename(path)
 }
@@ -99,10 +99,10 @@ hdfs_dir_exists <- function(path, convert_backslashes=TRUE)
 
 #' @rdname hdfs
 #' @export
-hdfs_file_exists <- function(path, convert_backslashes=TRUE)
+hdfs_file_exists <- function(path, host=hdfs_host())
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, normalizeHdfsPath(path))
     rxHadoopFileExists(path)
 }
 
@@ -114,33 +114,35 @@ hdfs_file_exists <- function(path, convert_backslashes=TRUE)
 #' The other \code{hdfs_*} functions return TRUE or FALSE depending on whether the operation succeeded.
 #' @rdname hdfs
 #' @export
-hdfs_dir_create <- function(path, ..., convert_backslashes=TRUE)
+hdfs_dir_create <- function(path, ..., host=hdfs_host())
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, normalizeHdfsPaths(path))
     rxHadoopMakeDir(path, ...)
 }
 
 
 #' @rdname hdfs
 #' @export
-hdfs_dir_remove <- function(path, ..., convert_backslashes=TRUE)
+hdfs_dir_remove <- function(path, ..., host=hdfs_host())
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, normalizeHdfsPaths(path))
     rxHadoopRemoveDir(path, ...)
 }
 
 
 #' @details
 #' \code{hdfs_file_copy} and \code{hdfs_file_move} copy and move files. They are analogous to \code{file.copy} and \code{file.rename} for the native filesystem. Unlike \code{\link{rxHadoopCopy}} and \code{\link{rxHadoopMove}}, they are vectorised in both \code{src} and \code{dest}.
+#'
+#' Currently, RevoScaleR has only limited support for accessing multiple HDFS filesystems simultaneously. In particular, \code{src} and \code{dest} should both be on the same HDFS filesystem, whether host or ADLS.
 #' @rdname hdfs
 #' @export
-hdfs_file_copy <- function(src, dest, ..., convert_backslashes=TRUE)
+hdfs_file_copy <- function(src, dest, ..., host=hdfs_host())
 {
     detectHdfsConnection()
-    src <- convertBS(src, convert_backslashes)
-    dest <- convertBS(dest, convert_backslashes)
+    src <- makeHdfsUri(host, normalizeHdfsPaths(src))
+    dest <- makeHdfsUri(host, normalizeHdfsPaths(dest))
     nSrc <- length(src)
     nDest <- length(dest)
 
@@ -154,11 +156,11 @@ hdfs_file_copy <- function(src, dest, ..., convert_backslashes=TRUE)
 
 #' @rdname hdfs
 #' @export
-hdfs_file_move <- function(src, dest, ..., convert_backslashes=TRUE)
+hdfs_file_move <- function(src, dest, ..., host=hdfs_host())
 {
     detectHdfsConnection()
-    src <- convertBS(src, convert_backslashes)
-    dest <- convertBS(dest, convert_backslashes)
+    src <- makeHdfsUri(host, normalizeHdfsPaths(src))
+    dest <- makeHdfsUri(host, normalizeHdfsPaths(dest))
     nSrc <- length(src)
     nDest <- length(dest)
 
@@ -174,10 +176,10 @@ hdfs_file_move <- function(src, dest, ..., convert_backslashes=TRUE)
 #' \code{hdfs_file_remove} deletes files. It is analogous to \code{file.remove} and \code{unlink} for the native filesystem.
 #' @rdname hdfs
 #' @export
-hdfs_file_remove <- function(path, ..., convert_backslashes=TRUE)
+hdfs_file_remove <- function(path, ..., host=hdfs_host())
 {
     detectHdfsConnection()
-    path <- convertBS(path, convert_backslashes)
+    path <- makeHdfsUri(host, normalizeHdfsPaths(path))
     rxHadoopRemove(path, ...)
 }
 
@@ -193,16 +195,40 @@ hdfs_expunge <- function()
 }
 
 
-#' @param obj For \code{in_hdfs}, An R object, typically a RevoScaleR data source object.
+#' @param object For \code{in_hdfs} and \code{hdfs_host}, An R object, typically a RevoScaleR data source object.
 #'
 #' @return
-#' \code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}. If no argument is specified, it returns whether the default filesystem is HDFS.
+#' \code{hdfs_host} returns the hostname of the HDFS filesystem for the given object. If no object is specified, or if the object is not in HDFS, it returns the hostname of the currently active HDFS filesystem. This is generally "default" unless you are in the \code{RxHadoopMR} or \code{RxSpark} compute context and using an Azure Data Lake Store, in which case it returns the ADLS name node.
 #' @rdname hdfs
 #' @export
-in_hdfs <- function(obj=NULL)
+hdfs_host <- function(object=NULL)
 {
-    fs <- rxGetFileSystem(obj)
-    inherits(fs, "RxHdfsFileSystem") || inherits(obj, "RxSparkData")
+    if(inherits(object, "RxDataSource"))
+        object <- rxGetFileSystem(object)
+
+    if(inherits(object, "RxHdfsFileSystem"))
+        return(object$hostName)
+
+    cc <- rxGetComputeContext()
+    if(inherits(cc, "RxHadoopMR"))
+        return(cc@nameNode)
+
+    fs <- rxGetFileSystem()
+    if(inherits(fs, "RxHdfsFileSystem"))
+        return(fs$hostName)
+
+    rxGetOption("hdfsHost")
+}
+
+
+#' @return
+#' \code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}.
+#' @rdname hdfs
+#' @export
+in_hdfs <- function(object)
+{
+    fs <- rxGetFileSystem(object)
+    inherits(fs, "RxHdfsFileSystem") || inherits(object, "RxSparkData")
 }
 
 
@@ -243,7 +269,8 @@ isRemoteHdfsClient <- function(stopIfNotConnected=TRUE)
     if(inherits(onClusterNode, "try-error"))
     {
         # assume if hadoop executable found, then this is an edge node
-        if(file.exists(rxGetOption("mrsHadoopPath")))
+        # check for both mrs-hadoop and hadoop, since the former calls the latter
+        if(file.exists(rxGetOption("mrsHadoopPath")) && Sys.which("hadoop") != "")
             return(FALSE)
         else
         {
@@ -290,25 +317,4 @@ getHdfsUserDir <- function(fs)
     else Sys.info()["user"]
 
     paste0("/user/", user)
-}
-
-
-normalizeHdfsPath <- function(path)
-{
-    userDir <- getHdfsUserDir()
-    path <- gsub("/\\./", "/", convertBS(path, TRUE))
-    path <- sub("^\\./", "", path)
-    if(path == ".")
-        userDir
-    else if(substr(path, 1, 1) != "/")
-        file.path(userDir, path, fsep="/")
-    else path
-}
-
-
-convertBS <- function(path, convert)
-{
-    if(convert)
-        gsub("\\\\", "/", path)
-    else path
 }

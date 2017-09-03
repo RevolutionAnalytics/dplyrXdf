@@ -11,32 +11,35 @@
 \alias{hdfs_file_move}
 \alias{hdfs_file_remove}
 \alias{hdfs_expunge}
+\alias{hdfs_host}
 \alias{in_hdfs}
 \title{Utilities for HDFS}
 \usage{
 hdfs_dir(path = ".", ..., full_path = FALSE, include_dirs = FALSE,
   recursive = FALSE, dirs_only = FALSE, pattern = NULL,
-  convert_backslashes = TRUE)
+  host = hdfs_host())
 
 \method{print}{dplyrXdf_hdfs_dir}(x, ...)
 
-hdfs_dir_exists(path, convert_backslashes = TRUE)
+hdfs_dir_exists(path, host = hdfs_host())
 
-hdfs_file_exists(path, convert_backslashes = TRUE)
+hdfs_file_exists(path, host = hdfs_host())
 
-hdfs_dir_create(path, ..., convert_backslashes = TRUE)
+hdfs_dir_create(path, ..., host = hdfs_host())
 
-hdfs_dir_remove(path, ..., convert_backslashes = TRUE)
+hdfs_dir_remove(path, ..., host = hdfs_host())
 
-hdfs_file_copy(src, dest, ..., convert_backslashes = TRUE)
+hdfs_file_copy(src, dest, ..., host = hdfs_host())
 
-hdfs_file_move(src, dest, ..., convert_backslashes = TRUE)
+hdfs_file_move(src, dest, ..., host = hdfs_host())
 
-hdfs_file_remove(path, ..., convert_backslashes = TRUE)
+hdfs_file_remove(path, ..., host = hdfs_host())
 
 hdfs_expunge()
 
-in_hdfs(obj = NULL)
+hdfs_host(object = NULL)
+
+in_hdfs(object)
 }
 \arguments{
 \item{path}{A HDFS pathname.}
@@ -53,11 +56,11 @@ in_hdfs(obj = NULL)
 
 \item{pattern}{For \code{hdfs_dir}, an optional \link{regular expression}. Only file names that match will be returned.}
 
-\item{convert_backslashes}{Whether to convert any backslashes found in the input to forward slashes.}
+\item{host}{The HDFS hostname as a URI string, in the form \code{adl://host.name}. You should need to set this only if you have an attached Azure Data Lake Store that you are accessing via HDFS. Can also be specified as an \code{RxHdfsFileSystem} object, in which case the hostname will be taken from the object.}
 
 \item{src, dest}{For \code{hdfs_file_copy} and \code{hdfs_file_move}, the source and destination paths.}
 
-\item{obj}{For \code{in_hdfs}, An R object, typically a RevoScaleR data source object.}
+\item{object}{For \code{in_hdfs} and \code{hdfs_host}, An R object, typically a RevoScaleR data source object.}
 }
 \value{
 \code{hdfs_dir} returns a vector of filenames, optionally with the full path attached.
@@ -66,7 +69,9 @@ in_hdfs(obj = NULL)
 
 The other \code{hdfs_*} functions return TRUE or FALSE depending on whether the operation succeeded.
 
-\code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}. If no argument is specified, it returns whether the default filesystem is HDFS.
+\code{hdfs_host} returns the hostname of the HDFS filesystem for the given object. If no object is specified, or if the object is not in HDFS, it returns the hostname of the currently active HDFS filesystem. This is generally "default" unless you are in the \code{RxHadoopMR} or \code{RxSpark} compute context and using an Azure Data Lake Store, in which case it returns the ADLS name node.
+
+\code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}.
 }
 \description{
 Functions for working with files in HDFS: directory listing; file copy, move and delete; directory create and delete; test for file/directory existence; check if in HDFS; expunge Trash.
@@ -81,6 +86,8 @@ The \code{hdfs_dir} function is analogous to \code{dir} for the native filesyste
 \code{hdfs_dir_create} and \code{hdfs_dir_remove} create and remove directories. They are analogous to \code{dir.create} and \code{unlink(recursive=TRUE)} for the native filesystem.
 
 \code{hdfs_file_copy} and \code{hdfs_file_move} copy and move files. They are analogous to \code{file.copy} and \code{file.rename} for the native filesystem. Unlike \code{\link{rxHadoopCopy}} and \code{\link{rxHadoopMove}}, they are vectorised in both \code{src} and \code{dest}.
+
+Currently, RevoScaleR has only limited support for accessing multiple HDFS filesystems simultaneously. In particular, \code{src} and \code{dest} should both be on the same HDFS filesystem, whether host or ADLS.
 
 \code{hdfs_file_remove} deletes files. It is analogous to \code{file.remove} and \code{unlink} for the native filesystem.
 

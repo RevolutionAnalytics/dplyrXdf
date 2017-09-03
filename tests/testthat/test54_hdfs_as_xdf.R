@@ -4,8 +4,8 @@ context("Coerce to Xdf, HDFS")
 
 detectHdfsConnection()
 
-mthc <- RxXdfData("mtcars", fileSystem=RxHdfsFileSystem(), createCompositeSet=TRUE)
-mtt <- RxTextData("mttext.csv", fileSystem=RxHdfsFileSystem())
+mthc <- RxXdfData("mtcars", fileSystem=RxHdfsFileSystem(hostName=hdfs_host()), createCompositeSet=TRUE)
+mtt <- RxTextData("mttext.csv", fileSystem=RxHdfsFileSystem(hostName=hdfs_host()))
 
 write.csv(mtcars, "mttext.csv", row.names=FALSE)
 hdfs_upload("mttext.csv", ".", overwrite=TRUE)

@@ -6,7 +6,7 @@ detectHdfsConnection()
 
 verifyHdfsData <- function(xdf, expectedClass)
 {
-    isTRUE(xdf@createCompositeSet) && rxHadoopFileExists(xdf@file) && class(xdf) == expectedClass # test for exact class
+    isTRUE(xdf@createCompositeSet) && hdfs_dir_exists(xdf@file) && class(xdf) == expectedClass # test for exact class
 }
 
 if(hdfs_dir_exists("mtcars")) hdfs_dir_remove("mtcars")
@@ -117,23 +117,23 @@ test_that("output to data frame works",
 
 test_that("output to xdf works",
 {
-    tbl <- mthc %>% filter(mpg > 15, cyl <= 6, .outFile="test16")
+    tbl <- mthc %>% filter(mpg > 15, cyl <= 6, .outFile="test51")
     expect_true(verifyHdfsData(tbl, "RxXdfData"))
-    tbl <- mthc %>% select(mpg, cyl, drat, .outFile="test16")
+    tbl <- mthc %>% select(mpg, cyl, drat, .outFile="test51")
     expect_true(verifyHdfsData(tbl, "RxXdfData"))
-    tbl <- mthc %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile="test16")
+    tbl <- mthc %>% subset(mpg > 15, c(mpg, cyl, drat), .outFile="test51")
     expect_true(verifyHdfsData(tbl, "RxXdfData"))
-    tbl <- mthc %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test16")
+    tbl <- mthc %>% mutate(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test51")
     expect_true(verifyHdfsData(tbl, "RxXdfData"))
-    tbl <- mthc %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test16")
-    expect_true(verifyHdfsData(tbl, "RxXdfData"))
-
-    tbl <- mthc %>% summarise(n=n(), mpg2=mean(mpg), .outFile="test16")
+    tbl <- mthc %>% transmute(mpg2=sin(mpg), wt2=sqrt(wt), .outFile="test51")
     expect_true(verifyHdfsData(tbl, "RxXdfData"))
 
-    tbl <- mthc %>% factorise(cyl, gear, .outFile="test16")
+    tbl <- mthc %>% summarise(n=n(), mpg2=mean(mpg), .outFile="test51")
+    expect_true(verifyHdfsData(tbl, "RxXdfData"))
+
+    tbl <- mthc %>% factorise(cyl, gear, .outFile="test51")
     expect_true(verifyHdfsData(tbl, "RxXdfData") && varTypes(tbl)["cyl"] == "factor")
 })
 
 
-hdfs_dir_remove(c("mtcars", "test16"))
+hdfs_dir_remove(c("mtcars", "test51"))

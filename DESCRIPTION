@@ -3,7 +3,8 @@ Title: Interface to xdf files for the dplyr package
 Version: 0.10.0
 Authors@R: c(
     person("Hong", "Ooi", , "hongooi@microsoft.com", role = c("aut", "cre")),
-    person("Microsoft", role="cph")
+    person("Microsoft", role="cph"),
+    person("Hadley", "Wickham", role = "ctb", comment = "Some functions based on code in dplyr and httr")
     )
 Description: Interface to xdf files for the dplyr package
 Depends: 
@@ -37,6 +38,7 @@ Collate:     '00rxArgs.R'
     'tbl_xdf.R'
     'group_by.R'
     'hdfs_filetransfer.R'
+    'hdfs_parse_uris.R'
     'hdfs_utils.R'
     'imports.R'
     'is_xdf.R'

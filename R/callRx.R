@@ -1,10 +1,8 @@
 # convert all tbl_xdf's to RxXdfData before calling an rx* function, because Spark/Hadoop compute context is broken
 # afterwards, convert back
-callRx <- function(func="rxDataStep", arglst, asTbl=NULL)
+callRx <- function(func="rxDataStep", arglst, asTbl=inherits(arglst$outFile, "tbl_xdf"))
 {
-    if(is.null(asTbl))
-        asTbl <- inherits(arglst$outFile, "tbl_xdf")
-
+    force(asTbl)
     arglst <- lapply(arglst, unTbl)
     out <- do.call(func, arglst, envir=parent.frame(2))
 

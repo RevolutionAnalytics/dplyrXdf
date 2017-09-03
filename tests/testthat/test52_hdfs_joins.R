@@ -21,7 +21,7 @@ xdf2f <- copy_to_hdfs(df2f, name="xdf2f")
 
 verifyHdfsData <- function(xdf, expectedClass)
 {
-    isTRUE(xdf@createCompositeSet) && rxHadoopFileExists(xdf@file) && class(xdf) == expectedClass # test for exact class
+    isTRUE(xdf@createCompositeSet) && hdfs_dir_exists(xdf@file) && class(xdf) == expectedClass # test for exact class
 }
 
 

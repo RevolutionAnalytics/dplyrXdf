@@ -41,6 +41,15 @@ dplyrxdf_options <- function(...)
         stop("rxExecBy not available in this RevoScaleR version")
 
     for(o in nams)
-        .dxOptions[[o]] <- dots[[o]]
+    {
+        if(o == "hdfsWorkDir")
+        {
+            set_dplyrxdf_dir(dots[[o]], "hdfs")
+            .dxOptions$hdfsWorkDirCreated <- FALSE
+        }
+        else if(o == "nativeWorkDir")
+            set_dplyrxdf_dir(dots[[o]], "native")
+        else .dxOptions[[o]] <- dots[[o]]
+    }
     invisible(oldOpts)
 }

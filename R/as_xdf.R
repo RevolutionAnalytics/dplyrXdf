@@ -68,11 +68,11 @@ as_xdf.RxXdfData <- function(.data, file=NULL, composite=is_composite_xdf(.data)
         if(file == .data@file)
             return(as(.data, "RxXdfData"))
 
-        asXdfOverwriteCheck(file, overwrite, in_hdfs(.data))
+        asXdfOverwriteCheck(file, overwrite, in_hdfs(.data), hdfs_host(.data))
         return(copy_xdf(.data, file))
     }
 
-    asXdfOverwriteCheck(file, overwrite, in_hdfs(.data))
+    asXdfOverwriteCheck(file, overwrite, in_hdfs(.data), hdfs_host(.data))
 
     out <- modifyXdf(.data, file=file, createCompositeSet=composite)
     rxDataStep(.data, out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite, ...)
@@ -96,7 +96,7 @@ as_xdf.RxDataSource <- function(.data, file=NULL, composite=in_hdfs(.data), over
     }
 
     file <- validateXdfFile(file, composite)
-    asXdfOverwriteCheck(file, overwrite, in_hdfs(.data))
+    asXdfOverwriteCheck(file, overwrite, in_hdfs(.data), hdfs_host(.data))
 
     out <- RxXdfData(file=file, fileSystem=rxGetFileSystem(.data), createCompositeSet=composite)
     if(in_hdfs(out))
@@ -122,14 +122,14 @@ as_xdf.default <- function(.data, file=NULL, composite=FALSE, overwrite=FALSE, .
 
 
 # handle overwriting semantics properly -- always treat 'file' as filename, not dirname
-asXdfOverwriteCheck <- function(file, overwrite, inHdfs)
+asXdfOverwriteCheck <- function(file, overwrite, inHdfs, hdfsHost=NULL)
 {
     if(inHdfs)
     {
-        if(hdfs_file_exists(file))
+        if(hdfs_file_exists(file, host=hdfsHost))
         {
             if(overwrite)
-                hdfs_dir_remove(file)
+                hdfs_dir_remove(file, host=hdfsHost)
             else stop("destination file exists; set overwrite=TRUE to replace it")
         }
     }

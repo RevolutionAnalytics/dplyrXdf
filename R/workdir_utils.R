@@ -19,8 +19,12 @@ set_dplyrxdf_dir <- function(path, fileSystem=rxGetFileSystem())
     {
         if(missing(path))
             path <- "/tmp"
+
+        # allow for Azure Data Lake storage
+        host <- fileSystem$hostName
         path <- gsub("\\", "/", tempfile(pattern="dxTmp", tmpdir=path), fixed=TRUE)
         .dxOptions$hdfsWorkDir <- path
+        .dxOptions$hdfsHost <- host
         .dxOptions$hdfsWorkDirCreated <- FALSE
     }
     else
@@ -43,8 +47,9 @@ get_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
     fileSystem <- validateFileSystem(fileSystem)
     if(in_hdfs(fileSystem))
     {
-        make_dplyrxdf_dir(fileSystem)
-        .dxOptions$hdfsWorkDir
+        if(!is.na(detectHdfsConnection(FALSE)))
+            make_dplyrxdf_dir(fileSystem)
+        makeHdfsUri(.dxOptions$hdfsHost, normalizeHdfsPath(.dxOptions$hdfsWorkDir))
     }
     else .dxOptions$localWorkDir
 }
@@ -59,12 +64,14 @@ make_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
         if(!.dxOptions$hdfsWorkDirCreated)
         {
             message("Creating HDFS working directory")
-            res <- hdfs_dir_create(path)
+            host <- fileSystem$hostName
+            res <- hdfs_dir_create(path, host=host)
 
             if(res)
                 .dxOptions$hdfsWorkDirCreated <- TRUE
             else warning("unable to create HDFS working directory", call.=FALSE)
 
+            .dxOptions$hdfsHost <- host
             return(res)
         }
     }
@@ -94,13 +101,14 @@ clean_dplyrxdf_dir <- function(fileSystem=rxGetFileSystem())
     }
     else if(inherits(fileSystem, "RxHdfsFileSystem"))
     {
-        pathExists <- hdfs_dir_exists(path)
+        host <- .dxOptions$hdfsHost
+        pathExists <- hdfs_dir_exists(path, host)
         if(!pathExists)
-            return(NULL)
-        files <- hdfs_dir(path, full_path=TRUE)
+            return(invisible(NULL))
+        files <- hdfs_dir(path, full_path=TRUE, host=host)
         if(length(files) == 0)
-            return(NULL)
-        hdfs_dir_remove(files, skipTrash=TRUE)
+            return(invisible(NULL))
+        hdfs_dir_remove(files, skipTrash=TRUE, host=host)
     }
 
     invisible(NULL)
