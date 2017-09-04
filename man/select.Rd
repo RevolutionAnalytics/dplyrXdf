@@ -25,6 +25,18 @@ Select columns in a data source
 \details{
 All the special functions mentioned in the documentation for \code{\link[dplyr]{select}} will also work with dplyrXdf. Note that renaming a variable is \emph{not} supported in dplyrXdf \code{select}. If you want to do this, follow the \code{select} with a \code{rename}; the latter is very fast, as it only modifies the metadata portion of an xdf file, not the data itself.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl <- select(mtx, mpg, cyl)
+names(tbl)
+
+# filter on rows and columns simultaneously with .rxArgs
+tbl2 <- select(mtx, mpg, cyl, .rxArgs=list(rowSelection=am == 1 & vs == 1))
+dim(tbl2)
+
+# save to a persistent Xdf file
+select(mtx, mpg, cyl, .outFile="mtcars_select.xdf")
+}
 \seealso{
-\code{\link[dplyr]{select}} in package dplyr
+\code{\link[dplyr]{select}} in package dplyr, \code{\link{subset}}
 }

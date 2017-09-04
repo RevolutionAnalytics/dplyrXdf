@@ -15,6 +15,19 @@
 #'
 #' @seealso
 #' \code{\link[base]{subset}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{select}}, \code{\link[RevoScaleR]{rxDataStep}}
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl <- subset(mtx, mpg > 20, c(mpg, cyl))
+#' dim(tbl)
+#'
+#' # transform and filter simultaneously with .rxArgs
+#' tbl2 <- subset(mtx, mpg > 20, c(mpg, cyl), .rxArgs=list(transforms=list(mpg2=2 * mpg)))
+#' dim(tbl2)
+#' names(tbl2)
+#'
+#' # save to a persistent Xdf file
+#' subset(mtx, mpg > 20, c(mpg, cyl), .outFile="mtcars_subset.xdf")
 #' @aliases subset
 #' @rdname subset
 #' @export

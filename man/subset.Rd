@@ -32,6 +32,19 @@ Subset a data source by rows and/or columns
 \details{
 This is a method for the \code{\link[base]{subset}} generic from base R. It combines the effects of the \code{filter} and \code{select} verbs, allowing you to subset a RevoScaleR data source (typically an xdf file) by rows and columns simultaneously. The advantage of this for an Xdf file is that it significantly reduces the amount of I/O compared to doing the row and column subsetting in separate steps.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl <- subset(mtx, mpg > 20, c(mpg, cyl))
+dim(tbl)
+
+# transform and filter simultaneously with .rxArgs
+tbl2 <- subset(mtx, mpg > 20, c(mpg, cyl), .rxArgs=list(transforms=list(mpg2=2 * mpg)))
+dim(tbl2)
+names(tbl2)
+
+# save to a persistent Xdf file
+subset(mtx, mpg > 20, c(mpg, cyl), .outFile="mtcars_subset.xdf")
+}
 \seealso{
 \code{\link[base]{subset}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{select}}, \code{\link[RevoScaleR]{rxDataStep}}
 }

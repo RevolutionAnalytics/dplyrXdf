@@ -9,7 +9,21 @@
 #' An object representing the filtered data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
-#' \code{\link[dplyr]{filter}} in package dplyr
+#' \code{\link[dplyr]{filter}} in package dplyr, \code{\link{subset}}
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl <- filter(mtx, mpg > 20)
+#' nrow(tbl)
+#' tbl2 <- filter(mtx, am == 1, vs == 1)
+#' nrow(tbl2)
+#'
+#' # filter on rows and columns simultaneously with .rxArgs
+#' tbl3 <- filter(mtx, am == 1, vs == 1, .rxArgs=list(varsToKeep=c("mpg", "cyl")))
+#' dim(tbl3)
+#'
+#' # save to a persistent Xdf file
+#' filter(mtx, am == 1, vs == 1, .outFile="mtcars_filter.xdf")
 #' @rdname filter
 #' @aliases filter
 #' @export

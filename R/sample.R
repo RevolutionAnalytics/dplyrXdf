@@ -14,6 +14,22 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{sample_frac}}, \code{\link[dplyr]{sample_n}}, \code{\link{sample}}
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#'
+#' tbl <- sample_n(mtx, 10)
+#' nrow(tbl)
+#'
+#' tbl2 <- sample_frac(mtx, 0.5)
+#' nrow(tbl2)
+#'
+#' tbl3 <- group_by(mtx, vs) %>% sample_frac(0.5)
+#' nrow(tbl3)
+#'
+#' # to get an _approximate_ sample, use filter()
+#' tbl4 <- filter(mtx, runif(.rxNumRows) < 0.4)  # keep 40% of rows in the data
+#' nrow(tbl4)
 #' @rdname sample
 #' @export
 sample_n.RxXdfData <- function(tbl, size=1, replace=FALSE, weight=NULL, .env=NULL)

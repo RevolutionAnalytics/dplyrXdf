@@ -9,6 +9,18 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{distinct}} in package dplyr
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl1 <- distinct(mtx)
+#' tbl2 <- distinct(mtx, am)
+#' tbl3 <- distinct(mtx, am, vs)
+#' nrow(tbl1)
+#' nrow(tbl2)
+#' nrow(tbl3)
+#'
+#' # save to a persistent Xdf file
+#' distinct(mtx, am, vs, .outFile="mtcars_distinct.xdf")
 #' @aliases distinct distinct_
 #' @rdname distinct
 #' @export

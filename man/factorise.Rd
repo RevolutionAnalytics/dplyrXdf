@@ -61,6 +61,25 @@ For performance reasons, factors created by \code{factorise} are not sorted; ins
 
 The method for \code{RxXdfData} objects is a shell around \code{\link[RevoScaleR]{rxFactors}}, which is the standard RevoScaleR function for factor manipulation. For \code{RxFileData} objects, the method calls \code{\link[RevoScaleR]{rxImport}} with an appropriately constructed \code{colInfo} argument.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl1 <- factorise(mtx, am, vs)
+tbl_types(tbl1)
+
+tbl2 <- factorise(mtx, all_numeric())
+tbl_types(tbl2)
+
+# selector functions used by select(), rename() also work
+tbl3 <- factorise(mtx, starts_with("m"))
+tbl_types(tbl3)
+
+# save to a persistent Xdf file
+factorise(mtx, am, vs, .outFile="mtcars_factor.xdf")
+
+# factorise() also works with data frames
+tbl4 <- factorise(mtcars, cyl)
+tbl_types(tbl4)
+}
 \seealso{
 \code{\link[RevoScaleR]{rxFactors}}, \code{\link[RevoScaleR]{rxImport}}, \code{\link{factor}}
 

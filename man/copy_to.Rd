@@ -41,6 +41,27 @@ The \code{copy_to_hdfs} function is a simple wrapper that avoids having to creat
 There are actually two kinds of Xdf files: standard and _composite_. A composite Xdf file is a directory containing multiple data and metadata files, which the RevoScaleR functions treat as a single dataset. Xdf files in HDFS must be composite in order to work properly; \code{copy_to} will convert an existing Xdf file into composite, if it's not already in that format. Non-Xdf datasets (data frames and other RevoScaleR data sources, such as text files) will similarly be uploaded as composite.
 }
 
+\examples{
+\dontrun{
+hd <- RxHdfsFileSystem()
+
+# copy a data frame to HDFS
+mth <- copy_to(hd, mtcars)
+# assign a new filename on copy
+mth2 <- copy_to(hd, mtcars, "mtcars_2")
+
+# copy an Xdf file to HDFS
+mtx <- as_xdf(mtcars)
+mth3 <- copy_to(hd, mtx, "mtcars_3")
+
+# same as copy_to(hd, ...)
+delete_xdf(mth)
+copy_to_hdfs(mtcars)
+
+# copying to attached ADLS storage
+copy_to_hdfs(mtcars, host="adls.host.name")
+}
+}
 \seealso{
 \code{\link{rxHadoopCopyFromClient}}, \code{\link{rxHadoopCopyFromLocal}},
 \code{\link{collect}} and \code{\link{compute}} for downloading data from HDFS,

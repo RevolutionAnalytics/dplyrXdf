@@ -19,6 +19,15 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{join}} in package dplyr, \code{\link{rxMerge}}
+#'
+#' @examples
+#' bmembx <- as_xdf(band_members, overwrite=TRUE)
+#' binstx <- as_xdf(band_instruments, overwrite=TRUE)
+#'
+#' left_join(bmembx, binstx)
+#' right_join(bmembx, binstx)
+#' inner_join(bmembx, binstx)
+#' full_join(bmembx, binstx)
 #' @aliases join left_join right_join inner_join full_join semi_join anti_join
 #' @name join
 NULL

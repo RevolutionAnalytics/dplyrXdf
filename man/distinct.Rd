@@ -37,6 +37,18 @@ This verb calls \code{dplyr::distinct} on each chunk in an Xdf file. The individ
 
 This verb can be used on HDFS data in the local compute context (on the edge node), but not in the Hadoop or Spark compute contexts.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl1 <- distinct(mtx)
+tbl2 <- distinct(mtx, am)
+tbl3 <- distinct(mtx, am, vs)
+nrow(tbl1)
+nrow(tbl2)
+nrow(tbl3)
+
+# save to a persistent Xdf file
+distinct(mtx, am, vs, .outFile="mtcars_distinct.xdf")
+}
 \seealso{
 \code{\link[dplyr]{distinct}} in package dplyr
 }

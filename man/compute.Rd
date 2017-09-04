@@ -33,6 +33,26 @@ The code will handle both the cases where you are logged into the edge node of a
 
 If you want to look at the first few rows of an Xdf file, it may be faster to use \code{compute}) to copy the entire file off HDFS, and then run \code{head}, than to run \code{head} on the original. This is due to quirks in how RevoScaleR works in Spark and Hadoop.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+mtx$mpg
+mtx[["mpg"]]
+pull(mtx, mpg)
+
+# all of these return a data frame (or a tbl_df) for input in the native filesystem
+as.data.frame(mtx)
+as_data_frame(mtx)  # returns a tbl_df
+collect(mtx)
+compute(mtx)
+
+# collect and compute are mainly for downloading data from HDFS
+\dontrun{
+mtc <- copy_to_hdfs(mtcars)
+as.data.frame(mtc)
+collect(mtc)  # still returns a data frame
+compute(mtc)  # returns a tbl_xdf
+}
+}
 \seealso{
-\code{\link[dplyr]{compute}} in package dplyr, \code{\link{copy_to}} for uploading to HDFS
+\code{\link{as_data_frame}}, \code{\link[dplyr]{compute}} in package dplyr, \code{\link{copy_to}} for uploading to HDFS
 }

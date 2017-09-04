@@ -23,6 +23,51 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{mutate}} and \code{\link{transmute}} in package dplyr, \code{\link[RevoScaleR]{rxDataStep}}, \code{\link[RevoScaleR]{rxTransform}} for variable transformations in RevoScaleR
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl <- mutate(mtx, mpg2=2 * mpg)
+#' head(tbl)
+#'
+#' tbl2 <- transmute(mtx, mpg2=2 * mpg)
+#' head(tbl2)
+#'
+#' # transform and select columns simultaneously with .rxArgs
+#' tbl3 <- mutate(mtx, mpg2=2 * mpg, .rxArgs=list(varsToKeep=c("mpg", "cyl")))
+#' head(tbl3)
+#' nrow(tbl3)
+#'
+#' # save to a persistent Xdf file
+#' mutate(mtx, mpg2=2 * mpg, .outFile="mtcars_mutate.xdf")
+#'
+#' # using a transformFunc
+#' tbl4 <- mutate(mtx, .rxArgs=list(transformFunc=function(varlist) {
+#'    varlist$mpg2 <- 2 * varlist$mpg
+#'    varlist
+#' }))
+#'
+#' # a non-trivial example: using a transformFunc to calculate a moving average
+#' \dontrun{
+#' tbl <- mutate(xdf, .rxArgs=list(transformFunc=
+#'     function(varList)
+#'     {
+#'         if(.rxIsTestChunk)
+#'             return(varList)
+#'         n <- .rxNumRows
+#'         x <- c(.keepx, varList[[1]])
+#'         ma <- rollmean(x, .k, fill=NA, align="right")
+#'         n_ma <- length(ma)
+#'         if(n_ma > n)
+#'             ma <- ma[-(1:(n_ma - n))]
+#'         .keepx <<- varList[[1]][(n - .k + 1):n]
+#'         varList$x_ma <- ma
+#'         varList
+#'     },
+#'     transformObjects=list(.keepx=numeric(), .k=5),  # k = window width
+#'     transformVars="x",                              # x = variable to get moving average for
+#'     transformPackages="zoo"))
+#' }
+#' head(tbl4)
 #' @aliases mutate transmute
 #' @rdname mutate
 #' @export

@@ -26,6 +26,36 @@
 #' \code{\link{as}}, \code{\link{is}}, \code{\link{inherits}},
 #' \code{\link{persist}}, \code{\link{rxDataStep}}, \code{\link{rxImport}}
 #'
+#' @examples
+#' # convert data frame to Xdf
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' is_xdf(mtcars)
+#' is_xdf(mtx)
+#' is_composite_xdf(mtx)
+#'
+#' # as_xdf() on an Xdf file without any args is a no-op
+#' as_xdf(mtx)
+#'
+#' ## some common uses for as_xdf:
+#'
+#' # convert a standard Xdf file to composite
+#' mtc <- as_composite_xdf(mtx, overwrite=TRUE)
+#' is_composite_xdf(mtc)
+#'
+#' # convert a tbl_xdf to Xdf
+#' tbl <- mtx %>% mutate(mpg2=2 * mpg)
+#' as_xdf(tbl, file="mtcars_mutate.xdf")
+#'
+#' # import a text file to Xdf
+#' write.csv(mtcars, "mtcars.csv", row.names=FALSE)
+#' mtt <- RxTextData("mtcars.csv")
+#' mtx <- as_xdf(mtt, overwrite=TRUE)
+#'
+#' # import a database table to Xdf
+#' \dontrun{
+#' table_db <- RxSqlServerData(table="mytable", server="sqlserver", databaseName="dbname", ...)
+#' table_xdf <- as_xdf(table_db)
+#' }
 #' @rdname as_xdf
 #' @export
 as_composite_xdf <- function(...)
@@ -124,13 +154,15 @@ as_xdf.default <- function(.data, file=NULL, composite=FALSE, overwrite=FALSE, .
 # handle overwriting semantics properly -- always treat 'file' as filename, not dirname
 asXdfOverwriteCheck <- function(file, overwrite, inHdfs, hdfsHost=NULL)
 {
+    err <- FALSE
+
     if(inHdfs)
     {
         if(hdfs_file_exists(file, host=hdfsHost))
         {
             if(overwrite)
                 hdfs_dir_remove(file, host=hdfsHost)
-            else stop("destination file exists; set overwrite=TRUE to replace it")
+            else err <- TRUE
         }
     }
     else
@@ -139,8 +171,10 @@ asXdfOverwriteCheck <- function(file, overwrite, inHdfs, hdfsHost=NULL)
         {
             if(overwrite)
                 unlink(file, recursive=TRUE)
-            else stop("destination file exists; set overwrite=TRUE to replace it")
+            else err <- TRUE
         }
     }
+    if(err)
+        stop("destination file '", file, "' exists; set overwrite=TRUE to replace it", call.=FALSE)
 }
 

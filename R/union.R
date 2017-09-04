@@ -13,6 +13,15 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{setops}} and \code{\link[dplyr]{bind_rows}} in package dplyr, \code{rbind}
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl <- union(mtx, mtx)
+#' nrow(tbl)
+#'
+#' # union_all doesn't remove duplicated rows
+#' tbl2 <- union_all(mtx, mtx)
+#' nrow(tbl2)
 #' @aliases setops union union_all intersect setdiff setequal
 #' @name setops
 NULL

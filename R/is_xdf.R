@@ -10,7 +10,6 @@
 #' Detecting whether an object is a composite Xdf can be tricky and \code{is_composite_xdf} goes through a few steps to do this. If \code{x} has a non-NULL \code{createCompositeSet} slot, then that value is returned. Otherwise, it checks whether the \code{file} slot refers to an existing directory, whose name does \emph{not} have an extension (that is, \code{"foo"} qualifies as a valid filename for a composite Xdf, but not \code{"foo.xdf"}). This is necessary because of the semantics of \code{rxDataStep}.
 #'
 #' To remove any ambiguity, it's recommended that you always explicitly specify the \code{createCompositeSet} argument when creating an Xdf data source object (objects created by dplyrXdf will always do this).
-#'
 #' @rdname as_xdf
 #' @export
 is_xdf <- function(x)

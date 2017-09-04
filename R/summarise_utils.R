@@ -50,7 +50,7 @@ invars <- function(exprs)
         if(length(e) > 1)
             as.character(e[[2]])
         else ""
-        })
+    })
 }
 
 

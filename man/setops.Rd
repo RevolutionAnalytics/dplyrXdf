@@ -42,6 +42,15 @@ Set operations on data sources
 \details{
 Currently, only \code{union} and \code{union_all} are supported for RevoScaleR data sources. The code uses \code{rxDataStep(append="rows")} to do the union; this can be much faster than using \code{rxMerge(type="union")}.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl <- union(mtx, mtx)
+nrow(tbl)
+
+# union_all doesn't remove duplicated rows
+tbl2 <- union_all(mtx, mtx)
+nrow(tbl2)
+}
 \seealso{
 \code{\link[dplyr]{setops}} and \code{\link[dplyr]{bind_rows}} in package dplyr, \code{rbind}
 }

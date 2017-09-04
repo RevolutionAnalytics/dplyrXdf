@@ -35,6 +35,16 @@ Note that by default, the levels of the grouping variables for Xdf files are \em
 
 Most verbs that have specific methods for grouped data will split the data into multiple Xdf files, and then process each file separately (the exception is \code{\link[dplyrXdf]{summarise}}, which allows a range of options in how to treat groups). There are two options for splitting the data: use the \code{\link[RevoScaleR]{rxExecBy}} supplied in the RevoScaleR package, or via dplyrXdf-internal code. The former is the default if the version of Microsoft R installed is 9.1 or higher.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl <- group_by(mtx, cyl)
+groups(tbl)
+group_vars(tbl)
+
+# the following result in the same groups
+group_by(mtx, cyl, gear)
+group_by(mtx, cyl) \%>\% group_by(gear, add=TRUE)
+}
 \seealso{
 \code{\link[dplyr]{group_by}}, \code{\link{dplyrxdf_options}} for how to change the splitting procedure
 }

@@ -33,6 +33,16 @@ The underlying RevoScaleR function is \code{rxSort}. This has many sorting optio
 
 Due to limitations in \code{rxSort}, this verb does not support data stored in HDFS.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl <- arrange(mtx, cyl, disp)
+as.data.frame(tbl)
+tbl2 <- arrange(mtx, desc(disp))
+as.data.frame(tbl2)
+
+# Saving to a persistent Xdf file
+arrange(mtx, cyl, disp, .outFile="mtcars_sorted.xdf")
+}
 \seealso{
 \code{\link{rxSort}}, \code{\link[dplyr]{arrange}} in package dplyr
 }

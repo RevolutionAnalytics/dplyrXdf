@@ -39,7 +39,22 @@ The default method is 1 if the data is grouped and the requested summary statist
 
 Supplying custom functions to summarise is supported, but they must be \emph{named} functions (and will automatically cause \code{.method=4} to be selected). Anonymous functions will cause an error.
 
-Due to the way in which \code{rxSummary} and \code{rxCube} work, when used with data in HDFS, the result of the summarisation will be streamed to the client (either the edge node or a remote client) before being written to disk.
+Due to the way in which \code{rxSummary} and \code{rxCube} work, when used with data in HDFS, the result of the summarisation will be streamed to the client (either the edge node or a remote client) before being written to back to HDFS.
+}
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+
+tbl <- summarise(mtx, m=mean(mpg))
+as.data.frame(tbl)
+
+tbl2 <- group_by(mtx, cyl) \%>\% summarise(m=mean(mpg))
+as.data.frame(tbl2)
+
+select and summarise simultaneously with .rxArgs
+tbl3 <- summarise(mtx, m=mean(mpg), .rxArgs=list(rowSelection=cyl > 4))
+
+# save to a persistent Xdf file
+summarise(mtx, m=mean(mpg), .outFile="mtcars_summary.xdf")
 }
 \seealso{
 \code{\link[dplyr]{summarise}} in package dplyr, \code{\link[RevoScaleR]{rxCube}}, \code{\link[RevoScaleR]{rxSummary}}

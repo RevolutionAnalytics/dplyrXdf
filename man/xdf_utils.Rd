@@ -33,6 +33,18 @@ The \code{copy_xdf} function copies the Xdf file given by \code{src} to the loca
 
 These are utility functions for working with the files/directories where the data for an Xdf data source is stored. They make use of low-level OS functionality, so should be more efficient that running \code{rxDataStep}. They work with both standard and composite Xdf files, and with data stored both in the native filesystem and in HDFS.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+
+mtx2 <- copy_xdf(mtx, "mtcars2.xdf")
+head(mtx2)
+delete_xdf(mtx2)
+file.exists("mtcars2.xdf")  # FALSE
+
+mtx2 <- rename_xdf(mtx, "mtcars2.xdf")
+file.exists("mtcars.xdf")   # FALSE
+file.exists("mtcars2.xdf")  # TRUE
+}
 \seealso{
 \code{\link{file.copy}}, \code{\link{file.rename}}, \code{\link{unlink}},
 \code{\link{rxHadoopCopy}}, \code{\link{rxHadoopMove}}, \code{\link{rxHadoopRemove}}, \code{\link{rxHadoopRemoveDir}}

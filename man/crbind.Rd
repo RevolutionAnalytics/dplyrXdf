@@ -32,6 +32,22 @@ These methods also have some limitations compared to \code{cbind} and \code{rbin
 
 These methods support HDFS data in the local compute compute context, but not the Hadoop or Spark compute contexts.
 }
+\examples{
+# cbind two Xdf files together
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl <- transmute(mtx, mpg2 = 2 * mpg)
+cbind(mtx, tbl)
+
+# rbind two Xdf files together
+mtx2 <- as_xdf(mtcars)
+rbind(mtx, mtx2)
+
+# combine an Xdf file and a data frame: must explicitly call RxXdfData method
+rbind.RxXdfData(mtx, mtcars)
+
+# save to a persistent Xdf file: again, must explicitly call RxXdfData method
+cbind.RxXdfData(mtx, tbl, .outFile="mtcars_cbind.xdf")
+}
 \seealso{
 \code{\link[base]{cbind}} and \code{\link[base]{rbind}} in base R,
 \code{\link[dplyr]{bind_cols}} and \code{\link[dplyr]{bind_rows}} in package dplyr

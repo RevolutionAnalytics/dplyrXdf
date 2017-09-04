@@ -13,6 +13,14 @@
 #'
 #' @seealso
 #' \code{\link[dplyr]{rename}} in package dplyr
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl <- rename(mtx, mpg2=mpg, cyl2=cyl)
+#' names(tbl)
+#'
+#' # save to a persistent Xdf file
+#' rename(mtx, mpg2=mpg, .outFile="mtcars_renamed.xdf")
 #' @rdname rename
 #' @aliases rename
 #' @export

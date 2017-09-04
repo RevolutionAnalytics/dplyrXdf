@@ -23,6 +23,16 @@ grouped_tbl_xdf <- setClass("grouped_tbl_xdf", contains="tbl_xdf", slots=c(group
 #'
 #' @seealso
 #' \code{\link[dplyr]{group_by}}, \code{\link{dplyrxdf_options}} for how to change the splitting procedure
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl <- group_by(mtx, cyl)
+#' groups(tbl)
+#' group_vars(tbl)
+#'
+#' # the following result in the same groups
+#' group_by(mtx, cyl, gear)
+#' group_by(mtx, cyl) %>% group_by(gear, add=TRUE)
 #' @aliases group_by
 #' @rdname group_by
 #' @export

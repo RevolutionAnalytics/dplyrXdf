@@ -31,6 +31,26 @@ These functions transfer files and directories between the native filesystem and
 
 Note that renaming directories as part of the transfer is supported for downloading from HDFS, but not for uploading.
 }
+\examples{
+\dontrun{
+as_xdf(mtcars, "mtcars.xdf", overwrite=TRUE)
+hdfs_upload("mtcars.xdf", ".")
+
+write.csv(mtcars, "mtcars.csv", row.names=FALSE)
+hdfs_upload("mtcars.csv", "mtcars_uploaded.csv")
+
+file.remove("mtcars.csv")
+hdfs_download("mtcars_uploaded.csv", "mtcars.csv")
+read.csv("mtcars.csv")
+
+# hdfs_upload() and hdfs_download() can transfer any file, not just datasets
+desc <- system.file("DESCRIPTION", package="dplyrXdf")
+hdfs_upload(desc, "dplyrXdf_description")
+
+# uploading to attached ADLS storage
+hdfs_upload("mtcars.xdf", ".", host="adls.host.name")
+}
+}
 \seealso{
 \code{\link{download.file}}, \code{\link{rxHadoopCopyFromLocal}}, \code{\link{rxHadoopCopyFromClient}}
 }

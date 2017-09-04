@@ -16,6 +16,18 @@
 #' @seealso
 #' \code{\link{file.copy}}, \code{\link{file.rename}}, \code{\link{unlink}},
 #' \code{\link{rxHadoopCopy}}, \code{\link{rxHadoopMove}}, \code{\link{rxHadoopRemove}}, \code{\link{rxHadoopRemoveDir}}
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#'
+#' mtx2 <- copy_xdf(mtx, "mtcars2.xdf")
+#' head(mtx2)
+#' delete_xdf(mtx2)
+#' file.exists("mtcars2.xdf")  # FALSE
+#'
+#' mtx2 <- rename_xdf(mtx, "mtcars2.xdf")
+#' file.exists("mtcars.xdf")   # FALSE
+#' file.exists("mtcars2.xdf")  # TRUE
 #' @rdname xdf_utils
 #' @export
 copy_xdf <- function(src, dest)

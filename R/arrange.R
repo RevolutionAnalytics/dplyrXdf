@@ -16,6 +16,16 @@
 #'
 #' @seealso
 #' \code{\link{rxSort}}, \code{\link[dplyr]{arrange}} in package dplyr
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl <- arrange(mtx, cyl, disp)
+#' as.data.frame(tbl)
+#' tbl2 <- arrange(mtx, desc(disp))
+#' as.data.frame(tbl2)
+#'
+#' # Saving to a persistent Xdf file
+#' arrange(mtx, cyl, disp, .outFile="mtcars_sorted.xdf")
 #' @rdname arrange
 #' @aliases arrange
 #' @export

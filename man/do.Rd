@@ -26,8 +26,6 @@ doXdf(.data, ...)
 \item{.data}{A tbl for an Xdf data source; or a raw Xdf data source.}
 
 \item{...}{Expressions to apply.}
-
-\item{.rxArgs}{A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.}
 }
 \value{
 The \code{do} and \code{do_xdf} verbs always return a data frame, unlike the other verbs for Xdf objects. This is because they are meant to execute code that can return arbitrarily complex objects, and Xdf files can only store atomic data.
@@ -41,6 +39,30 @@ The difference between the \code{do} and \code{do_xdf} verbs is that the former 
 \code{do_xdf} was called \code{doXdf} in previous versions of this package; it has been renamed to match dplyr's snake_case naming convention.
 
 To run expressions on a grouped Xdf tbl, \code{do} and \code{do_xdf} split the data into one file per group, and the arguments are called on each file. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
+}
+\examples{
+# unnamed arg
+mtx <- as_xdf(mtcars)
+do(mtx, {
+    mpg2 <- 2 * .$mpg
+    cyl2 <- 2 * .$cyl
+})
+
+# named arg
+do(mtx, m=lm(mpg ~ cyl, data=.)
+
+# fitting multiple models to subsets of the data
+if(require("nycflights13")) {
+flx <- as_xdf(flights, overwrite=TRUE)
+flx \%>\%
+    group_by(carrier) \%>\%
+    do(m=lm(arr_delay ~ dep_time, data=.))
+
+# with do_xdf: useful if each subset is very large, but called code must be Xdf-aware
+flx \%>\%
+    group_by(carrier) \%>\%
+    do_xdf(m2=rxLinMod(arr_delay ~ dep_time, data=.)
+}
 }
 \seealso{
 \code{\link[dplyr]{do}} in package dplyr

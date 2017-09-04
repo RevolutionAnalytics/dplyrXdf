@@ -26,6 +26,33 @@
 #' \code{\link{rxHadoopListFiles}}, \code{\link{rxHadoopFileExists}},
 #' \code{\link{rxHadoopMakeDir}}, \code{\link{rxHadoopRemoveDir}},
 #' \code{\link{rxHadoopCopy}}, \code{\link{rxHadoopMove}}, \code{\link{rxHadoopRemove}}
+#'
+#' @examples
+#' \dontrun{
+#' hdfs_host()
+#'
+#' mtx <- local_exect(as_xdf(mtcars))
+#' mth <- copy_to_hdfs(mtx)
+#' in_hdfs(mtx)
+#' in_hdfs(mth)
+#' hdfs_host(mth)
+#'
+#' hdfs_dir_exists("/")                           # always TRUE
+#' hdfs_dir_exists("/user/RevoShare")             # should always be TRUE if Microsoft R and Spark are installed
+#'
+#' hdfs_dir()                                     # listing of home directory: /user/<username>
+#'
+#' desc <- system.file("DESCRIPTION", package="dplyrXdf")
+#' hdfs_upload(desc, "dplyrXdf_description")
+#' hdfs_file_exists("dplyrXdf_description")
+#'
+#' hdfs_dir_create("foo")                         # creates /user/<username>/foo
+#' hdfs_file_copy("dplyrXdf_description", "foo")
+#' hdfs_file_exists("foo/dplyrXdf_description")
+#'
+#' hdfs_file_remove("dplyrXdf_description")
+#' hdfs_dir_remove("foo")
+#' }
 #' @rdname hdfs
 #' @export
 hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursive=FALSE,
@@ -245,6 +272,13 @@ in_hdfs <- function(object)
 #'
 #' @seealso
 #' \code{\link{eval}}
+#'
+#' @examples
+#' \dontrun{
+#' # set the compute context to Spark
+#' rxSparkConnect()
+#' local_exec(rxDataStep(mtcars))
+#' }
 #' @rdname local_exec
 #' @export
 local_exec <- function(expr, context="local")

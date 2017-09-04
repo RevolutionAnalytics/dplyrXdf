@@ -71,6 +71,37 @@ Detecting whether an object is a composite Xdf can be tricky and \code{is_compos
 
 To remove any ambiguity, it's recommended that you always explicitly specify the \code{createCompositeSet} argument when creating an Xdf data source object (objects created by dplyrXdf will always do this).
 }
+\examples{
+# convert data frame to Xdf
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+is_xdf(mtcars)
+is_xdf(mtx)
+is_composite_xdf(mtx)
+
+# as_xdf() on an Xdf file without any args is a no-op
+as_xdf(mtx)
+
+## some common uses for as_xdf:
+
+# convert a standard Xdf file to composite
+mtc <- as_composite_xdf(mtx, overwrite=TRUE)
+is_composite_xdf(mtc)
+
+# convert a tbl_xdf to Xdf
+tbl <- mtx \%>\% mutate(mpg2=2 * mpg)
+as_xdf(tbl, file="mtcars_mutate.xdf")
+
+# import a text file to Xdf
+write.csv(mtcars, "mtcars.csv", row.names=FALSE)
+mtt <- RxTextData("mtcars.csv")
+mtx <- as_xdf(mtt, overwrite=TRUE)
+
+# import a database table to Xdf
+\dontrun{
+table_db <- RxSqlServerData(table="mytable", server="sqlserver", databaseName="dbname", ...)
+table_xdf <- as_xdf(table_db)
+}
+}
 \seealso{
 \code{\link{as}}, \code{\link{is}}, \code{\link{inherits}},
 \code{\link{persist}}, \code{\link{rxDataStep}}, \code{\link{rxImport}}

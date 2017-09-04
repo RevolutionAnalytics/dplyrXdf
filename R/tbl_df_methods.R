@@ -45,9 +45,28 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
 #' If \code{as_data_frame} is FALSE, a data frame. Otherwise, a tbl_xdf data source.
 #'
 #' @seealso
-#' \code{\link[dplyr]{compute}} in package dplyr, \code{\link{copy_to}} for uploading to HDFS
-#'
+#' \code{\link{as_data_frame}}, \code{\link[dplyr]{compute}} in package dplyr, \code{\link{copy_to}} for uploading to HDFS
 #' @aliases collect, compute
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' mtx$mpg
+#' mtx[["mpg"]]
+#' pull(mtx, mpg)
+#'
+#' # all of these return a data frame (or a tbl_df) for input in the native filesystem
+#' as.data.frame(mtx)
+#' as_data_frame(mtx)  # returns a tbl_df
+#' collect(mtx)
+#' compute(mtx)
+#'
+#' # collect and compute are mainly for downloading data from HDFS
+#' \dontrun{
+#' mtc <- copy_to_hdfs(mtcars)
+#' as.data.frame(mtc)
+#' collect(mtc)  # still returns a data frame
+#' compute(mtc)  # returns a tbl_xdf
+#' }
 #' @rdname compute
 #' @export
 collect.RxXdfData <- function(x, as_data_frame=TRUE, ...)

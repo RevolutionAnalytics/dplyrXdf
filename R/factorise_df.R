@@ -1,4 +1,10 @@
 #' The data frame method simply calls \code{factor} to convert the specified columns into factors.
+#'
+#' @examples
+#'
+#' # factorise() also works with data frames
+#' tbl4 <- factorise(mtcars, cyl)
+#' tbl_types(tbl4)
 #' @rdname factorise
 #' @export
 factorise.data.frame <- function(.data, ...)

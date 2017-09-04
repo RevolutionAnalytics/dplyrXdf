@@ -60,6 +60,15 @@ For best performance, avoid merging on factor variables or on variables with mis
 
 Currently, merging in Spark has a few limitations. Only Xdf (in HDFS) and Spark data sources (\code{RxHiveData}, \code{RxOrcData} and \code{RxParquetData}) can be merged, and only the "standard" join operations are supported: \code{left_join}, \code{right_join}, \code{inner_join} and \code{full join}. Moreover, Xdf files in HDFS can \emph{only} be merged in the Spark compute context (not in the local compute context).
 }
+\examples{
+bmembx <- as_xdf(band_members, overwrite=TRUE)
+binstx <- as_xdf(band_instruments, overwrite=TRUE)
+
+left_join(bmembx, binstx)
+right_join(bmembx, binstx)
+inner_join(bmembx, binstx)
+full_join(bmembx, binstx)
+}
 \seealso{
 \code{\link[dplyr]{join}} in package dplyr, \code{\link{rxMerge}}
 }

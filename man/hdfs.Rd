@@ -93,6 +93,33 @@ Currently, RevoScaleR has only limited support for accessing multiple HDFS files
 
 \code{hdfs_expunge} empties the HDFS trash.
 }
+\examples{
+\dontrun{
+hdfs_host()
+
+mtx <- local_exect(as_xdf(mtcars))
+mth <- copy_to_hdfs(mtx)
+in_hdfs(mtx)
+in_hdfs(mth)
+hdfs_host(mth)
+
+hdfs_dir_exists("/")                           # always TRUE
+hdfs_dir_exists("/user/RevoShare")             # should always be TRUE if Microsoft R and Spark are installed
+
+hdfs_dir()                                     # listing of home directory: /user/<username>
+
+desc <- system.file("DESCRIPTION", package="dplyrXdf")
+hdfs_upload(desc, "dplyrXdf_description")
+hdfs_file_exists("dplyrXdf_description")
+
+hdfs_dir_create("foo")                         # creates /user/<username>/foo
+hdfs_file_copy("dplyrXdf_description", "foo")
+hdfs_file_exists("foo/dplyrXdf_description")
+
+hdfs_file_remove("dplyrXdf_description")
+hdfs_dir_remove("foo")
+}
+}
 \seealso{
 \code{\link{dir}}, \code{link{dir.exists}}, \code{\link{file.exists}}, \code{\link{dir.create}},
 \code{\link{file.copy}}, \code{\link{file.rename}}, \code{\link{file.remove}}, \code{\link{unlink}},

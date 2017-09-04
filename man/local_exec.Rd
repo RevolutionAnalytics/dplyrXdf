@@ -20,6 +20,13 @@ Runs an expression in the local compute context
 \details{
 This function is useful when you are working with datasets in both the native filesystem and HDFS. The workhorse RevoScaleR function for data transformation, \code{rxDataStep}, will complain if you are in a distributed compute context such as \code{\link{RxHadoopMR}} or \code{\link{RxSpark}}, and you want to process a dataset in the native filesystem. You can wrap your code inside a \code{local_exec} call to switch to the local compute context temporarily, and then switch back when it has finished running.
 }
+\examples{
+\dontrun{
+# set the compute context to Spark
+rxSparkConnect()
+local_exec(rxDataStep(mtcars))
+}
+}
 \seealso{
 \code{\link{eval}}
 }

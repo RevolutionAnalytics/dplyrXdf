@@ -35,9 +35,15 @@ Copy an xdf tbl to a permanent storage location.
 \details{
 By default, the underlying data for an xdf tbl is saved as a file in the R temporary directory, and is managed by dplyrXdf. This can cause confusion and errors when a tbl is reused by later dplyrXdf operations, which can overwrite or delete the data.
 
-The \code{persist} verb is a simple routine that either copies or moves the data into a new xdf file at the location given by \code{outFile}. This ensures that the data will not be modified by dplyrXdf, and will be persistent beyond the end of the R session.
+The \code{persist} verb is a simple routine that either copies or moves the data into a new Xdf file at the location given by \code{outFile}. This ensures that the data will not be modified by dplyrXdf, and will be persistent beyond the end of the R session.
 
 Calling this verb on a non-tbl data source (eg a raw \code{RxXdfData} object) will give a warning and return the data source unchanged.
+}
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl <- mutate(mtx, mpg2=2 * mpg)
+persist(tbl, "mtcars_mutate.xdf")
+persist(tbl, "mtcars_composite", composite=TRUE)
 }
 \seealso{
 \code{\link{as_xdf}}, \code{\link{as.data.frame.RxXdfData}}, \code{\link[RevoScaleR]{rxDataStep}}

@@ -15,6 +15,13 @@
 #' @seealso
 #' \code{\link[base]{cbind}} and \code{\link[base]{rbind}} in base R,
 #' \code{\link[dplyr]{bind_cols}} and \code{\link[dplyr]{bind_rows}} in package dplyr
+#'
+#' @examples
+#' # cbind two Xdf files together
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl <- transmute(mtx, mpg2 = 2 * mpg)
+#' cbind(mtx, tbl)
+#'
 #' @aliases cbind rbind
 #' @rdname crbind
 #' @rawNamespace export(cbind.RxXdfData)
@@ -68,6 +75,16 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
 }
 
 
+#' @examples
+#' # rbind two Xdf files together
+#' mtx2 <- as_xdf(mtcars)
+#' rbind(mtx, mtx2)
+#'
+#' # combine an Xdf file and a data frame: must explicitly call RxXdfData method
+#' rbind.RxXdfData(mtx, mtcars)
+#'
+#' # save to a persistent Xdf file: again, must explicitly call RxXdfData method
+#' cbind.RxXdfData(mtx, tbl, .outFile="mtcars_cbind.xdf")
 #' @rdname crbind
 #' @rawNamespace export(rbind.RxXdfData)
 #' @method rbind RxXdfData

@@ -24,6 +24,20 @@ An object representing the filtered data. This depends on the \code{.outFile} ar
 \description{
 Subset a data source by rows
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl <- filter(mtx, mpg > 20)
+nrow(tbl)
+tbl2 <- filter(mtx, am == 1, vs == 1)
+nrow(tbl2)
+
+# filter on rows and columns simultaneously with .rxArgs
+tbl3 <- filter(mtx, am == 1, vs == 1, .rxArgs=list(varsToKeep=c("mpg", "cyl")))
+dim(tbl3)
+
+# save to a persistent Xdf file
+filter(mtx, am == 1, vs == 1, .outFile="mtcars_filter.xdf")
+}
 \seealso{
-\code{\link[dplyr]{filter}} in package dplyr
+\code{\link[dplyr]{filter}} in package dplyr, \code{\link{subset}}
 }

@@ -25,6 +25,14 @@ Rename columns in an Xdf file
 \details{
 Renaming is generally a very fast operation, as only the metadata in the Xdf file header is changed. The exception is when the dataset needs to be copied, either to preserve dplyrXdf's semantics of never modifying the source data for a pipeline, or if the the desired output format is a data frame or persistent Xdf file. If a copy is made, \code{rxDataStep} is used and will accept arguments supplied in \code{.rxArgs}.
 }
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+tbl <- rename(mtx, mpg2=mpg, cyl2=cyl)
+names(tbl)
+
+# save to a persistent Xdf file
+rename(mtx, mpg2=mpg, .outFile="mtcars_renamed.xdf")
+}
 \seealso{
 \code{\link[dplyr]{rename}} in package dplyr
 }

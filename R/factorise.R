@@ -28,6 +28,21 @@
 #' \code{\link[RevoScaleR]{rxFactors}}, \code{\link[RevoScaleR]{rxImport}}, \code{\link{factor}}
 #'
 #' \code{\link{chol}}, \code{\link{qr}}, \code{\link{svd}} for the other meaning of factorise
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl1 <- factorise(mtx, am, vs)
+#' tbl_types(tbl1)
+#'
+#' tbl2 <- factorise(mtx, all_numeric())
+#' tbl_types(tbl2)
+#'
+#' # selector functions used by select(), rename() also work
+#' tbl3 <- factorise(mtx, starts_with("m"))
+#' tbl_types(tbl3)
+#'
+#' # save to a persistent Xdf file
+#' factorise(mtx, am, vs, .outFile="mtcars_factor.xdf")
 #' @rdname factorise
 #' @export
 factorise <- function(.data, ..., .dots)

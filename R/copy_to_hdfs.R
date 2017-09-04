@@ -22,6 +22,27 @@
 #' \code{\link{rxHadoopCopyFromClient}}, \code{\link{rxHadoopCopyFromLocal}},
 #' \code{\link{collect}} and \code{\link{compute}} for downloading data from HDFS,
 #' \code{\link{as_xdf}}, \code{\link{as_composite_xdf}}
+#'
+#' @examples
+#' \dontrun{
+#' hd <- RxHdfsFileSystem()
+#'
+#' # copy a data frame to HDFS
+#' mth <- copy_to(hd, mtcars)
+#' # assign a new filename on copy
+#' mth2 <- copy_to(hd, mtcars, "mtcars_2")
+#'
+#' # copy an Xdf file to HDFS
+#' mtx <- as_xdf(mtcars)
+#' mth3 <- copy_to(hd, mtx, "mtcars_3")
+#'
+#' # same as copy_to(hd, ...)
+#' delete_xdf(mth)
+#' copy_to_hdfs(mtcars)
+#'
+#' # copying to attached ADLS storage
+#' copy_to_hdfs(mtcars, host="adls.host.name")
+#' }
 #' @aliases copy_to
 #' @rdname copy_to
 #' @export
