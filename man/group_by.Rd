@@ -31,20 +31,59 @@ Group an Xdf file by one or more variables
 \details{
 When called on an Xdf file, \code{group_by} does not do any data processing; it only sets up the necessary metadata for verbs accepting grouped tbls to handle the data correctly. When called on a non-Xdf data source, it imports the data into an Xdf tbl.
 
-Note that by default, the levels of the grouping variables for Xdf files are \emph{unsorted.}
+Note that by default, the levels of the grouping variables for Xdf files are \emph{unsorted.} This is for performance reasons, to avoid having to make unnecessary passes through the data.
 
-Most verbs that have specific methods for grouped data will split the data into multiple Xdf files, and then process each file separately (the exception is \code{\link[dplyrXdf]{summarise}}, which allows a range of options in how to treat groups). There are two options for splitting the data: use the \code{\link[RevoScaleR]{rxExecBy}} supplied in the RevoScaleR package, or via dplyrXdf-internal code. The former is the default if the version of Microsoft R installed is 9.1 or higher.
+Most verbs that have specific methods for grouped data will split the data into multiple Xdf files, and then process each file separately (the exception is \code{\link[dplyrXdf]{summarise}}, which allows a range of options in how to treat groups). There are two options for handling grouped data: use the \code{\link[RevoScaleR]{rxExecBy}} supplied in the RevoScaleR package, or via dplyrXdf-internal code. The former is the default if the version of Microsoft R installed is 9.1 or higher.
 }
+\section{Parallel by-group processing}{
+
+It's easy to parallelise the processing of grouped data in dplyrXdf. There are a number of options available:
+\itemize{
+    \item By default, if Microsoft R Server 9.1 or higher is installed, dplyrXdf will use \code{\link{rxExecBy}} to process groups. This will create a cluster of slave nodes in the background and send the data to the nodes by group. The cluster is destroyed at the end of each pipeline.
+    \item For more flexibility, you can set the compute context manually to \code{\link{RxForeachDoPar}}. This will create a \emph{persistent} cluster, that can be reused for multiple pipelines. The ForeachDoPar compute context can also use clusters made up of multiple machines, not just multiple processes on the single machine; see below for an example of this.
+    \item If your data is stored in a Hadoop or Spark cluster, dplyrXdf will similarly take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes.
+}
+}
+
 \examples{
 mtx <- as_xdf(mtcars, overwrite=TRUE)
 tbl <- group_by(mtx, cyl)
 groups(tbl)
 group_vars(tbl)
 
-# the following result in the same groups
-group_by(mtx, cyl, gear)
-group_by(mtx, cyl) \%>\% group_by(gear, add=TRUE)
+## parallel processing of groups with ForeachDoPar compute context
+\dontrun{
+flx <- as_tbl(nycflights13::flights)
+
+doParallel::registerDoParallel(3)
+dplyrxdf_options(useExecBy=FALSE)  # turn rxExecBy processing off
+rxSetComputeContext("dopar")
+
+flx \%>\%
+    group_by(carrier) \%>\%
+    do(m=lm(arr_time ~ dep_time + dep_delay + factor(month), data=.))
+
+doParallel::stopImplicitCluster()
+
+# ForeachDoPar also works with a cluster of multiple machines, not just multiple processes on one machine
+# to work with dplyrXdf, all machines must have access to the same filesystem (eg a network share)
+spec <- c("dsvm1", "dsvm2", "dsvm3")
+cl <- SNOW::makeCluster(spec)
+doSNOW::registerDoSNOW(cl)
+
+# set the dplyrXdf working directory to a cluster-accessible location
+set_dplyrxdf_dir("n:/clusterdata")
+
+flx2 <- as_xdf(nycflights13::flights, file="n:/clusterdata/flights.xdf")
+flx2 \%>\%
+    group_by(carrier) \%>\%
+    do(m=lm(arr_time ~ dep_time + dep_delay + factor(month), data=.))
+
+SNOW::stopCluster(cl)
+rxSetComputeContext("local")
+dplyrxdf_options(useExecBy=TRUE)  # re-enable rxExecBy processing once we are done
+}
 }
 \seealso{
-\code{\link[dplyr]{group_by}}, \code{\link{dplyrxdf_options}} for how to change the splitting procedure
+\code{\link[dplyr]{group_by}} in package dplyr, \code{\link{dplyrxdf_options}} for how to change the splitting procedure
 }

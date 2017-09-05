@@ -6,10 +6,10 @@
 #' @param full_path For \code{hdfs_dir}, whether to prepend the directory path to filenames to give a full path. If FALSE, only file names are returned.
 #' @param include_dirs For \code{hdfs_dir}, if subdirectory names should be included. Always TRUE for non-recursive listings.
 #' @param recursive For \code{hdfs_dir}, if the listing should recurse into subdirectories.
-#' @param dirs_only For \code{hdfs_dir} if \emph{only} subdirectory names should be included.
+#' @param dirs_only For \code{hdfs_dir}, if \emph{only} subdirectory names should be included.
 #' @param pattern For \code{hdfs_dir}, an optional \link{regular expression}. Only file names that match will be returned.
 #' @param ... For \code{hdfs_dir}, further switches, prefixed by \code{"-"}, to pass to the Hadoop \code{fs -ls} command. For other functions, further arguments to pass to \code{\link{rxHadoopCommand.}}
-#' @param host The HDFS hostname as a URI string, in the form \code{adl://host.name}. You should need to set this only if you have an attached Azure Data Lake Store that you are accessing via HDFS. Can also be specified as an \code{RxHdfsFileSystem} object, in which case the hostname will be taken from the object.
+#' @param host The HDFS hostname as a string, in the form \code{adl://host.name}. You should need to set this only if you have an attached Azure Data Lake Store that you are accessing via HDFS. Can also be an \code{RxHdfsFileSystem} object, in which case the hostname will be taken from the object.
 #' @param src,dest For \code{hdfs_file_copy} and \code{hdfs_file_move}, the source and destination paths.
 #'
 #' @details
@@ -21,7 +21,7 @@
 #' \code{hdfs_dir} returns a vector of filenames, optionally with the full path attached.
 #'
 #' @seealso
-#' \code{\link{dir}}, \code{link{dir.exists}}, \code{\link{file.exists}}, \code{\link{dir.create}},
+#' \code{\link{dir}}, \code{\link{dir.exists}}, \code{\link{file.exists}}, \code{\link{dir.create}},
 #' \code{\link{file.copy}}, \code{\link{file.rename}}, \code{\link{file.remove}}, \code{\link{unlink}},
 #' \code{\link{rxHadoopListFiles}}, \code{\link{rxHadoopFileExists}},
 #' \code{\link{rxHadoopMakeDir}}, \code{\link{rxHadoopRemoveDir}},
@@ -31,22 +31,27 @@
 #' \dontrun{
 #' hdfs_host()
 #'
-#' mtx <- local_exect(as_xdf(mtcars))
+#' mtx <- as_xdf(mtcars)
 #' mth <- copy_to_hdfs(mtx)
 #' in_hdfs(mtx)
 #' in_hdfs(mth)
 #' hdfs_host(mth)
 #'
-#' hdfs_dir_exists("/")                           # always TRUE
-#' hdfs_dir_exists("/user/RevoShare")             # should always be TRUE if Microsoft R and Spark are installed
+#' # always TRUE
+#' hdfs_dir_exists("/")
+#' # should always be TRUE if Microsoft R is installed on the cluster
+#' hdfs_dir_exists("/user/RevoShare")
 #'
-#' hdfs_dir()                                     # listing of home directory: /user/<username>
+#' # listing of home directory: /user/<username>
+#' hdfs_dir()
 #'
+#' # upload an arbitrary file
 #' desc <- system.file("DESCRIPTION", package="dplyrXdf")
 #' hdfs_upload(desc, "dplyrXdf_description")
 #' hdfs_file_exists("dplyrXdf_description")
 #'
-#' hdfs_dir_create("foo")                         # creates /user/<username>/foo
+#' # creates /user/<username>/foo
+#' hdfs_dir_create("foo")
 #' hdfs_file_copy("dplyrXdf_description", "foo")
 #' hdfs_file_exists("foo/dplyrXdf_description")
 #'
@@ -105,6 +110,32 @@ print.dplyrXdf_hdfs_dir <- function(x, ...)
     cat("Directory listing of", attr(x, "path"), "\n")
     print.default(c(x), ...)
     invisible(x)
+}
+
+
+#' @param object For \code{in_hdfs} and \code{hdfs_host}, An R object, typically a RevoScaleR data source object.
+#'
+#' @return
+#' \code{hdfs_host} returns the hostname of the HDFS filesystem for the given object. If no object is specified, or if the object is not in HDFS, it returns the hostname of the currently active HDFS filesystem. This is generally "default" unless you are in the \code{RxHadoopMR} or \code{RxSpark} compute context and using an Azure Data Lake Store, in which case it returns the ADLS name node.
+#' @rdname hdfs
+#' @export
+hdfs_host <- function(object=NULL)
+{
+    if(inherits(object, "RxDataSource"))
+        object <- rxGetFileSystem(object)
+
+    if(inherits(object, "RxHdfsFileSystem"))
+        return(object$hostName)
+
+    cc <- rxGetComputeContext()
+    if(inherits(cc, "RxHadoopMR"))
+        return(cc@nameNode)
+
+    fs <- rxGetFileSystem()
+    if(inherits(fs, "RxHdfsFileSystem"))
+        return(fs$hostName)
+
+    rxGetOption("hdfsHost")
 }
 
 
@@ -219,32 +250,6 @@ hdfs_expunge <- function()
 {
     detectHdfsConnection()
     rxHadoopCommand("fs -expunge")
-}
-
-
-#' @param object For \code{in_hdfs} and \code{hdfs_host}, An R object, typically a RevoScaleR data source object.
-#'
-#' @return
-#' \code{hdfs_host} returns the hostname of the HDFS filesystem for the given object. If no object is specified, or if the object is not in HDFS, it returns the hostname of the currently active HDFS filesystem. This is generally "default" unless you are in the \code{RxHadoopMR} or \code{RxSpark} compute context and using an Azure Data Lake Store, in which case it returns the ADLS name node.
-#' @rdname hdfs
-#' @export
-hdfs_host <- function(object=NULL)
-{
-    if(inherits(object, "RxDataSource"))
-        object <- rxGetFileSystem(object)
-
-    if(inherits(object, "RxHdfsFileSystem"))
-        return(object$hostName)
-
-    cc <- rxGetComputeContext()
-    if(inherits(cc, "RxHadoopMR"))
-        return(cc@nameNode)
-
-    fs <- rxGetFileSystem()
-    if(inherits(fs, "RxHdfsFileSystem"))
-        return(fs$hostName)
-
-    rxGetOption("hdfsHost")
 }
 
 

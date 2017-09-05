@@ -35,9 +35,6 @@ If you want to look at the first few rows of an Xdf file, it may be faster to us
 }
 \examples{
 mtx <- as_xdf(mtcars, overwrite=TRUE)
-mtx$mpg
-mtx[["mpg"]]
-pull(mtx, mpg)
 
 # all of these return a data frame (or a tbl_df) for input in the native filesystem
 as.data.frame(mtx)

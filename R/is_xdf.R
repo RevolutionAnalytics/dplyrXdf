@@ -1,7 +1,3 @@
-#' Detect and coerce to Xdf data source objects
-#'
-#' Functions to detect and coerce to Xdf data source objects.
-#'
 #' @param x An R object.
 #'
 #' @details

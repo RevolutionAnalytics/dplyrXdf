@@ -10,10 +10,18 @@ NULL
 #' @details
 #' These are simple wrappers around \code{\link[RevoScaleR]{rxDataStep}}, with the check on the maximum table size turned off. You should ensure that you have enough memory for your data.
 #'
-#' \code{as.data.frame} converts a data source object (typically an Xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
+#' \code{as.data.frame} converts a data source object (typically an Xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{pull}, \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
 #'
 #' @seealso
-#' \code{\link[base]{as.data.frame}}, \code{\link[dplyr]{collect}}
+#' \code{\link[base]{as.data.frame}}, \code{\link{collect}}
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' mtx$mpg
+#' mtx[["mpg"]]
+#' pull(mtx, mpg)
+#' as.data.frame(mtx)
+#' as_data_frame(mtx)  # returns a tbl_df
 #' @aliases as.data.frame
 #' @rdname as.data.frame
 #' @export
@@ -50,9 +58,6 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
 #'
 #' @examples
 #' mtx <- as_xdf(mtcars, overwrite=TRUE)
-#' mtx$mpg
-#' mtx[["mpg"]]
-#' pull(mtx, mpg)
 #'
 #' # all of these return a data frame (or a tbl_df) for input in the native filesystem
 #' as.data.frame(mtx)
@@ -67,6 +72,7 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
 #' collect(mtc)  # still returns a data frame
 #' compute(mtc)  # returns a tbl_xdf
 #' }
+#' @aliases collect compute
 #' @rdname compute
 #' @export
 collect.RxXdfData <- function(x, as_data_frame=TRUE, ...)

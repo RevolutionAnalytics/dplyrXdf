@@ -34,8 +34,16 @@ Convert a data source or tbl to a data frame
 \details{
 These are simple wrappers around \code{\link[RevoScaleR]{rxDataStep}}, with the check on the maximum table size turned off. You should ensure that you have enough memory for your data.
 
-\code{as.data.frame} converts a data source object (typically an Xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
+\code{as.data.frame} converts a data source object (typically an Xdf file, but can also be any data source type that \code{rxDataStep} supports) into a data frame. The \code{pull}, \code{$} and \code{[[} methods extract a single column from a data source, as a vector.
+}
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+mtx$mpg
+mtx[["mpg"]]
+pull(mtx, mpg)
+as.data.frame(mtx)
+as_data_frame(mtx)  # returns a tbl_df
 }
 \seealso{
-\code{\link[base]{as.data.frame}}, \code{\link[dplyr]{collect}}
+\code{\link[base]{as.data.frame}}, \code{\link{collect}}
 }

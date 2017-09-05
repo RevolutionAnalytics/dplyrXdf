@@ -14,7 +14,7 @@
 #' An object representing the subsetted data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
 #' @seealso
-#' \code{\link[base]{subset}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{select}}, \code{\link[RevoScaleR]{rxDataStep}}
+#' \code{\link[base]{subset}} in base R, \code{\link{filter}}, \code{\link{select}}, \code{\link[RevoScaleR]{rxDataStep}}
 #'
 #' @examples
 #' mtx <- as_xdf(mtcars, overwrite=TRUE)

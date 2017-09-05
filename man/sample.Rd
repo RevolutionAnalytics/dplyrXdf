@@ -54,5 +54,5 @@ tbl4 <- filter(mtx, runif(.rxNumRows) < 0.4)  # keep 40\% of rows in the data
 nrow(tbl4)
 }
 \seealso{
-\code{\link[dplyr]{sample_frac}}, \code{\link[dplyr]{sample_n}}, \code{\link{sample}}
+\code{\link[dplyr]{sample_frac}} and \code{\link[dplyr]{sample_n}} in package dplyr, \code{\link{sample}}
 }

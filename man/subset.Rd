@@ -46,5 +46,5 @@ names(tbl2)
 subset(mtx, mpg > 20, c(mpg, cyl), .outFile="mtcars_subset.xdf")
 }
 \seealso{
-\code{\link[base]{subset}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{select}}, \code{\link[RevoScaleR]{rxDataStep}}
+\code{\link[base]{subset}} in base R, \code{\link{filter}}, \code{\link{select}}, \code{\link[RevoScaleR]{rxDataStep}}
 }

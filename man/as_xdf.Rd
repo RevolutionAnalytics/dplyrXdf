@@ -51,8 +51,6 @@ For the \code{as} functions, an Xdf data source object pointing to the created f
 }
 \description{
 Functions to detect and coerce to Xdf data source objects.
-
-Functions to detect and coerce to Xdf data source objects.
 }
 \details{
 The \code{as_xdf} function takes the object given by \code{.data} and imports its data into an Xdf file, returning a data source pointing to that file. The file can be either a standard or a \emph{composite} Xdf, as given by the \code{composite} argument. A composite Xdf is actually a directory containing data and metadata files; it can be manipulated by the RevoScaleR functions as if it were a single dataset.

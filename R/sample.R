@@ -13,7 +13,7 @@
 #' An Xdf tbl.
 #'
 #' @seealso
-#' \code{\link[dplyr]{sample_frac}}, \code{\link[dplyr]{sample_n}}, \code{\link{sample}}
+#' \code{\link[dplyr]{sample_frac}} and \code{\link[dplyr]{sample_n}} in package dplyr, \code{\link{sample}}
 #'
 #' @examples
 #' mtx <- as_xdf(mtcars, overwrite=TRUE)

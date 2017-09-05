@@ -41,7 +41,7 @@
 #' copy_to_hdfs(mtcars)
 #'
 #' # copying to attached ADLS storage
-#' copy_to_hdfs(mtcars, host="adls.host.name")
+#' copy_to_hdfs(mtcars, host="adl://adls.host.name")
 #' }
 #' @aliases copy_to
 #' @rdname copy_to

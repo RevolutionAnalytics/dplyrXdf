@@ -3,6 +3,7 @@
 \name{hdfs_dir}
 \alias{hdfs_dir}
 \alias{print.dplyrXdf_hdfs_dir}
+\alias{hdfs_host}
 \alias{hdfs_dir_exists}
 \alias{hdfs_file_exists}
 \alias{hdfs_dir_create}
@@ -11,7 +12,6 @@
 \alias{hdfs_file_move}
 \alias{hdfs_file_remove}
 \alias{hdfs_expunge}
-\alias{hdfs_host}
 \alias{in_hdfs}
 \title{Utilities for HDFS}
 \usage{
@@ -20,6 +20,8 @@ hdfs_dir(path = ".", ..., full_path = FALSE, include_dirs = FALSE,
   host = hdfs_host())
 
 \method{print}{dplyrXdf_hdfs_dir}(x, ...)
+
+hdfs_host(object = NULL)
 
 hdfs_dir_exists(path, host = hdfs_host())
 
@@ -37,8 +39,6 @@ hdfs_file_remove(path, ..., host = hdfs_host())
 
 hdfs_expunge()
 
-hdfs_host(object = NULL)
-
 in_hdfs(object)
 }
 \arguments{
@@ -52,24 +52,24 @@ in_hdfs(object)
 
 \item{recursive}{For \code{hdfs_dir}, if the listing should recurse into subdirectories.}
 
-\item{dirs_only}{For \code{hdfs_dir} if \emph{only} subdirectory names should be included.}
+\item{dirs_only}{For \code{hdfs_dir}, if \emph{only} subdirectory names should be included.}
 
 \item{pattern}{For \code{hdfs_dir}, an optional \link{regular expression}. Only file names that match will be returned.}
 
-\item{host}{The HDFS hostname as a URI string, in the form \code{adl://host.name}. You should need to set this only if you have an attached Azure Data Lake Store that you are accessing via HDFS. Can also be specified as an \code{RxHdfsFileSystem} object, in which case the hostname will be taken from the object.}
-
-\item{src, dest}{For \code{hdfs_file_copy} and \code{hdfs_file_move}, the source and destination paths.}
+\item{host}{The HDFS hostname as a string, in the form \code{adl://host.name}. You should need to set this only if you have an attached Azure Data Lake Store that you are accessing via HDFS. Can also be an \code{RxHdfsFileSystem} object, in which case the hostname will be taken from the object.}
 
 \item{object}{For \code{in_hdfs} and \code{hdfs_host}, An R object, typically a RevoScaleR data source object.}
+
+\item{src, dest}{For \code{hdfs_file_copy} and \code{hdfs_file_move}, the source and destination paths.}
 }
 \value{
 \code{hdfs_dir} returns a vector of filenames, optionally with the full path attached.
 
+\code{hdfs_host} returns the hostname of the HDFS filesystem for the given object. If no object is specified, or if the object is not in HDFS, it returns the hostname of the currently active HDFS filesystem. This is generally "default" unless you are in the \code{RxHadoopMR} or \code{RxSpark} compute context and using an Azure Data Lake Store, in which case it returns the ADLS name node.
+
 \code{hdfs_dir_exists} and \code{hdfs_file_exists} return TRUE or FALSE depending on whether the directory or file exists.
 
 The other \code{hdfs_*} functions return TRUE or FALSE depending on whether the operation succeeded.
-
-\code{hdfs_host} returns the hostname of the HDFS filesystem for the given object. If no object is specified, or if the object is not in HDFS, it returns the hostname of the currently active HDFS filesystem. This is generally "default" unless you are in the \code{RxHadoopMR} or \code{RxSpark} compute context and using an Azure Data Lake Store, in which case it returns the ADLS name node.
 
 \code{in_hdfs} returns whether the given object is stored in HDFS. This will be TRUE for an Xdf data source or file data source in HDFS, or a Spark data source. Classes for the latter include \code{RxHiveData}, \code{RxParquetData} and \code{RxOrcData}.
 }
@@ -97,22 +97,27 @@ Currently, RevoScaleR has only limited support for accessing multiple HDFS files
 \dontrun{
 hdfs_host()
 
-mtx <- local_exect(as_xdf(mtcars))
+mtx <- as_xdf(mtcars)
 mth <- copy_to_hdfs(mtx)
 in_hdfs(mtx)
 in_hdfs(mth)
 hdfs_host(mth)
 
-hdfs_dir_exists("/")                           # always TRUE
-hdfs_dir_exists("/user/RevoShare")             # should always be TRUE if Microsoft R and Spark are installed
+# always TRUE
+hdfs_dir_exists("/")
+# should always be TRUE if Microsoft R is installed on the cluster
+hdfs_dir_exists("/user/RevoShare")
 
-hdfs_dir()                                     # listing of home directory: /user/<username>
+# listing of home directory: /user/<username>
+hdfs_dir()
 
+# upload an arbitrary file
 desc <- system.file("DESCRIPTION", package="dplyrXdf")
 hdfs_upload(desc, "dplyrXdf_description")
 hdfs_file_exists("dplyrXdf_description")
 
-hdfs_dir_create("foo")                         # creates /user/<username>/foo
+# creates /user/<username>/foo
+hdfs_dir_create("foo")
 hdfs_file_copy("dplyrXdf_description", "foo")
 hdfs_file_exists("foo/dplyrXdf_description")
 
@@ -121,7 +126,7 @@ hdfs_dir_remove("foo")
 }
 }
 \seealso{
-\code{\link{dir}}, \code{link{dir.exists}}, \code{\link{file.exists}}, \code{\link{dir.create}},
+\code{\link{dir}}, \code{\link{dir.exists}}, \code{\link{file.exists}}, \code{\link{dir.create}},
 \code{\link{file.copy}}, \code{\link{file.rename}}, \code{\link{file.remove}}, \code{\link{unlink}},
 \code{\link{rxHadoopListFiles}}, \code{\link{rxHadoopFileExists}},
 \code{\link{rxHadoopMakeDir}}, \code{\link{rxHadoopRemoveDir}},
