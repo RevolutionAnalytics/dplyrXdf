@@ -12,20 +12,19 @@ grouped_tbl_xdf <- setClass("grouped_tbl_xdf", contains="tbl_xdf", slots=c(group
 #' @param .data An Xdf file or a tbl wrapping the same.
 #' @param ... Variables to group by.
 #' @param add If FALSE (the default), \code{group_by} will ignore existing groups. If TRUE, add grouping variables to existing groups.
-#' @param .dots Used to work around non-standard evaluation.
 #'
 #' @details
 #' When called on an Xdf file, \code{group_by} does not do any data processing; it only sets up the necessary metadata for verbs accepting grouped tbls to handle the data correctly. When called on a non-Xdf data source, it imports the data into an Xdf tbl.
 #'
 #' Note that by default, the levels of the grouping variables for Xdf files are \emph{unsorted.} This is for performance reasons, to avoid having to make unnecessary passes through the data.
 #'
-#' Most verbs that have specific methods for grouped data will split the data into multiple Xdf files, and then process each file separately (the exception is \code{\link[dplyrXdf]{summarise}}, which allows a range of options in how to treat groups). There are two options for handling grouped data: use the \code{\link[RevoScaleR]{rxExecBy}} supplied in the RevoScaleR package, or via dplyrXdf-internal code. The former is the default if the version of Microsoft R installed is 9.1 or higher.
+#'  There are two options for handling grouped data: use the \code{\link[RevoScaleR]{rxExecBy}} function supplied in the RevoScaleR package, or via dplyrXdf-internal code. The former is the default if the version of Microsoft R installed is 9.1 or higher.
 #'
 #' @section Parallel by-group processing:
-#' It's easy to parallelise the processing of grouped data in dplyrXdf. There are a number of options available:
+#' Most verbs that have specific methods for grouped data will split the data into multiple Xdf files, and then process each file separately (the exception is \code{\link[dplyrXdf]{summarise}}. This makes it easy to parallelise the processing of groups in dplyrXdf. There are a number of options available:
 #' \itemize{
 #'     \item By default, if Microsoft R Server 9.1 or higher is installed, dplyrXdf will use \code{\link{rxExecBy}} to process groups. This will create a cluster of slave nodes in the background and send the data to the nodes by group. The cluster is destroyed at the end of each pipeline.
-#'     \item For more flexibility, you can set the compute context manually to \code{\link{RxForeachDoPar}}. This will create a \emph{persistent} cluster, that can be reused for multiple pipelines. The ForeachDoPar compute context can also use clusters made up of multiple machines, not just multiple processes on the single machine; see below for an example of this.
+#'     \item For more flexibility, you can set the compute context manually to \code{\link{RxForeachDoPar}}. This will create a \emph{persistent} cluster that can be reused for multiple pipelines. The ForeachDoPar compute context can also use clusters made up of multiple machines, not just multiple processes on the single machine; see below for an example of this.
 #'     \item If your data is stored in a Hadoop or Spark cluster, dplyrXdf will similarly take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes.
 #' }
 #'
