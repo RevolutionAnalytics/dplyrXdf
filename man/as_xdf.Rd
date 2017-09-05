@@ -87,7 +87,7 @@ as_xdf(mtx)
 mtc <- as_composite_xdf(mtx, overwrite=TRUE)
 is_composite_xdf(mtc)
 
-# convert a tbl_xdf to Xdf
+# convert a tbl_xdf to Xdf (could also use persist())
 tbl <- mtx \%>\% mutate(mpg2=2 * mpg)
 as_xdf(tbl, file="mtcars_mutate.xdf")
 

@@ -5,14 +5,23 @@ NULL
 #'
 #' @param x A data source object, or tbl wrapping the same.
 #' @details
-#' These are simple wrappers around the \code{names} and \code{rxGetVarInfo} functions.
+#' These are simple wrappers around the \code{names} and \code{rxGetVarInfo} functions. The \code{names<-} function allows renaming variables inside an Xdf file; however, the recommended method is to use the \code{\link{rename}} verb instead.
 #'
 #' @return
 #' For \code{tbl_vars}, a character vector of variable names; for \code{tbl_types}, a named vector giving the types of each variable.
 #'
 #' @seealso
-#' \code{\link{RxXdfData}}, \code{\link{RxTextData}}, \code{\link{RxSasData}}, \code{\link{RxSpssData}},
+#' \code{\link[dplyr]{tbl_vars}} in package dplyr,
 #' \code{\link{rxGetInfo}}, \code{\link{rxGetVarInfo}}
+#'
+#' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' names(mtx)
+#' tbl_vars(mtx)
+#' tbl_types(mtx)
+#'
+#' names(mtx)[1] <- "mpg2"
+#' names(mtx)
 #' @aliases tbl_vars
 #' @rdname tbl_vars
 #' @export

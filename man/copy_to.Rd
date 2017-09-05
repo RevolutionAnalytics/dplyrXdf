@@ -38,7 +38,7 @@ The \code{copy_to_hdfs} function is a simple wrapper that avoids having to creat
 }
 \section{Note on composite Xdf}{
 
-There are actually two kinds of Xdf files: standard and _composite_. A composite Xdf file is a directory containing multiple data and metadata files, which the RevoScaleR functions treat as a single dataset. Xdf files in HDFS must be composite in order to work properly; \code{copy_to} will convert an existing Xdf file into composite, if it's not already in that format. Non-Xdf datasets (data frames and other RevoScaleR data sources, such as text files) will similarly be uploaded as composite.
+There are actually two kinds of Xdf files: standard and \emph{composite}. A composite Xdf file is a directory containing multiple data and metadata files, which the RevoScaleR functions treat as a single dataset. Xdf files in HDFS must be composite in order to work properly; \code{copy_to} will convert an existing Xdf file into composite, if it's not already in that format. Non-Xdf datasets (data frames and other RevoScaleR data sources, such as text files) will similarly be uploaded as composite.
 }
 
 \examples{

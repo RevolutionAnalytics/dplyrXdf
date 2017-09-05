@@ -13,7 +13,7 @@
 #' Similarly, it can handle uploading both to the host HDFS filesystem, and to an attached Azure Data Lake Store. If \code{dest} points to an ADLS host, the file will be uploaded to that filesystem, by default in the root directory. You can override this by supplying an explicit an explicit URI for the uploaded file, in the form \code{adl://azure.host.name/path}. The name for the host HDFS filesystem is \code{adl://host/}.
 #'
 #' @section Note on composite Xdf:
-#' There are actually two kinds of Xdf files: standard and _composite_. A composite Xdf file is a directory containing multiple data and metadata files, which the RevoScaleR functions treat as a single dataset. Xdf files in HDFS must be composite in order to work properly; \code{copy_to} will convert an existing Xdf file into composite, if it's not already in that format. Non-Xdf datasets (data frames and other RevoScaleR data sources, such as text files) will similarly be uploaded as composite.
+#' There are actually two kinds of Xdf files: standard and \emph{composite}. A composite Xdf file is a directory containing multiple data and metadata files, which the RevoScaleR functions treat as a single dataset. Xdf files in HDFS must be composite in order to work properly; \code{copy_to} will convert an existing Xdf file into composite, if it's not already in that format. Non-Xdf datasets (data frames and other RevoScaleR data sources, such as text files) will similarly be uploaded as composite.
 #'
 #' @return
 #' An Xdf data source object pointing to the uploaded data.

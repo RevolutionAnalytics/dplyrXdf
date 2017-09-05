@@ -30,9 +30,18 @@ For \code{tbl_vars}, a character vector of variable names; for \code{tbl_types},
 Get the variable names or types for a RevScaleR data source
 }
 \details{
-These are simple wrappers around the \code{names} and \code{rxGetVarInfo} functions.
+These are simple wrappers around the \code{names} and \code{rxGetVarInfo} functions. The \code{names<-} function allows renaming variables inside an Xdf file; however, the recommended method is to use the \code{\link{rename}} verb instead.
+}
+\examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+names(mtx)
+tbl_vars(mtx)
+tbl_types(mtx)
+
+names(mtx)[1] <- "mpg2"
+names(mtx)
 }
 \seealso{
-\code{\link{RxXdfData}}, \code{\link{RxTextData}}, \code{\link{RxSasData}}, \code{\link{RxSpssData}},
+\code{\link[dplyr]{tbl_vars}} in package dplyr,
 \code{\link{rxGetInfo}}, \code{\link{rxGetVarInfo}}
 }
