@@ -85,6 +85,13 @@ output3 <- move_xdf(output3, "d:/data/output3.xdf")
 output3
 
 ## ------------------------------------------------------------------------
+get_dplyrxdf_dir()
+
+## ---- eval=FALSE---------------------------------------------------------
+#  # set the tbl directory to a network drive (on Windows)
+#  set_dplyrxdf_dir("n:/Rtemp")
+
+## ------------------------------------------------------------------------
 compositeOutput3 <- as_composite_xdf(output3)
 compositeOutput3
 
@@ -166,13 +173,36 @@ flightsMods <- flightsXdf %>%
 flightsMods$model[[1]]
 
 ## ------------------------------------------------------------------------
-get_dplyrxdf_dir()
+head(flightsXdf$arr_delay)
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  # set the tbl directory to a network drive (on Windows)
-#  set_dplyrxdf_dir("n:/Rtemp")
+#  library(doAzureParallel)
+#  
+#  # doAzureParallel uses json files for cluster setup; see the documentation on GitHub for details
+#  setCredentials("credentials.json")
+#  
+#  # create a cluster of VMs in Azure
+#  cl <- makeCluster("cluster.json")
+#  registerDoAzureParallel(cl)
+#  
+#  # tell dplyrXdf to use our cluster
+#  dplyrxdf_options(useExecBy=FALSE)
+#  rxSetComputeContext("dopar")
+#  
+#  # set the dplyrXdf working directory to a cluster-accessible location
+#  set_dplyrxdf_dir("n:/clusterdata")
+#  
+#  # fit the models in parallel across the cluster
+#  flightsXdf %>%
+#      group_by(carrier) %>%
+#      do(model=lm(arr_delay ~ dep_delay + hour, data=.))
+#  
+#  # manually shut down the cluster when we're done
+#  stopCluster(cl)
+#  rxSetComputeContext("local")
+#  dplyrxdf_options(useExecBy=TRUE)
 
-## ------------------------------------------------------------------------
+## ----echo=FALSE, message=FALSE, results="hide"---------------------------
 unlink(c("flights.xdf", "output1.xdf"))
 clean_dplyrxdf_dir("native")
 

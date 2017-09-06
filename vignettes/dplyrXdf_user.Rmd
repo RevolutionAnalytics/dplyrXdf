@@ -2,7 +2,9 @@
 title: "Using the dplyrXdf package"
 author: "Hong Ooi"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Using dplyrXdf}
@@ -51,6 +53,7 @@ file.remove("flights.csv")
 delete_xdf(flightsXdf2)
 ```
 
+While we've only shown importing from a csv file, `as_xdf` will work with any RevoScaleR data source, for example an `RxSqlServerData` object pointing to a table in a SQL Server database. It should also work with any object that can be converted into a data frame.
 
 ## Tbls and file management
 
@@ -163,6 +166,22 @@ output3 <- move_xdf(output3, "d:/data/output3.xdf")
 output3
 ```
 
+### Setting the tbl directory
+
+By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large Xdf files. You can view the location of the current Xdf tbl directory with `get_dplyrxdf_dir`:
+
+```{r}
+get_dplyrxdf_dir()
+```
+
+Similarly, you can change the location of the Xdf tbl directory with the `set_dplyrxdf_dir` function:
+
+```{r, eval=FALSE}
+# set the tbl directory to a network drive (on Windows)
+set_dplyrxdf_dir("n:/Rtemp")
+```
+
+For best results, you should avoid setting the Xdf tbl directory to a remote location/network drive unless you have a fast network connection.
 
 ### Standard and composite Xdf files
 
@@ -183,7 +202,11 @@ delete_xdf(compositeOutput3)
 ```
 
 
-## The `subset` verb
+## New and enhanced verbs
+
+In addition to the `persist` verb described above, dplyrXdf adds new functionality for existing verbs, as well as some new single-table verbs.
+
+### The `subset` verb
 
 In dplyr, subsetting data is handled by two verbs: `filter` for subsetting by rows, and `select` for subsetting by columns. This is fine for data frames, where everything runs in memory, and for SQL databases, where the hard work is done by the database. For Xdf files, however, this is suboptimal, as each verb translates into a separate I/O step where the data is read from disk, subsetted, then written out again. This can waste a lot of time with large datasets.
 
@@ -202,7 +225,7 @@ head(flightsXdfSub)
 ```
 
 
-## The `.rxArgs` parameter
+### Passing RevoScaleR arguments with `.rxArgs`
 
 The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don't need to touch these, it can sometimes be useful to do so. For example, when using `mutate` or `transmute`, you could specify [more complicated transformations via a `transformFunc`](https://msdn.microsoft.com/en-us/microsoft-r/scaler/rxtransform). Similarly, rather than chaining together a `mutate` and a `summarise` --- which would involve creating an intermediate file --- you could incorporate the variable transformation into the `summarise` itself. More low-level uses of such arguments include setting the block size for an Xdf file, changing the compression level, limiting the number of rows, and so on.
 
@@ -264,7 +287,7 @@ head(flightsScores)
 You should use `.rxArgs` with caution, as some verbs modify the data as part of their normal functioning, so the results you get back may not be as expected. It's also easy to write convoluted code that makes your pipelines hard to read. Nevertheless, if you are working with very large datasets and speed is important, this is one way to improve the efficiency of your code.
 
 
-## Setting the summary method for `summarise`
+### Setting the summary method for `summarise`
 
 For best performance, when using `summarise` you should request only those summary statistics supported by `rxCube` and/or `rxSummary`: sum, mean, min, max, sd, var and n (the count of observations). If you request something else, dplyrXdf will split the dataset into multiple data frames, one per group, and call `dplyr::summarise` on each data frame; this will generally work as intended, but may be slow.
 
@@ -295,7 +318,7 @@ datasrc %>%
 ```
 
 
-## Creating factors with `factorise`
+### Creating factors with `factorise`
 
 Many RevoScaleR functions are optimised to work best with factors, or require factors as input. dplyrXdf provides a simple shell to the `rxFactors` function to convert non-factor variables to factors. The syntax is as follows:
 
@@ -318,7 +341,7 @@ There are a number of ways to specify the variables to convert, in addition to n
 By default, if no variables are specified in the `factorise` call, then all character variables will be converted to factors. As with `select`, renaming variables as part of the factor conversion is not supported.
 
 
-## Executing code with `do` and `do_xdf`
+### Executing code with `do` and `do_xdf`
 
 The `do` verb is an exception to the rule that `dplyrXdf` verbs write their output as Xdf files. This is because `do` executes arbitrary R code, and can return arbitrary R objects; while a data frame is capable of storing these objects, an Xdf file is limited to character and numeric vectors only.
 
@@ -334,34 +357,64 @@ flightsMods$model[[1]]
 ```
 
 
-## Setting the tbl directory
-
-By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large Xdf files. You can view the location of the current Xdf tbl directory with `get_dplyrxdf_dir`:
-
-```{r}
-get_dplyrxdf_dir()
-```
-
-Similarly, you can change the location of the Xdf tbl directory with the `set_dplyrxdf_dir` function:
-
-```{r, eval=FALSE}
-# set the tbl directory to a network drive (on Windows)
-set_dplyrxdf_dir("n:/Rtemp")
-```
-
-For best results, you should avoid setting the Xdf tbl directory to a remote location/network drive unless you have a fast network connection.
-
-
 ## Data frame methods
 
 dplyrXdf includes a number of convenience functions for exporting data from Xdf to data frames:
 
 - An `as.data.frame` method for Xdf files (and other RevoScaleR data sources).
-- Methods for `$` and `[[` that will extract a given column as a vector in memory.
+- Methods for `pull`, `$` and `[[` that will extract a given column as a vector in memory.
+- The `collect` and `compute` methods, while meant for downloading data sources from HDFS, can also be used to export to data frames.
 
 These are simple wrappers around RevoScaleR's `rxDataStep` function that turn off the default size check. Make sure you have enough memory to hold the data before using them!
 
 ```{r}
+head(flightsXdf$arr_delay)
+```
+
+## Parallel processing of grouped data
+
+dplyrXdf takes a fairly literal approach to implementing the split-apply-combine strategy for grouped data. Most verbs that have specific methods for groups will split the data into multiple Xdf files, and then process each file separately (the exception is `summarise`, because `rxCube` and `rxSummary` can deal with groups natively). This makes it easy to parallelise the processing of groups in dplyrXdf.
+
+By default, if Microsoft R Server 9.1 or higher is installed, dplyrXdf will use `rxExecBy` to process groups. This automatically creates a cluster of slave nodes in the background and sends the data to the nodes by group. The cluster is destroyed when the verb returns.
+
+For more flexibility, you can _manually_ create a cluster and set the compute context to `RxForeachDoPar`, which has a number of benefits. First, since the cluster is persistent, no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the `ForeachDoPar` compute context is agnostic as to the nature of the underlying cluster. In particular, it's possible to create a cluster of multiple machines, rather than multiple processes on a single machine; this can be useful when dealing with Xdf files, since a single machine may run into I/O bottlenecks. The main requirement is that all the machines must have access to the same filesystem, such as a network drive or file share.
+
+The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the [doAzureParallel package](https://github.com/Azure/doAzureParallel), which is an easy-to-use method to create clusters of [Azure Data Science VMs](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview); however, you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).
+
+
+```{r, eval=FALSE}
+library(doAzureParallel)
+
+# doAzureParallel uses json files for cluster setup; see the documentation on GitHub for details
+setCredentials("credentials.json")
+
+# create a cluster of VMs in Azure
+cl <- makeCluster("cluster.json")
+registerDoAzureParallel(cl)
+
+# tell dplyrXdf to use our cluster
+dplyrxdf_options(useExecBy=FALSE)
+rxSetComputeContext("dopar")
+
+# set the dplyrXdf working directory to a cluster-accessible location
+set_dplyrxdf_dir("n:/clusterdata")
+
+# fit the models in parallel across the cluster
+flightsXdf %>%
+    group_by(carrier) %>%
+    do(model=lm(arr_delay ~ dep_delay + hour, data=.))
+
+# manually shut down the cluster when we're done
+stopCluster(cl)
+rxSetComputeContext("local")
+dplyrxdf_options(useExecBy=TRUE)
+```
+
+
+Note that the above assumes your data is stored on the native filesystem (either on your machine's local hard disk, or in a network share). If your data is stored in a Hadoop or Spark cluster, dplyrXdf will take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes. See the HDFS vignette for more information on working with Xdf files in Spark.
+
+
+```{r echo=FALSE, message=FALSE, results="hide"}
 unlink(c("flights.xdf", "output1.xdf"))
 clean_dplyrxdf_dir("native")
 ```
