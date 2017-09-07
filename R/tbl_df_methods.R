@@ -189,6 +189,6 @@ compute.RxXdfData <- function(x, as_data_frame=!in_hdfs(x), ...)
 pull.RxFileData <- function(.data, var=-1)
 {
     # exactly the same as for data frames
-    var <- select_var(names(.data), !(!enquo(var)))
+    var <- select_var(names(.data), !!enquo(var))
     .data[[var]]
 }
