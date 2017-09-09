@@ -15,7 +15,7 @@ callGroupedExec <- function(.data, .output, ...)
 
     if(is.character(.output))
         .output <- modifyXdf(.data, file=.output)
-    combineGroups(outlst, .output, gvars)
+    combineGroups(outlst, .output)
 }
 
 
