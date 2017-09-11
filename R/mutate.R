@@ -45,6 +45,7 @@
 #'    varlist$mpg2 <- 2 * varlist$mpg
 #'    varlist
 #' }))
+#' head(tbl4)
 #'
 #' # a non-trivial example: using a transformFunc to calculate a moving average
 #' \dontrun{
@@ -67,7 +68,6 @@
 #'     transformVars="x",                              # x = variable to get moving average for
 #'     transformPackages="zoo"))
 #' }
-#' head(tbl4)
 #' @aliases mutate transmute
 #' @rdname mutate
 #' @export

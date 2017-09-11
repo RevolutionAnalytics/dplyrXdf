@@ -66,6 +66,7 @@ tbl4 <- mutate(mtx, .rxArgs=list(transformFunc=function(varlist) {
    varlist$mpg2 <- 2 * varlist$mpg
    varlist
 }))
+head(tbl4)
 
 # a non-trivial example: using a transformFunc to calculate a moving average
 \dontrun{
@@ -88,7 +89,6 @@ tbl <- mutate(xdf, .rxArgs=list(transformFunc=
     transformVars="x",                              # x = variable to get moving average for
     transformPackages="zoo"))
 }
-head(tbl4)
 }
 \seealso{
 \code{\link[dplyr]{mutate}} and \code{\link{transmute}} in package dplyr, \code{\link[RevoScaleR]{rxDataStep}}, \code{\link[RevoScaleR]{rxTransform}} for variable transformations in RevoScaleR

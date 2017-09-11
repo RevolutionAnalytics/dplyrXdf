@@ -65,9 +65,9 @@ doParallel::stopImplicitCluster()
 
 # ForeachDoPar also works with a cluster of multiple machines, not just multiple processes on one machine
 # to work with dplyrXdf, all machines must have access to the same filesystem (eg a network share)
-spec <- c("dsvm1", "dsvm2", "dsvm3")
-cl <- SNOW::makeCluster(spec)
-doSNOW::registerDoSNOW(cl)
+# doAzureParallel is available from GitHub: https://github.com/Azure/doAzureParallel
+cl <- doAzureParallel::makeCluster("cluster.json")
+doAzureParallel::registerDoAzureParallel(cl)
 
 # set the dplyrXdf working directory to a cluster-accessible location
 set_dplyrxdf_dir("n:/clusterdata")
@@ -77,7 +77,7 @@ flx2 \%>\%
     group_by(carrier) \%>\%
     do(m=lm(arr_time ~ dep_time + dep_delay + factor(month), data=.))
 
-SNOW::stopCluster(cl)
+doAzureParallel::stopCluster(cl)
 rxSetComputeContext("local")
 dplyrxdf_options(useExecBy=TRUE)  # re-enable rxExecBy processing once we are done
 }
