@@ -276,27 +276,6 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
     if(inputHd && outputDf)
         arglst$outFile <- tbl_xdf(x)
 
-    # rxMerge fails in Spark with relative ADLS input paths
-    if(inputHd && hasUriScheme(hdfs_host(arglst[[1]])))
-    {
-        # make sure we don't lose any grouping info
-        grps <- group_vars(arglst[[1]])
-        arglst[[1]] <- modifyXdf(arglst[[1]], file=normalizeHdfsPath(arglst[[1]]@file))
-        if(length(grps) > 0)
-            arglst[[1]] <- group_by_at(arglst[[1]], grps)
-    }
-    if(inputHd && hasUriScheme(hdfs_host(arglst[[2]])))
-        arglst[[2]] <- modifyXdf(arglst[[2]], file=normalizeHdfsPath(arglst[[2]]@file))
-
-    # rxMerge writes to wrong location in Spark if given relative output path
-    if(inputHd && !hasUriScheme(arglst$outFile@file) && substr(arglst$outFile@file, 1, 1) != "/")
-    {
-        tblOut <- inherits(arglst$outFile, "tbl_xdf")
-        arglst$outFile <- modifyXdf(arglst$outFile, file=normalizeHdfsPath(arglst$outFile@file))
-        if(tblOut)
-            arglst$outFile <- as(arglst$outFile, "tbl_xdf")
-    }
-
     output <- callRx("rxMerge", arglst)
 
     if(inputHd && outputDf)

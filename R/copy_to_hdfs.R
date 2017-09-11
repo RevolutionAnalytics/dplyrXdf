@@ -92,9 +92,7 @@ copy_to.RxHdfsFileSystem <- function(dest, df, name=NULL, ...)
     }
 
     hdfs_upload(df@file, path, overwrite=TRUE, host=host, ...)
-    hdfsFile <- if(path == ".")
-        basename(df@file)
-    else file.path(path, basename(df@file), fsep="/")
+    hdfsFile <- normalizeHdfsPath(file.path(path, basename(df@file), fsep="/"))
     xdf <- RxXdfData(hdfsFile, fileSystem=dest, createCompositeSet=TRUE)
 
     if(basename(xdf@file) != name)

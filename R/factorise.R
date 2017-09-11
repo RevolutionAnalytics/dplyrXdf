@@ -98,14 +98,6 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     if(inputHd && outputDf)
         arglst$outFile <- tbl_xdf(.data)
 
-    # rxFactors in HDFS breaks if relative path used in input or output data sources
-    if(inputHd)
-    {
-        arglst[[1]]@file <- normalizeHdfsPath(arglst[[1]]@file)
-        if(is_xdf(arglst$outFile))
-            arglst$outFile@file <- normalizeHdfsPath(arglst$outFile@file)
-    }
-
     # rxFactors is noisy when given already-existing factors; shut it up
     output <- suppressWarnings(callRx("rxFactors", arglst))
     on.exit(deleteIfTbl(.data))

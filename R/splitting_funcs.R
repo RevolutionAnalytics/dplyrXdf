@@ -37,7 +37,7 @@ callExecBy <- function(.data, .func, ..., .captures=list())
     }
 
     funcParams <- list(.func=.func, ..., .captures=.captures)
-    execByResult(unTbl(.data), group_vars(.data), enclosFunc, funcParams)
+    execByResult(.data, group_vars(.data), enclosFunc, funcParams)
 }
 
 

@@ -71,7 +71,7 @@ copyOrMoveHdfs <- function(src, dest, overwrite, move, composite)
         }
         else dest <- file.path(dest, srcFile)
 
-        out <- modifyXdf(src, file=dest)
+        out <- modifyXdf(src, file=normalizeHdfsPath(dest))
     }
 
     if(!ret)
