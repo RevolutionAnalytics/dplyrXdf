@@ -9,12 +9,15 @@ execByCheck <- function(execLst)
 }
 
 
-execByResult <- function(.data, ...)
+execByResult <- function(.data, vars, ...)
 {
     cc <- rxGetComputeContext()
     on.exit(rxSetComputeContext(cc))
 
-    execLst <- callRx("rxExecBy", list(.data, ...))
+    # workaround crazy rxExecBy issue
+    vars <- unname(vars)
+
+    execLst <- callRx("rxExecBy", list(.data, vars, ...))
     execByCheck(execLst)
     lapply(execLst, "[[", "result")
 }

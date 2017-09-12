@@ -6,9 +6,6 @@ getFactorLevels <- function(data, vars=group_vars(data))
     # use rxExecBy if in Spark/Hadoop CC: only for the keys, not the data
     levs <- if(inherits(rxGetComputeContext(), "RxHadoopMR"))
     {
-        # workaround crazy rxExecBy issue
-        vars <- unname(vars)
-
         # keep only the variables we need
         tmpSrc <- modifyXdf(data, varsToKeep=vars)
         message("Scanning data to get levels")
