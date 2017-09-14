@@ -54,12 +54,13 @@ summarise.RxDataSource <- function(.data, ...)
 }
 
 
-##' @export
-#subset.RxDataSource <- function(.data, subset, select, ...)
-#{
-    #filter(convertSrc(.data), rlang::enquo(subset)) %>%
-        #select(rlang::enquo(select))
-#}
+#' @export
+subset.RxDataSource <- function(.data, subset, select, ...)
+{
+    sub <- rlang::enquo(subset)
+    sel <- rlang::enquo(select)
+    convertSrc(.data) %>% filter(!!sub) %>% select(!!sel)
+}
 
 
 #' @export
@@ -134,11 +135,11 @@ convertSrc <- function(.data)
 # convert a SQL Server data source to a dplyr src
 convertSrc.RxSqlServerData <- function(.data)
 {
-    if(!requireNamespace("odbc", quietly=FALSE))
+    if(!requireNamespace("odbc", quietly=TRUE))
         stop("odbc package required to use dplyr with RxSqlServerData sources", call.=FALSE)
 
     if(is.null(.data@table))
-        stop("can only use dplyr verbs with table sources")
+        stop("data source must be a table (not a SQL query)")
 
     db <- DBI::dbConnect(odbc::odbc(), .connection_string=.data@connectionString)
     tbl(db, .data@table)
@@ -146,13 +147,13 @@ convertSrc.RxSqlServerData <- function(.data)
 
 
 # convert an ODBC or Teradata data source to a dplyr src
-convertSrc.RxODBCData <- function(.data)
+convertSrc.RxOdbcData <- function(.data)
 {
-    if(!requireNamespace("odbc", quietly=FALSE))
+    if(!requireNamespace("odbc", quietly=TRUE))
         stop("odbc package required to use dplyr with RxOdbcData and RxTeradata sources", call.=FALSE)
 
     if(is.null(.data@table))
-        stop("can only use dplyr verbs with table sources")
+        stop("data source must be a table (not a SQL query)")
 
     db <- DBI::dbConnect(odbc::odbc(),
         server=.data@server,
@@ -169,11 +170,11 @@ convertSrc.RxHiveData <- function(.data)
     if(is.null(.data@table))
         stop("can only use dplyr verbs with table sources")
 
-    # if remote, import to Xdf (no failsafe way to create separate Sparklyr connection)
+    # if remote, import to xdf (no failsafe way to create separate sparklyr connection)
     if(isRemoteHdfsClient())
-        return(convertDefaultSrc(.data))
+        return(convertSrc.RxDataSource(.data))
 
-    if(!requireNamespace("sparklyr", quietly=FALSE))
+    if(!requireNamespace("sparklyr", quietly=TRUE))
         stop("sparklyr package required to use dplyr with RxHiveData sources", call.=FALSE)
 
     # if Spark CC and interop feature present, use it
@@ -181,7 +182,7 @@ convertSrc.RxHiveData <- function(.data)
     if(!inherits(sc, "try-error"))
         return(tbl(sc, .data@table))
 
-    # otherwise create separate Sparklyr connection
+    # otherwise create separate sparklyr connection
     sc <- spark_connect()
     tbl(sc, .data@table)
 }
