@@ -4,17 +4,21 @@ Version: 0.10.0
 Authors@R: c(
     person("Hong", "Ooi", , "hongooi@microsoft.com", role = c("aut", "cre")),
     person("Microsoft", role="cph"),
-    person("Hadley", "Wickham", role = "ctb", comment = "Some functions based on code in dplyr and httr")
+    person("Hadley", "Wickham", role = "ctb", comment = "Some functions based on code in dplyr and httr"),
+    person("Ali-Kazim", "Zaidi", role = "ctb", comment = "Provided valuable input on Spark functionality")
     )
 Description: Interface to xdf files for the dplyr package
 Depends: 
     R (>= 3.3.2),
-    dplyr (>= 0.6),
+    dplyr (>= 0.7),
     RevoScaleR (>= 8.0)
 Imports: 
     dplyr,
     magrittr,
     rlang (>= 0.1)
+Suggests:
+    odbc,
+    sparklyr
 License: MIT + file LICENSE
 URL: https://github.com/RevolutionAnalytics/dplyrXdf
 BugReports: https://github.com/RevolutionAnalytics/dplyrXdf/issues
@@ -46,6 +50,7 @@ Collate:     '00rxArgs.R'
     'joins.R'
     'joins_unsupported.R'
     'mutate.R'
+    'non_xdf_srcs.R'
     'onLoad.R'
     'options.R'
     'persist.R'
