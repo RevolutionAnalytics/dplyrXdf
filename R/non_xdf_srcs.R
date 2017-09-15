@@ -135,11 +135,11 @@ convertSrc <- function(.data)
 # convert a SQL Server data source to a dplyr src
 convertSrc.RxSqlServerData <- function(.data)
 {
+    if(is.null(.data@table))
+        stop("data source must be a table (not a SQL query)", call.=FALSE)
+
     if(!requireNamespace("odbc", quietly=TRUE))
         stop("odbc package required to use dplyr with RxSqlServerData sources", call.=FALSE)
-
-    if(is.null(.data@table))
-        stop("data source must be a table (not a SQL query)")
 
     db <- DBI::dbConnect(odbc::odbc(), .connection_string=.data@connectionString)
     tbl(db, .data@table)
@@ -149,11 +149,11 @@ convertSrc.RxSqlServerData <- function(.data)
 # convert an ODBC or Teradata data source to a dplyr src
 convertSrc.RxOdbcData <- function(.data)
 {
+    if(is.null(.data@table))
+        stop("data source must be a table (not a SQL query)", call.=FALSE)
+
     if(!requireNamespace("odbc", quietly=TRUE))
         stop("odbc package required to use dplyr with RxOdbcData and RxTeradata sources", call.=FALSE)
-
-    if(is.null(.data@table))
-        stop("data source must be a table (not a SQL query)")
 
     db <- DBI::dbConnect(odbc::odbc(),
         server=.data@server,
@@ -168,23 +168,27 @@ convertSrc.RxOdbcData <- function(.data)
 convertSrc.RxHiveData <- function(.data)
 {
     if(is.null(.data@table))
-        stop("can only use dplyr verbs with table sources")
+        stop("data source must be a table (not a SQL query)", call.=FALSE)
 
     # if remote, import to xdf (no failsafe way to create separate sparklyr connection)
     if(isRemoteHdfsClient())
         return(convertSrc.RxDataSource(.data))
 
     if(!requireNamespace("sparklyr", quietly=TRUE))
-        stop("sparklyr package required to use dplyr with RxHiveData sources", call.=FALSE)
+        stop("sparklyr package required to use dplyr with local RxHiveData sources", call.=FALSE)
 
     # if Spark CC and interop feature present, use it
     sc <- try(rxGetSparklyrConnection(), silent=TRUE)
     if(!inherits(sc, "try-error"))
         return(tbl(sc, .data@table))
 
-    # otherwise create separate sparklyr connection
-    sc <- spark_connect()
-    tbl(sc, .data@table)
+    # otherwise try creating separate sparklyr connection
+    sc <- try(sparklyr::spark_connect(master="yarn-client"))
+    if(!inherits(sc, "try-error"))
+        return(tbl(sc, .data@table))
+
+    # if all else fails, import to Xdf
+    convertSrc.RxDataSource(.data)
 }
 
 

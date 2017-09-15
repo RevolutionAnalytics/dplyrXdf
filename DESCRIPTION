@@ -5,7 +5,7 @@ Authors@R: c(
     person("Hong", "Ooi", , "hongooi@microsoft.com", role = c("aut", "cre")),
     person("Microsoft", role="cph"),
     person("Hadley", "Wickham", role = "ctb", comment = "Some functions based on code in dplyr and httr"),
-    person("Ali-Kazim", "Zaidi", role = "ctb", comment = "Provided valuable input on Spark functionality")
+    person("Ali-Kazim", "Zaidi", role = "ctb", comment = "Invaluable assistance on Spark")
     )
 Description: Interface to xdf files for the dplyr package
 Depends: 
