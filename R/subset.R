@@ -10,6 +10,8 @@
 #' @details
 #' This is a method for the \code{\link[base]{subset}} generic from base R. It combines the effects of the \code{filter} and \code{select} verbs, allowing you to subset a RevoScaleR data source (typically an xdf file) by rows and columns simultaneously. The advantage of this for an Xdf file is that it significantly reduces the amount of I/O compared to doing the row and column subsetting in separate steps.
 #'
+#' If the \code{select} argument is missing, \code{subset} returns \emph{all} the columns in the data; this is different to the \code{select} verb, which returns \emph{no} columns if no arguments are provided.
+#'
 #' @return
 #' An object representing the subsetted data. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
 #'
