@@ -4,7 +4,6 @@
 #' @param ... Variables to convert to factors.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
-#' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details.
 #'
 #' @details
 #' The selector functions listed in \code{\link[dplyr]{select}} also work with \code{factorise}. In addition, you can use the following:
@@ -45,7 +44,7 @@
 #' factorise(mtx, am, vs, .outFile="mtcars_factor.xdf")
 #' @rdname factorise
 #' @export
-factorise <- function(.data, ..., .dots)
+factorise <- function(.data, ...)
 {
     UseMethod("factorise")
 }

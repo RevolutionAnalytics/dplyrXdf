@@ -16,9 +16,11 @@ Imports:
     dplyr,
     magrittr,
     rlang (>= 0.1)
-Suggests:
+Suggests: 
     odbc,
-    sparklyr
+    sparklyr,
+    knitr,
+    testthat
 License: MIT + file LICENSE
 URL: https://github.com/RevolutionAnalytics/dplyrXdf
 BugReports: https://github.com/RevolutionAnalytics/dplyrXdf/issues
@@ -50,7 +52,6 @@ Collate:     '00rxArgs.R'
     'joins.R'
     'joins_unsupported.R'
     'mutate.R'
-    'non_xdf_srcs.R'
     'onLoad.R'
     'options.R'
     'persist.R'
@@ -72,8 +73,6 @@ Collate:     '00rxArgs.R'
     'union.R'
     'workdir_utils.R'
     'xdf_utils.R'
-Suggests: 
-    knitr,
-    testthat
+    'zzz_non_xdf_srcs.R'
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1

@@ -4,7 +4,6 @@
 #' @param ... Name-value pairs of summary functions like \code{\link{min}()}, \code{\link{mean}()}, \code{\link{max}()} etc.
 #' @param .outFile Output format for the returned data. If not supplied, create an xdf tbl; if \code{NULL}, return a data frame; if a character string naming a file, save an Xdf file at that location.
 #' @param .rxArgs A list of RevoScaleR arguments. See \code{\link{rxArgs}} for details.
-#' @param .dots Used to work around non-standard evaluation. See the dplyr vignettes for details. See "Details" below for how to change the summarisation method.
 #'
 #' @details
 #' There are 5 possible methods for doing the summarisation. To choose which method is used, specify a \code{.method} argument in the call to \code{summarise}, with a number from 1 to 5.
