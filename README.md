@@ -27,3 +27,6 @@ At the moment, dplyr 0.7 is not in the MRAN snapshot that is the default repo fo
 install.packages("dplyr", repos="https://cloud.r-project.org")
 ```
 
+Make sure you install dplyr 0.7 before you install dplyrXdf.
+
+
