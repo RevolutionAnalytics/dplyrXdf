@@ -25,7 +25,7 @@ NULL
 #' @aliases tbl_vars
 #' @rdname tbl_vars
 #' @export
-tbl_vars.RxFileData <- function(x)
+tbl_vars.RxDataSource <- function(x)
 {
     names(x)
 }
