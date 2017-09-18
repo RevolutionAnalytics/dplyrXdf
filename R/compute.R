@@ -105,7 +105,7 @@ compute.RxDataSource <- function(x, name=NULL, ...)
 {
     if(is.null(name))
     {
-        name <- if(inherits(x, "RxFileData", "RxOrcData", "RxParquetData"))
+        name <- if(inherits(x, c("RxFileData", "RxOrcData", "RxParquetData")))
             x@file
         else if(inherits(x, c("RxOdbcData", "RxTeradata")) && !is.null(x@table))
             x@table
