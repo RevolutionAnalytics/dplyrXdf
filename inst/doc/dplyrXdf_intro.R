@@ -1,8 +1,8 @@
-## ---- echo = FALSE, message = FALSE--------------------------------------
+## ---- echo=FALSE, message=FALSE, results="hide"--------------------------
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
 
-rxSetComputeContext("local")
+cc <- rxSetComputeContext("local")
 
 ## ------------------------------------------------------------------------
 library(dplyrXdf)  # also loads dplyr
@@ -57,6 +57,9 @@ flightsSmry <- flightsXdf %>%
 head(flightsSmry)
 
 ## ------------------------------------------------------------------------
+rxLinMod(mean_delay ~ sum_dist + carrier, data=flightsSmry)
+
+## ------------------------------------------------------------------------
 airportsXdf <- rxDataStep(airports, "airports.xdf", overwrite=TRUE)
 flightsJoin <- left_join(
     flightsXdf %>% select(year:day, hour, origin, dest, tailnum, carrier),
@@ -67,4 +70,5 @@ head(flightsJoin)
 ## ----echo=FALSE, message=FALSE, results="hide"---------------------------
 unlink(c("airports.xdf", "flights.xdf", "flights_rx1.xdf", "flights_rx2.xdf", "flights_rx3.xdf"))
 clean_dplyrxdf_dir("native")
+rxSetComputeContext(cc)
 

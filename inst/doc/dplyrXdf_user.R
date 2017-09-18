@@ -1,8 +1,8 @@
-## ---- echo = FALSE, message = FALSE--------------------------------------
+## ---- echo=FALSE, message=FALSE, results="hide"--------------------------
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
 
-rxSetComputeContext("local")
+cc <- rxSetComputeContext("local")
 
 ## ------------------------------------------------------------------------
 library(dplyrXdf) # also loads dplyr
@@ -22,6 +22,12 @@ tbl_vars(flightsXdf2)
 ## ---- echo=FALSE, message=FALSE, results="hide"--------------------------
 file.remove("flights.csv")
 delete_xdf(flightsXdf2)
+
+## ---- eval=FALSE---------------------------------------------------------
+#  sqlSrc <- RxSqlServerData(table="mytable", server="host", databaseName="mydatabase", ...)
+#  
+#  # this will create the file 'mytable.xdf'
+#  xdfSrc <- as_xdf(sqlSrc)
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  txt <- RxTextData("path/to/file.txt")
@@ -175,6 +181,8 @@ flightsMods$model[[1]]
 ## ------------------------------------------------------------------------
 head(flightsXdf$arr_delay)
 
+head(pull(flightsXdf, arr_delay))  # same as above
+
 ## ---- eval=FALSE---------------------------------------------------------
 #  library(doAzureParallel)
 #  
@@ -205,4 +213,5 @@ head(flightsXdf$arr_delay)
 ## ----echo=FALSE, message=FALSE, results="hide"---------------------------
 unlink(c("flights.xdf", "output1.xdf"))
 clean_dplyrxdf_dir("native")
+rxSetComputeContext(cc)
 
