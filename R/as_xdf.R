@@ -129,7 +129,12 @@ as_xdf.RxDataSource <- function(.data, file=NULL, composite=in_hdfs(.data), over
     file <- validateXdfFile(file, composite)
     asXdfOverwriteCheck(file, overwrite, in_hdfs(.data), hdfs_host(.data))
 
-    out <- RxXdfData(file=file, fileSystem=rxGetFileSystem(.data), createCompositeSet=composite)
+    # RxHiveData is considered to be in native filesystem (!)
+    fs <- if(inherits(.data, "RxHiveData"))
+        RxHdfsFileSystem(hostName=hdfs_host())
+    else rxGetFileSystem(.data)
+        
+    out <- RxXdfData(file=file, fileSystem=fs, createCompositeSet=composite)
     arglst <- rlang::modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
 
     if(in_hdfs(out))

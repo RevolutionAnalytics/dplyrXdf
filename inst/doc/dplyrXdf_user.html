@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2017-09-06" />
+<meta name="date" content="2017-09-19" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -70,12 +70,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2017-09-06</em></h4>
+<h4 class="date"><em>2017-09-19</em></h4>
 
 
 <div id="TOC">
 <ul>
-<li><a href="#importing-data">Importing data</a></li>
+<li><a href="#importing-to-xdf">Importing to Xdf</a></li>
 <li><a href="#tbls-and-file-management">Tbls and file management</a><ul>
 <li><a href="#specifying-the-output-format">Specifying the output format</a></li>
 <li><a href="#the-persist-verb">The <code>persist</code> verb</a></li>
@@ -91,15 +91,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#creating-factors-with-factorise">Creating factors with <code>factorise</code></a></li>
 <li><a href="#executing-code-with-do-and-do_xdf">Executing code with <code>do</code> and <code>do_xdf</code></a></li>
 </ul></li>
-<li><a href="#data-frame-methods">Data frame methods</a></li>
 <li><a href="#parallel-processing-of-grouped-data">Parallel processing of grouped data</a></li>
+<li><a href="#data-frame-methods">Data frame methods</a></li>
 </ul>
 </div>
 
 <p>This vignette goes into more details on using dplyrXdf. Most of dplyrXdf works the same way as dplyr, so if you know how to use the latter, then you also (mostly) know how to use the former. However, there are some places in which the two packages are different. These will be described below.</p>
 <p>As with the introductory vignette, we’ll use the nycflights13 flights data to demonstrate the use of dplyrXdf.</p>
-<div id="importing-data" class="section level2">
-<h2>Importing data</h2>
+<div id="importing-to-xdf" class="section level2">
+<h2>Importing to Xdf</h2>
 <p>The easiest way to import data into an Xdf file is via the <code>as_xdf</code> function. This works with any RevoScaleR data source, as well as any object that can be converted into a data frame. For example, you can use this to import data from a SQL Server database table, a SAS or SPSS dataset, or a delimited text file. The syntax is very simple, as can be seen by importing the flights data:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyrXdf) <span class="co"># also loads dplyr</span>
 <span class="kw">library</span>(nycflights13)
@@ -124,7 +124,12 @@ flightsXdf2 &lt;-<span class="st"> </span><span class="kw">as_xdf</span>(flights
 <span class="co">#&gt;  [9] &quot;arr_delay&quot;      &quot;carrier&quot;        &quot;flight&quot;         &quot;tailnum&quot;       </span>
 <span class="co">#&gt; [13] &quot;origin&quot;         &quot;dest&quot;           &quot;air_time&quot;       &quot;distance&quot;      </span>
 <span class="co">#&gt; [17] &quot;hour&quot;           &quot;minute&quot;         &quot;time_hour&quot;</span></code></pre></div>
-<p>While we’ve only shown importing from a csv file, <code>as_xdf</code> will work with any RevoScaleR data source, for example an <code>RxSqlServerData</code> object pointing to a table in a SQL Server database. It should also work with any object that can be converted into a data frame.</p>
+<p>As well as a csv file, <code>as_xdf</code> will work with any RevoScaleR data source, or with any R object that can be treated as a data frame. In particular, the following code will import a table from a SQL Server database.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sqlSrc &lt;-<span class="st"> </span><span class="kw">RxSqlServerData</span>(<span class="dt">table=</span><span class="st">&quot;mytable&quot;</span>, <span class="dt">server=</span><span class="st">&quot;host&quot;</span>, <span class="dt">databaseName=</span><span class="st">&quot;mydatabase&quot;</span>, ...)
+
+<span class="co"># this will create the file 'mytable.xdf'</span>
+xdfSrc &lt;-<span class="st"> </span><span class="kw">as_xdf</span>(sqlSrc)</code></pre></div>
+<p>However, rather than importing the data, dplyrXdf can also work directly with a database. If given a <code>RxOdbcData</code>, <code>RxTeradata</code> or <code>RxSqlServerData</code> source as the input to a pipeline, dplyrXdf will convert it to a dplyr tbl. For more information, see the vignette on SQL databases.</p>
 </div>
 <div id="tbls-and-file-management" class="section level2">
 <h2>Tbls and file management</h2>
@@ -196,7 +201,7 @@ output3 &lt;-<span class="st"> </span>output1 %&gt;%
 
 output3
 <span class="co">#&gt; tbl_xdf Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpsxzPvM\dxTmp5e5022ea3e53\file5e50b0b7dba.xdf&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpEduo1t\dxTmp34a85cf17aff\file34a86a6b553d.xdf&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: FALSE</span>
@@ -204,7 +209,7 @@ output3
 <span class="co"># no longer a tbl_xdf</span>
 outputXdf
 <span class="co">#&gt; RxXdfData Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpsxzPvM\dxTmp5e5022ea3e53\file5e50b0b7dba.xdf&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpEduo1t\dxTmp34a85cf17aff\file34a86a6b553d.xdf&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: FALSE</span></code></pre></div>
@@ -230,7 +235,7 @@ output3
 <h3>Setting the tbl directory</h3>
 <p>By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large Xdf files. You can view the location of the current Xdf tbl directory with <code>get_dplyrxdf_dir</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_dplyrxdf_dir</span>()
-<span class="co">#&gt; [1] &quot;d:\\misc\\Rtemp\\RtmpsxzPvM\\dxTmp5e5022ea3e53&quot;</span></code></pre></div>
+<span class="co">#&gt; [1] &quot;d:\\misc\\Rtemp\\RtmpEduo1t\\dxTmp34a85cf17aff&quot;</span></code></pre></div>
 <p>Similarly, you can change the location of the Xdf tbl directory with the <code>set_dplyrxdf_dir</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># set the tbl directory to a network drive (on Windows)</span>
 <span class="kw">set_dplyrxdf_dir</span>(<span class="st">&quot;n:/Rtemp&quot;</span>)</code></pre></div>
@@ -285,16 +290,13 @@ compositeOutput3
 <div id="passing-revoscaler-arguments-with-.rxargs" class="section level3">
 <h3>Passing RevoScaleR arguments with <code>.rxArgs</code></h3>
 <p>The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don’t need to touch these, it can sometimes be useful to do so. For example, when using <code>mutate</code> or <code>transmute</code>, you could specify <a href="https://msdn.microsoft.com/en-us/microsoft-r/scaler/rxtransform">more complicated transformations via a <code>transformFunc</code></a>. Similarly, rather than chaining together a <code>mutate</code> and a <code>summarise</code> — which would involve creating an intermediate file — you could incorporate the variable transformation into the <code>summarise</code> itself. More low-level uses of such arguments include setting the block size for an Xdf file, changing the compression level, limiting the number of rows, and so on.</p>
-<p>Most of the dplyrXdf verbs accept a <code>.rxArgs</code> argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the RevoScaleR function that is called, which will in turn depend on the verb. Here is a list of the verbs and the underlying RevoScaleR function that they call:</p>
+<p>Most of the dplyrXdf verbs accept a <code>.rxArgs</code> argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the RevoScaleR function that is called, which will in turn depend on the verb. Here is a list of the verbs and the RevoScaleR function that they call:</p>
 <ul>
-<li><code>subset</code>, <code>filter</code> and <code>select</code>: <code>rxDataStep</code></li>
-<li><code>mutate</code> and <code>transmute</code>: <code>rxDataStep</code></li>
 <li><code>summarise</code>: depending on the method chosen, <code>rxCube</code> or <code>rxSummary</code></li>
 <li><code>arrange</code>: <code>rxSort</code></li>
-<li><code>distinct</code>: <code>rxDataStep</code></li>
 <li><code>factorise</code>: depending on the data source, <code>rxFactors</code> (for an Xdf) or <code>rxImport</code> (for a non-Xdf file source)</li>
-<li><code>doXdf</code>: <code>rxDataStep</code></li>
 <li>Two-table verbs (<code>left_join</code>, <code>right_join</code> et al): <code>rxMerge</code></li>
+<li>All other verbs: <code>rxDataStep</code></li>
 </ul>
 <p>Here are some examples to illustrate the use of <code>.rxArgs</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># subset, transform and summarise in the one step</span>
@@ -407,7 +409,7 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     d:\misc\Rtemp\RtmpsxzPvM\tmpPartitions5e5016622ef\data\tmpPartitions5e5016622ef_8198236150526572797.xdf</span>
+<span class="co">#&gt;     d:\misc\Rtemp\RtmpEduo1t\tmpPartitions34a896f32e0\data\tmpPartitions34a896f32e0_8198236150526572797.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
 <span class="co">#&gt; Number of valid observations: 57782</span>
@@ -420,24 +422,12 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; hour         0.02243255</span></code></pre></div>
 </div>
 </div>
-<div id="data-frame-methods" class="section level2">
-<h2>Data frame methods</h2>
-<p>dplyrXdf includes a number of convenience functions for exporting data from Xdf to data frames:</p>
-<ul>
-<li>An <code>as.data.frame</code> method for Xdf files (and other RevoScaleR data sources).</li>
-<li>Methods for <code>pull</code>, <code>$</code> and <code>[[</code> that will extract a given column as a vector in memory.</li>
-<li>The <code>collect</code> and <code>compute</code> methods, while meant for downloading data sources from HDFS, can also be used to export to data frames.</li>
-</ul>
-<p>These are simple wrappers around RevoScaleR’s <code>rxDataStep</code> function that turn off the default size check. Make sure you have enough memory to hold the data before using them!</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(flightsXdf$arr_delay)
-<span class="co">#&gt; [1]  11  20  33 -18 -25  12</span></code></pre></div>
-</div>
 <div id="parallel-processing-of-grouped-data" class="section level2">
 <h2>Parallel processing of grouped data</h2>
 <p>dplyrXdf takes a fairly literal approach to implementing the split-apply-combine strategy for grouped data. Most verbs that have specific methods for groups will split the data into multiple Xdf files, and then process each file separately (the exception is <code>summarise</code>, because <code>rxCube</code> and <code>rxSummary</code> can deal with groups natively). This makes it easy to parallelise the processing of groups in dplyrXdf.</p>
 <p>By default, if Microsoft R Server 9.1 or higher is installed, dplyrXdf will use <code>rxExecBy</code> to process groups. This automatically creates a cluster of slave nodes in the background and sends the data to the nodes by group. The cluster is destroyed when the verb returns.</p>
-<p>For more flexibility, you can <em>manually</em> create a cluster and set the compute context to <code>RxForeachDoPar</code>, which has a number of benefits. First, since the cluster is persistent, no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the <code>ForeachDoPar</code> compute context is agnostic as to the nature of the underlying cluster. In particular, it’s possible to create a cluster of multiple machines, rather than multiple processes on a single machine; this can be useful when dealing with Xdf files, since a single machine may run into I/O bottlenecks. The main requirement is that all the machines must have access to the same filesystem, such as a network drive or file share.</p>
-<p>The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the <a href="https://github.com/Azure/doAzureParallel">doAzureParallel package</a>, which is an easy-to-use method to create clusters of <a href="https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview">Azure Data Science VMs</a>; however, you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).</p>
+<p>For more flexibility, you can <em>manually</em> create a cluster and set the compute context to <code>RxForeachDoPar</code>, which has a number of benefits. First, since the cluster is persistent, no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the <code>RxForeachDoPar</code> compute context is agnostic as to the nature of the underlying cluster. In particular, you can create a cluster of multiple (virtual) machines, which will be much more scalable than a cluster of multiple processes on a single machine. The main requirement is that all the machines must have access to the same filesystem, such as a network drive or file share.</p>
+<p>The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the <a href="https://github.com/Azure/doAzureParallel">doAzureParallel package</a>, which is an easy-to-use way to create clusters of <a href="https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview">Azure Data Science VMs</a>, but you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(doAzureParallel)
 
 <span class="co"># doAzureParallel uses json files for cluster setup; see the documentation on GitHub for details</span>
@@ -464,6 +454,21 @@ flightsXdf %&gt;%
 <span class="kw">rxSetComputeContext</span>(<span class="st">&quot;local&quot;</span>)
 <span class="kw">dplyrxdf_options</span>(<span class="dt">useExecBy=</span><span class="ot">TRUE</span>)</code></pre></div>
 <p>Note that the above assumes your data is stored on the native filesystem (either on your machine’s local hard disk, or in a network share). If your data is stored in a Hadoop or Spark cluster, dplyrXdf will take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes. See the HDFS vignette for more information on working with Xdf files in Spark.</p>
+</div>
+<div id="data-frame-methods" class="section level2">
+<h2>Data frame methods</h2>
+<p>dplyrXdf includes a number of convenience functions for exporting data to data frames:</p>
+<ul>
+<li>An <code>as.data.frame</code> method for Xdf files (and other RevoScaleR data sources).</li>
+<li>Methods for <code>pull</code>, <code>$</code> and <code>[[</code> that will extract a given column as a vector in memory.</li>
+<li>The <code>collect</code> and <code>compute</code> methods, while meant for downloading data sources from HDFS, can also be used to export to data frames.</li>
+</ul>
+<p>These are simple wrappers around RevoScaleR’s <code>rxDataStep</code> function that turn off the default size check. Make sure you have enough memory to hold the data before using them!</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(flightsXdf$arr_delay)
+<span class="co">#&gt; [1]  11  20  33 -18 -25  12</span>
+
+<span class="kw">head</span>(<span class="kw">pull</span>(flightsXdf, arr_delay))  <span class="co"># same as above</span>
+<span class="co">#&gt; [1]  11  20  33 -18 -25  12</span></code></pre></div>
 </div>
 
 

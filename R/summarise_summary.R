@@ -62,13 +62,13 @@ smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
     selectCol <- function(df, stat)
     {
         x <- switch(stat,
-        mean=df$Mean, # note that cubes from rxSummary have a "Means" column; relying on partial evaluation here
-        sum=df$Sum,
-        sd=df$StdDev,
-        var=df$StdDev ^ 2,
-        n=df$Sum,
-        min=df$Min,
-        max=df$Max)
+                    mean=df$Mean, # note that cubes from rxSummary have a "Means" column; relying on partial evaluation here
+                    sum=df$Sum,
+                    sd=df$StdDev,
+                    var=df$StdDev ^ 2,
+                    n=df$Sum,
+                    min=df$Min,
+                    max=df$Max)
         # check if rxSummary screwed up
         if(is.null(x))
             stop("error in rxSummary")

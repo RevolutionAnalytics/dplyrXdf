@@ -9,27 +9,29 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-```{r, echo = FALSE, message = FALSE}
+```{r, echo=FALSE, message=FALSE, results="hide"}
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
 
-rxSetComputeContext("local")
+cc <- rxSetComputeContext("local")
 ```
 ## Introduction
 
-The [dplyr package](https://cran.r-project.org/web/packages/dplyr/index.html) is a popular toolkit for data transformation and manipulation. Since its release dplyr has become very popular in the R community, for the way in which it streamlines and simplifies many common data manipulation tasks. 
+The dplyrXdf package is a suite of tools to facilitate working with [Microsoft R Server](https://www.microsoft.com/cloud-platform/r-server) (MRS). Its features include:
 
-Out of the box, dplyr supports data frames, data tables (from the data.table package), and a number of SQL databases including MySQL/MariaDB, SQLite, and PostgreSQL. However, a feature of dplyr is that it's _extensible_: by writing a specific backend, you can make it work with many other kinds of data sources. For example the [RSQLServer package](https://cran.r-project.org/package=RSQLServer) implements a dplyr backend for Microsoft SQL Server.
+- A backend to the popular [dplyr package](https://cran.r-project.org/web/packages/dplyr/index.html) for the Xdf file format. Xdf files are a technology provided by MRS to break R's memory barrier: instead of keeping data in-memory in data frames, it is saved on disk. The data is then processed in chunks, so that you only need enough memory to handle each chunk.
 
-The dplyrXdf package implements such a backend for [Microsoft R Server](https://www.microsoft.com/en-au/cloud-platform/r-server) (MRS). A key feature of MRS is that it allows you to break R's memory barrier. Instead of storing data in memory as data frames, it is stored on disk, in a file format identifiable by the `.xdf` extension. The data is then processed in chunks, so that you only need enough memory to store each chunk. This allows you to work with datasets of potentially unlimited size.
+- Interfaces to Microsoft SQL Server and HDInsight Hadoop and Spark clusters. dplyrXdf, in conjunction with dplyr, provides the ability to execute pipelines natively in-database and in-cluster, which for large datasets can be much more efficient than executing them locally.
 
-MRS includes a suite of data transformation and modelling functions in the RevoScaleR package that can handle Xdf files. These functions are highly optimised and efficient, but their user interface can be complex. dplyrXdf allows you to work with Xdf files within the framework supplied by dplyr, which reduces the learning curve and allows you to become productive more quickly.
+- Several functions to ease working with Xdf files, including functions for file management and for transferring data to and from remote backends.
 
-_Note that dplyrXdf is a shell on top of the existing functions provided by Microsoft R Server, which is a commercial distribution of R. You must have MRS installed to make use of dplyrXdf. In particular, Microsoft R Open does not include support for Xdf files._
+- Workarounds for various glitches and unexpected behaviour in MRS.
+
+_Note that dplyrXdf is a shell on top of the existing functions provided by Microsoft R Server, which is a commercial distribution of R. You must have MRS installed to make use of dplyrXdf. In particular, [Microsoft R Open](https://mran.microsoft.com/open/), the free distribution of R from Microsoft, does not include support for Xdf files._
 
 ## A sample dplyrXdf pipeline
 
-For this example I'll use the flights dataset from the nycflights13 package. This is one of the datasets used in the [dplyr vignettes](https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html), and crops up in many other places besides.
+For this example we'll use the flights dataset from the nycflights13 package. This is one of the datasets used in the [dplyr vignettes](https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html), and crops up in many other places besides.
 
 ```{r}
 library(dplyrXdf)  # also loads dplyr
@@ -106,6 +108,12 @@ Here are a couple of additional features that may not be immediately apparent fr
 
 * The source xdf file to a dplyrXdf pipeline is _never modified_. This provides a measure of security, so that even if there are bugs in your code, your original data is safe.
 
+The output from a dplyrXdf pipeline can be used directly by other RevoScaleR and MicrosoftML functions, such as those for statistical model fitting and machine learning. For example, we could fit a simple linear regression to the output from the above pipeline, using `rxLinMod`:
+
+```{r}
+rxLinMod(mean_delay ~ sum_dist + carrier, data=flightsSmry)
+```
+
 
 ## Basic functionality
 
@@ -147,11 +155,9 @@ flightsJoin <- left_join(
 head(flightsJoin)
 ```
 
-### Utility functions
+## Utility functions
 
 In addition to the above verbs, dplyrXdf provides a number of functions to ease working with Xdf data sources, both in the native filesystem and in HDFS.
-
-#### Xdf utilities
 
 * `cbind` and `rbind` combine Xdf files
 * `as.data.frame` converts an Xdf file into a data frame
@@ -161,7 +167,12 @@ In addition to the above verbs, dplyrXdf provides a number of functions to ease 
 * `is_xdf` and `is_composite_xdf` return whether an object is a (composite) Xdf
 * `as_xdf` imports a data source or data frame into an Xdf file, optionally as composite; `as_composite_xdf` and `as_standard_xdf` are shortcuts for creating a composite and standard Xdf file respectively
 
-#### HDFS utilities
+
+## Working with HDFS, Hadoop and Spark
+
+If you are working on a Hadoop or Spark cluster, dplyrXdf supports data stored both in the native filesystem and in HDFS. Most verbs will work transparently with datasets stored in either filesystem; in general, the output of a verb will be created in the same filesystem as the input. Similarly, dplyrXdf can handle R sessions both on the cluster edge node, and from a remote client, without any major change in functionality (the exception is sparklyr interoperability; see below).
+
+The following functions are available to ease the task of file management on HDFS:
 
 * `copy_to` uploads a dataset to HDFS, saving it as Xdf
 * `collect` and `compute` do the opposite, downloading an Xdf file from HDFS
@@ -174,14 +185,14 @@ In addition to the above verbs, dplyrXdf provides a number of functions to ease 
 * `in_hdfs` returns whether a dataset is in HDFS
 * `local_exec` runs an expression in the local compute context
 
+In addition, dplyrXdf has the ability to call the sparklyr package to run Spark-native pipelines on Hive tables, without having to import the data to Xdf format. This can provide efficiency gains, since it reduces the amount of I/O. However, this is only supported if your R session is taking place on the edge node (not a remote session).
 
-## Non-xdf and non-local data sources
 
-Despite the name, dplyrXdf supports all file data sources defined by RevoScaleR, not just xdf files. This includes delimited text (`RxTextData`), SAS datasets (`RxSasData`) and SPSS datasets (`RxSpssData`). If you pass one of these data sources to a dplyrXdf pipeline, it will import the data to an xdf file first before executing the rest of the pipeline.
+## Working with SQL Server
 
-Most verbs will work transparently with datasets stored in both the native filesystem, and in HDFS (as when working with a Hadoop or Spark cluster). In general, the output of a verb will be created in the same filesystem as the input. To transfer data between the two filesystems, you can use `copy_to` to upload, and `as_data_frame`, `collect` and `compute` to download.
+One of the key strengths of dplyr is its ability to interoperate with SQL databases. Given a database table as input, dplyr can translate the verbs in a pipeline into a SQL query which is then execute in the database. For large tables, this can often be much more efficient than importing the data and running them locally.
 
-Similarly, all verbs will work transparently with both standard and _composite_ Xdf files. A composite Xdf is actually a directory that contains multiple data and metadata files. Xdf files in the native filesystem can be either standard or composite, but those in HDFS must be composite to work properly.
+If the input to a pipeline is an `RxOdbcData`, `RxTeradata` or `RxSqlServerData` source, dplyrXdf will convert it to a dplyr tbl, and the subsequent pipeline will then be run in the database, rather than the data being imported to the local R session. This does require a compatible dplyr backend for the database in question; at the time of writing (September 2017) the dbplyr package includes such a backend for SQL Server, and one for Teradata is in development.
 
 
 ## Conclusion
@@ -191,6 +202,7 @@ This article has been a quick executive-summary introduction to dplyrXdf. If you
 ```{r echo=FALSE, message=FALSE, results="hide"}
 unlink(c("airports.xdf", "flights.xdf", "flights_rx1.xdf", "flights_rx2.xdf", "flights_rx3.xdf"))
 clean_dplyrxdf_dir("native")
+rxSetComputeContext(cc)
 ```
 
 

@@ -1,0 +1,93 @@
+---
+title: "Working with SQL Server databases"
+author: "Hong Ooi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Working with SQL databases}
+  \usepackage[utf8]{inputenc}
+---
+
+<!-- define 'connStr' in the R session if you want to build this vignette -->
+
+```{r, echo=FALSE, message=FALSE, results="hide"}
+knitr::opts_chunk$set(collapse=TRUE, comment="#>")
+options(dplyr.print_min=5L, dplyr.print_max=5L)
+
+cc <- rxSetComputeContext("local")
+
+db <- DBI::dbConnect(odbc::odbc(), .connection_string=connStr)
+if(DBI::dbExistsTable(db, "flights")) DBI::dbRemoveTable(db, "flights")
+if(DBI::dbExistsTable(db, "flightsQry")) DBI::dbRemoveTable(db, "flightsQry")
+```
+One of the key strengths of dplyr is its ability to interoperate with SQL databases. Given a database table as input, dplyr can translate the verbs in a pipeline into a SQL query which is then execute in the database. For large tables, this can often be much more efficient than importing the data and running them locally.
+
+## Working in the database
+
+As of version 0.10.0, dplyrXdf has the ability to leverage this ability with ODBC data sources. If the input to a pipeline is an `RxOdbcData`, `RxTeradata` or `RxSqlServerData` source, dplyrXdf will convert it to a dplyr tbl. The subsequent pipeline will then be run in the database, rather than the data being imported to the local R session. To demonstrate how this works, we'll take the flights dataset and turn it into a table in a SQL Server database, then run a simple pipeline against it.
+
+The verb to copy an `RxSqlServerData` source into a table is `copy_to`. RevoScaleR doesn't have an exact analogue to the "src" concept in dplyr, so `copy_to` works slightly differently in dplyrXdf. To copy a dataset to a SQL database, the first argument to the function should be a data source that references the destination table:
+
+```{r}
+library(dplyrXdf) # also loads dplyr
+library(nycflights13)
+
+# copy the flights dataset to SQL Server
+flightsSql <- RxSqlServerData("flights", connectionString=connStr)
+flightsHd <- copy_to(flightsSql, flights)
+```
+
+Once this is done, the rest of the pipeline looks the same as any other dplyr pipeline:
+
+```{r}
+flightsQry <- flightsSql %>%
+    filter(month > 6) %>%
+    group_by(carrier) %>%
+    summarise(avg_delay=mean(arr_delay))
+
+flightsQry
+```
+
+The header in the output tell us that the source is Microsoft SQL Server 2016, with the name of the server and database appended. This is an indication that, rather than the pipeline running inside the R session on the client, it has been converted into a SQL query to be executed on the server. No data is transferred back to the client, except for a small sample used in the printout.
+
+To execute the pipeline and save the output in the database, use the `compute` verb. By default, this will create a temporary table (with a random name prefixed with `##`). To create a persistent table, set the `temporary` argument to `FALSE`.
+
+```{r}
+compute(flightsQry)
+
+compute(flightsQry, name="flightsQry", temporary=FALSE)
+```
+
+## Working locally
+
+Going the other way is also possible: starting from a database table, dplyrXdf can import the data to Xdf format. This is done via `compute` if you want to create a temporary Xdf file (which will be deleted after you quit R), or `as_xdf` if you want a permanent Xdf file.
+
+```{r}
+# import a table to the local machine
+flightsXdf <- as_xdf(flightsSql)
+
+flightsXdf %>%
+    filter(month > 6) %>%
+    group_by(carrier) %>%
+    summarise(avg_delay=mean(arr_delay)) %>%
+    head()
+```
+
+
+## Notes
+
+While dplyrXdf will do this with any `RxOdbcData`, `RxTeradata` or `RxSqlServerData` source, the ability to run a pipeline in-database depends on the availability of a suitable dplyr backend for the DBMS in question. There are backends for many popular commercial and open-source DBMSes, including SQL Server, PostgreSQL and Apache Hive. A Teradata backend is not yet available, but is in development at the time of writing (September 2017).
+
+It should also be noted that an in-database pipeline is handled by dplyr, _not_ by dplyrXdf. This means that RevoScaleR-specific features, such as the use of a `transformFunc` to execute arbitrary R code in the database, will not be available.
+
+For more information on how dplyr executes pipelines against database sources, see the [database vignette](http://dbplyr.tidyverse.org/articles/dbplyr.html) on the Tidyverse website. Using this functionality does require you to install a few additional packages, namely odbc and dbplyr (and their dependencies).
+
+
+```{r, echo=FALSE, message=FALSE, results="hide"}
+delete_xdf(flightsXdf)
+DBI::dbRemoveTable(db, "flightsQry")
+DBI::dbRemoveTable(db, "flights")
+DBI::dbDisconnect(db)
+rxSetComputeContext(cc)
+```

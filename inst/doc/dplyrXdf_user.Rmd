@@ -11,11 +11,11 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-```{r, echo = FALSE, message = FALSE}
+```{r, echo=FALSE, message=FALSE, results="hide"}
 knitr::opts_chunk$set(collapse=TRUE, comment="#>")
 options(dplyr.print_min=5L, dplyr.print_max=5L)
 
-rxSetComputeContext("local")
+cc <- rxSetComputeContext("local")
 ```
 
 This vignette goes into more details on using dplyrXdf. Most of dplyrXdf works the same way as dplyr, so if you know how to use the latter, then you also (mostly) know how to use the former. However, there are some places in which the two packages are different. These will be described below.
@@ -23,7 +23,7 @@ This vignette goes into more details on using dplyrXdf. Most of dplyrXdf works t
 As with the introductory vignette, we'll use the nycflights13 flights data to demonstrate the use of dplyrXdf.
 
 
-## Importing data
+## Importing to Xdf
 
 The easiest way to import data into an Xdf file is via the `as_xdf` function. This works with any RevoScaleR data source, as well as any object that can be converted into a data frame. For example, you can use this to import data from a SQL Server database table, a SAS or SPSS dataset, or a delimited text file. The syntax is very simple, as can be seen by importing the flights data:
 
@@ -53,7 +53,16 @@ file.remove("flights.csv")
 delete_xdf(flightsXdf2)
 ```
 
-While we've only shown importing from a csv file, `as_xdf` will work with any RevoScaleR data source, for example an `RxSqlServerData` object pointing to a table in a SQL Server database. It should also work with any object that can be converted into a data frame.
+As well as a csv file, `as_xdf` will work with any RevoScaleR data source, or with any R object that can be treated as a data frame. In particular, the following code will import a table from a SQL Server database.
+
+```{r, eval=FALSE}
+sqlSrc <- RxSqlServerData(table="mytable", server="host", databaseName="mydatabase", ...)
+
+# this will create the file 'mytable.xdf'
+xdfSrc <- as_xdf(sqlSrc)
+```
+
+However, rather than importing the data, dplyrXdf can also work directly with a database. If given a `RxOdbcData`, `RxTeradata` or `RxSqlServerData` source as the input to a pipeline, dplyrXdf will convert it to a dplyr tbl. For more information, see the vignette on SQL databases.
 
 ## Tbls and file management
 
@@ -229,16 +238,13 @@ head(flightsXdfSub)
 
 The RevoScaleR functions typically have several arguments beyond those used by dplyrXdf verbs. While usually you don't need to touch these, it can sometimes be useful to do so. For example, when using `mutate` or `transmute`, you could specify [more complicated transformations via a `transformFunc`](https://msdn.microsoft.com/en-us/microsoft-r/scaler/rxtransform). Similarly, rather than chaining together a `mutate` and a `summarise` --- which would involve creating an intermediate file --- you could incorporate the variable transformation into the `summarise` itself. More low-level uses of such arguments include setting the block size for an Xdf file, changing the compression level, limiting the number of rows, and so on.
 
-Most of the dplyrXdf verbs accept a `.rxArgs` argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the RevoScaleR function that is called, which will in turn depend on the verb. Here is a list of the verbs and the underlying RevoScaleR function that they call:
+Most of the dplyrXdf verbs accept a `.rxArgs` argument as a way of transmitting these extra arguments to the underlying RevoScaleR code. This should be a named list specifying the names and values of the arguments to be passed. The exact arguments will vary depending on the RevoScaleR function that is called, which will in turn depend on the verb. Here is a list of the verbs and the RevoScaleR function that they call:
 
-* `subset`, `filter` and `select`: `rxDataStep`
-* `mutate` and `transmute`: `rxDataStep`
 * `summarise`: depending on the method chosen, `rxCube` or `rxSummary`
 * `arrange`: `rxSort`
-* `distinct`: `rxDataStep`
 * `factorise`: depending on the data source, `rxFactors` (for an Xdf) or `rxImport` (for a non-Xdf file source)
-* `doXdf`: `rxDataStep`
 * Two-table verbs (`left_join`, `right_join` et al): `rxMerge`
+* All other verbs: `rxDataStep`
 
 Here are some examples to illustrate the use of `.rxArgs`:
 
@@ -357,29 +363,15 @@ flightsMods$model[[1]]
 ```
 
 
-## Data frame methods
-
-dplyrXdf includes a number of convenience functions for exporting data from Xdf to data frames:
-
-- An `as.data.frame` method for Xdf files (and other RevoScaleR data sources).
-- Methods for `pull`, `$` and `[[` that will extract a given column as a vector in memory.
-- The `collect` and `compute` methods, while meant for downloading data sources from HDFS, can also be used to export to data frames.
-
-These are simple wrappers around RevoScaleR's `rxDataStep` function that turn off the default size check. Make sure you have enough memory to hold the data before using them!
-
-```{r}
-head(flightsXdf$arr_delay)
-```
-
 ## Parallel processing of grouped data
 
 dplyrXdf takes a fairly literal approach to implementing the split-apply-combine strategy for grouped data. Most verbs that have specific methods for groups will split the data into multiple Xdf files, and then process each file separately (the exception is `summarise`, because `rxCube` and `rxSummary` can deal with groups natively). This makes it easy to parallelise the processing of groups in dplyrXdf.
 
 By default, if Microsoft R Server 9.1 or higher is installed, dplyrXdf will use `rxExecBy` to process groups. This automatically creates a cluster of slave nodes in the background and sends the data to the nodes by group. The cluster is destroyed when the verb returns.
 
-For more flexibility, you can _manually_ create a cluster and set the compute context to `RxForeachDoPar`, which has a number of benefits. First, since the cluster is persistent, no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the `ForeachDoPar` compute context is agnostic as to the nature of the underlying cluster. In particular, it's possible to create a cluster of multiple machines, rather than multiple processes on a single machine; this can be useful when dealing with Xdf files, since a single machine may run into I/O bottlenecks. The main requirement is that all the machines must have access to the same filesystem, such as a network drive or file share.
+For more flexibility, you can _manually_ create a cluster and set the compute context to `RxForeachDoPar`, which has a number of benefits. First, since the cluster is persistent, no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the `RxForeachDoPar` compute context is agnostic as to the nature of the underlying cluster. In particular, you can create a cluster of multiple (virtual) machines, which will be much more scalable than a cluster of multiple processes on a single machine. The main requirement is that all the machines must have access to the same filesystem, such as a network drive or file share.
 
-The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the [doAzureParallel package](https://github.com/Azure/doAzureParallel), which is an easy-to-use method to create clusters of [Azure Data Science VMs](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview); however, you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).
+The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the [doAzureParallel package](https://github.com/Azure/doAzureParallel), which is an easy-to-use way to create clusters of [Azure Data Science VMs](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview), but you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).
 
 
 ```{r, eval=FALSE}
@@ -410,12 +402,29 @@ rxSetComputeContext("local")
 dplyrxdf_options(useExecBy=TRUE)
 ```
 
-
 Note that the above assumes your data is stored on the native filesystem (either on your machine's local hard disk, or in a network share). If your data is stored in a Hadoop or Spark cluster, dplyrXdf will take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes. See the HDFS vignette for more information on working with Xdf files in Spark.
 
 
+## Data frame methods
+
+dplyrXdf includes a number of convenience functions for exporting data to data frames:
+
+- An `as.data.frame` method for Xdf files (and other RevoScaleR data sources).
+- Methods for `pull`, `$` and `[[` that will extract a given column as a vector in memory.
+- The `collect` and `compute` methods, while meant for downloading data sources from HDFS, can also be used to export to data frames.
+
+These are simple wrappers around RevoScaleR's `rxDataStep` function that turn off the default size check. Make sure you have enough memory to hold the data before using them!
+
+```{r}
+head(flightsXdf$arr_delay)
+
+head(pull(flightsXdf, arr_delay))  # same as above
+```
 ```{r echo=FALSE, message=FALSE, results="hide"}
 unlink(c("flights.xdf", "output1.xdf"))
 clean_dplyrxdf_dir("native")
+rxSetComputeContext(cc)
 ```
+
+
 

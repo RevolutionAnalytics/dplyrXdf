@@ -83,18 +83,17 @@ tbl_xdf <- function(xdf=NULL, file=NULL, createCompositeSet=NULL, fileSystem=rxG
             tmpdir <- get_dplyrxdf_dir(fileSystem)
         }
 
-        if(!createCompositeSet)
-            file <- tempfile(tmpdir=tmpdir, fileext=".xdf")
-        else file <- tempfile(tmpdir=tmpdir)
+        file <- if(!createCompositeSet)
+            tempfile(tmpdir=tmpdir, fileext=".xdf")
+        else tempfile(tmpdir=tmpdir)
 
         if(in_hdfs(fileSystem))
-        {
             file <- convertBS(file) # rm backslash nonsense
-            if(!.dxOptions$hdfsWorkDirCreated)
-                make_dplyrxdf_dir(fileSystem)
-        }
     }
     else file <- validateXdfFile(file, createCompositeSet)
+
+    if(in_hdfs(fileSystem) && !.dxOptions$hdfsWorkDirCreated)
+        make_dplyrxdf_dir(fileSystem)
 
     # call RxXdfData() directly or indirectly to create xdf object
     # this is NOT the S4 class constructor so cannot use callNextMethod()

@@ -25,7 +25,7 @@ NULL
 #' @aliases as.data.frame
 #' @rdname as.data.frame
 #' @export
-as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
+as.data.frame.RxXdfData <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
 {
     # calling rxDataStep on HDFS data from remote client is bog-slow, use direct download instead
     if(in_hdfs(x))
@@ -34,93 +34,20 @@ as.data.frame.RxFileData <- function(x, maxRowsByCols=NULL, row.names=NULL, opti
 }
 
 
-#' Download a dataset to the local machine
-#'
-#' @param x An Xdf data source object.
-#' @param as_data_frame Should the downloaded data be converted to a data frame, or left as an Xdf file?
-#' @param ... If the output is to be a data frame, further arguments to the \code{as.data.frame} method.
-#'
-#' @details
-#' The \code{collect} and \code{compute} functions can be used for two purposes: to download a dataset stored in HDFS to the native filesystem; or to convert a dataset (whether stored in HDFS or not) to a data frame. If \code{x} is an Xdf data source in HDFS, the data is downloaded as a tbl_xdf in the dplyrXdf working directory.
-#'
-#' The functions differ only in the default value of the \code{as_data_frame} argument. By default \code{collect} will always output a data frame, while \code{compute} will only do so if the source data was \emph{not} downloaded from HDFS. Note that if \code{as_data_frame} is FALSE and the source data is on the native filesystem, then \code{collect}/\code{compute} is effectively a no-op.
-#'
-#' The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the downloading is a two-stage process: the data is first transferred from HDFS to the native filesystem of the edge node, and then downloaded from the edge node to the client.
-#'
-#' If you want to look at the first few rows of an Xdf file, it may be faster to use \code{compute}) to copy the entire file off HDFS, and then run \code{head}, than to run \code{head} on the original. This is due to quirks in how RevoScaleR works in Spark and Hadoop.
-#'
-#' @return
-#' If \code{as_data_frame} is FALSE, a data frame. Otherwise, a tbl_xdf data source.
-#'
-#' @seealso
-#' \code{\link{as_data_frame}}, \code{\link[dplyr]{compute}} in package dplyr, \code{\link{copy_to}} for uploading to HDFS
-#' @aliases collect, compute
-#'
-#' @examples
-#' mtx <- as_xdf(mtcars, overwrite=TRUE)
-#'
-#' # all of these return a data frame (or a tbl_df) for input in the native filesystem
-#' as.data.frame(mtx)
-#' as_data_frame(mtx)  # returns a tbl_df
-#' collect(mtx)
-#' compute(mtx)
-#'
-#' # collect and compute are mainly for downloading data from HDFS
-#' \dontrun{
-#' mtc <- copy_to_hdfs(mtcars)
-#' as.data.frame(mtc)
-#' collect(mtc)  # still returns a data frame
-#' compute(mtc)  # returns a tbl_xdf
-#' }
-#' @aliases collect compute
-#' @rdname compute
+#' @rdname as.data.frame
 #' @export
-collect.RxXdfData <- function(x, as_data_frame=TRUE, ...)
+as.data.frame.RxDataSource <- function(x, maxRowsByCols=NULL, row.names=NULL, optional=TRUE, ...)
 {
+    # if data in HDFS: import to xdf, rely on as.data.frame.RxXdfData to download and convert to df
     if(in_hdfs(x))
     {
-        # copy from HDFS to native filesystem
-        composite <- is_composite_xdf(x)
-        file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
-        localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
-
-        hdfs_download(x@file, localXdf@file, overwrite=TRUE, host=x@fileSystem$hostName)
+        x <- compute(x)
+        on.exit(delete_xdf(x))
+        as.data.frame(x, maxRowsByCols=maxRowsByCols, ...)
     }
-    else localXdf <- x
-
-    if(as_data_frame)
-    {
-        if(in_hdfs(x))
-            on.exit(delete_xdf(localXdf))
-        as.data.frame(localXdf, ...)
-    }
-    else localXdf
+    else local_exec(rxDataStep(x, outFile=NULL, maxRowsByCols=maxRowsByCols, ...))
 }
 
-
-#' @rdname compute
-#' @export
-compute.RxXdfData <- function(x, as_data_frame=!in_hdfs(x), ...)
-{
-    if(in_hdfs(x))
-    {
-        # copy from HDFS to native filesystem
-        composite <- is_composite_xdf(x)
-        file <- file.path(get_dplyrxdf_dir("native"), basename(x@file))
-        localXdf <- tbl_xdf(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
-
-        hdfs_download(x@file, localXdf@file, overwrite=TRUE, host=x@fileSystem$hostName)
-    }
-    else localXdf <- x
-
-    if(as_data_frame)
-    {
-        if(in_hdfs(x))
-            on.exit(delete_xdf(localXdf))
-        as.data.frame(localXdf, ...)
-    }
-    else localXdf
-}
 
 
 #' @param name The name of a column to extract from a data source object
