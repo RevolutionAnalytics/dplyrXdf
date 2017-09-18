@@ -1,3 +1,13 @@
+#' SQL Server methods for dplyr/dbplyr
+#'
+#' Saving tables on SQL Server with dplyr requires creating some custom methods. These are automatically called by \code{compute}, \code{collect} and \code{copy_to}.
+#'
+#' @param con A DBI connection
+#' @param table,name A table name
+#' @param sql A query
+#' @param temporary Whether to generate a temporary table (which will be automatically prefixed with \code{'##'})
+#' @aliases db_compute db_save_query
+#' @rdname sql
 #' @rawNamespace export("db_compute.Microsoft SQL Server")
 `db_compute.Microsoft SQL Server` <- function(con, table, sql, temporary=TRUE, unique_indexes=list(), indexes=list(), ...)
 {
@@ -18,6 +28,7 @@
 }
 
 
+#' @rdname sql
 #' @rawNamespace export("db_save_query.Microsoft SQL Server")
 `db_save_query.Microsoft SQL Server` <- function(con, sql, name, temporary=TRUE, ...)
 {
