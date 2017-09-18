@@ -7,7 +7,7 @@
 \alias{db_save_query.Microsoft SQL Server}
 \title{SQL Server methods for dplyr/dbplyr}
 \usage{
-\method{db_compute}{Microsoft SQL Server}(con, table, sql, temporary = TRUE,
+"db_compute.Microsoft SQL Server"(con, table, sql, temporary = TRUE,
   unique_indexes = list(), indexes = list(), ...)
 
 \method{db_save_query}{Microsoft SQL Server}(con, sql, name, temporary = TRUE,

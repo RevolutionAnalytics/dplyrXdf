@@ -41,7 +41,7 @@ RevoScaleR does not have an exact analogue of the dplyr concept of a src, and be
 
 The code will handle both the cases where you are logged into the edge node of a Hadoop/Spark cluster, and if you are a remote client. For the latter case, the downloading is a two-stage process: the data is first transferred from HDFS to the native filesystem of the edge node, and then downloaded from the edge node to the client.
 
-If you want to look at the first few rows of an Xdf file in HDFS, it may be faster to use \code{compute}) to copy the entire file to the native filesystem, and then run \code{head}, than to run \code{head} on the original. This is due to quirks in how RevoScaleR works in Spark and Hadoop.
+If you want to look at the first few rows of a small Xdf file in HDFS, it may be faster to use \code{compute}) to copy the entire file to the native filesystem, and then run \code{head}, than to run \code{head} on the original. This is due to RevoScaleR overhead in Spark and Hadoop.
 }
 \examples{
 mtx <- as_xdf(mtcars, overwrite=TRUE)

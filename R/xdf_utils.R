@@ -8,7 +8,7 @@
 #' @details
 #' The \code{copy_xdf} function copies the Xdf file given by \code{src} to the location specified by \code{dest}, possibly renaming it as well; \code{move_xdf} moves the file. \code{rename_xdf} does a strict rename (the location of the file is unchanged, only its name). \code{delete_xdf} deletes the file given by \code{xdf}.
 #'
-#' These are utility functions for working with the files/directories where the data for an Xdf data source is stored. They make use of low-level OS functionality, so should be more efficient that running \code{rxDataStep}. They work with both standard and composite Xdf files, and with data stored both in the native filesystem and in HDFS.
+#' These are utility functions for working with the files/directories where the data for an Xdf data source is stored. They make use of low-level OS functionality, so should be more efficient than running \code{rxDataStep}. They work with both standard and composite Xdf files, and with data stored both in the native filesystem and in HDFS.
 #'
 #' @return
 #' \code{copy_xdf}, \code{move_xdf} and \code{rename_xdf} return an Xdf data source object pointing to the new file location. \code{delete_xdf} returns TRUE if the delete operation succeeded, FALSE otherwise.
