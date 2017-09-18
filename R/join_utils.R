@@ -262,7 +262,7 @@ mergeBase <- function(x, y, by=NULL, copy=FALSE, type, .outFile=tbl_xdf(x), .rxA
     })
 
     # sigh
-    if(all(substr(suffix, 1, 1) == "."))
+    if(all(substr(suffix, 1, 1) == ".") && !in_hdfs(x))
         suffix <- substr(suffix, 2, nchar(suffix))
 
     arglst <- list(x, y, matchVars=by$y, type=type, duplicateVarExt=suffix)
