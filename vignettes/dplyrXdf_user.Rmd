@@ -363,31 +363,15 @@ flightsMods$model[[1]]
 ```
 
 
-## Data frame methods
-
-dplyrXdf includes a number of convenience functions for exporting data to data frames:
-
-- An `as.data.frame` method for Xdf files (and other RevoScaleR data sources).
-- Methods for `pull`, `$` and `[[` that will extract a given column as a vector in memory.
-- The `collect` and `compute` methods, while meant for downloading data sources from HDFS, can also be used to export to data frames.
-
-These are simple wrappers around RevoScaleR's `rxDataStep` function that turn off the default size check. Make sure you have enough memory to hold the data before using them!
-
-```{r}
-head(flightsXdf$arr_delay)
-
-head(pull(flightsXdf, arr_delay))  # same as above
-```
-
 ## Parallel processing of grouped data
 
 dplyrXdf takes a fairly literal approach to implementing the split-apply-combine strategy for grouped data. Most verbs that have specific methods for groups will split the data into multiple Xdf files, and then process each file separately (the exception is `summarise`, because `rxCube` and `rxSummary` can deal with groups natively). This makes it easy to parallelise the processing of groups in dplyrXdf.
 
 By default, if Microsoft R Server 9.1 or higher is installed, dplyrXdf will use `rxExecBy` to process groups. This automatically creates a cluster of slave nodes in the background and sends the data to the nodes by group. The cluster is destroyed when the verb returns.
 
-For more flexibility, you can _manually_ create a cluster and set the compute context to `RxForeachDoPar`, which has a number of benefits. First, since the cluster is persistent, no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the `RxForeachDoPar` compute context is agnostic as to the nature of the underlying cluster. In particular, it's possible to create a cluster of multiple machines, rather than multiple processes on a single machine; this can be useful when dealing with Xdf files, since a single machine may run into I/O bottlenecks. The main requirement is that all the machines must have access to the same filesystem, such as a network drive or file share.
+For more flexibility, you can _manually_ create a cluster and set the compute context to `RxForeachDoPar`, which has a number of benefits. First, since the cluster is persistent, no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the `RxForeachDoPar` compute context is agnostic as to the nature of the underlying cluster. In particular, you can create a cluster of multiple (virtual) machines, which will be much more scalable than a cluster of multiple processes on a single machine. The main requirement is that all the machines must have access to the same filesystem, such as a network drive or file share.
 
-The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the [doAzureParallel package](https://github.com/Azure/doAzureParallel), which is an easy-to-use method to create clusters of [Azure Data Science VMs](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview); however, you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).
+The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the [doAzureParallel package](https://github.com/Azure/doAzureParallel), which is an easy-to-use way to create clusters of [Azure Data Science VMs](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview), but you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).
 
 
 ```{r, eval=FALSE}
@@ -418,13 +402,29 @@ rxSetComputeContext("local")
 dplyrxdf_options(useExecBy=TRUE)
 ```
 
-
 Note that the above assumes your data is stored on the native filesystem (either on your machine's local hard disk, or in a network share). If your data is stored in a Hadoop or Spark cluster, dplyrXdf will take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes. See the HDFS vignette for more information on working with Xdf files in Spark.
 
 
+## Data frame methods
+
+dplyrXdf includes a number of convenience functions for exporting data to data frames:
+
+- An `as.data.frame` method for Xdf files (and other RevoScaleR data sources).
+- Methods for `pull`, `$` and `[[` that will extract a given column as a vector in memory.
+- The `collect` and `compute` methods, while meant for downloading data sources from HDFS, can also be used to export to data frames.
+
+These are simple wrappers around RevoScaleR's `rxDataStep` function that turn off the default size check. Make sure you have enough memory to hold the data before using them!
+
+```{r}
+head(flightsXdf$arr_delay)
+
+head(pull(flightsXdf, arr_delay))  # same as above
+```
 ```{r echo=FALSE, message=FALSE, results="hide"}
 unlink(c("flights.xdf", "output1.xdf"))
 clean_dplyrxdf_dir("native")
 rxSetComputeContext(cc)
 ```
+
+
 

@@ -178,11 +178,6 @@ flightsMods <- flightsXdf %>%
 
 flightsMods$model[[1]]
 
-## ------------------------------------------------------------------------
-head(flightsXdf$arr_delay)
-
-head(pull(flightsXdf, arr_delay))  # same as above
-
 ## ---- eval=FALSE---------------------------------------------------------
 #  library(doAzureParallel)
 #  
@@ -209,6 +204,11 @@ head(pull(flightsXdf, arr_delay))  # same as above
 #  stopCluster(cl)
 #  rxSetComputeContext("local")
 #  dplyrxdf_options(useExecBy=TRUE)
+
+## ------------------------------------------------------------------------
+head(flightsXdf$arr_delay)
+
+head(pull(flightsXdf, arr_delay))  # same as above
 
 ## ----echo=FALSE, message=FALSE, results="hide"---------------------------
 unlink(c("flights.xdf", "output1.xdf"))

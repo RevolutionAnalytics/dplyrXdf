@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2017-09-18" />
+<meta name="date" content="2017-09-19" />
 
 <title>Introducing the dplyrXdf package</title>
 
@@ -70,15 +70,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introducing the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2017-09-18</em></h4>
+<h4 class="date"><em>2017-09-19</em></h4>
 
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>The dbplyr package is a suite of tools to facilitate working with <a href="https://www.microsoft.com/cloud-platform/r-server">Microsoft R Server</a> (MRS). Its features include:</p>
+<p>The dplyrXdf package is a suite of tools to facilitate working with <a href="https://www.microsoft.com/cloud-platform/r-server">Microsoft R Server</a> (MRS). Its features include:</p>
 <ul>
-<li><p>Its most visible portion is a backend to the popular <a href="https://cran.r-project.org/web/packages/dplyr/index.html">dplyr package</a> for the Xdf file format. Xdf files are a technology provided by MRS to break R’s memory barrier: instead of keeping data in-memory in data frames, it is saved on disk. The data is then processed in chunks, so that you only need enough memory to handle each chunk.</p></li>
+<li><p>A backend to the popular <a href="https://cran.r-project.org/web/packages/dplyr/index.html">dplyr package</a> for the Xdf file format. Xdf files are a technology provided by MRS to break R’s memory barrier: instead of keeping data in-memory in data frames, it is saved on disk. The data is then processed in chunks, so that you only need enough memory to handle each chunk.</p></li>
 <li><p>Interfaces to Microsoft SQL Server and HDInsight Hadoop and Spark clusters. dplyrXdf, in conjunction with dplyr, provides the ability to execute pipelines natively in-database and in-cluster, which for large datasets can be much more efficient than executing them locally.</p></li>
 <li><p>Several functions to ease working with Xdf files, including functions for file management and for transferring data to and from remote backends.</p></li>
 <li><p>Workarounds for various glitches and unexpected behaviour in MRS.</p></li>
@@ -170,7 +170,7 @@ flights_rx5 &lt;-<span class="st"> </span>flights_rx5[<span class="kw">order</sp
 <span class="co">#&gt; Linear Regression Results for: mean_delay ~ sum_dist + carrier</span>
 <span class="co">#&gt; Data: flightsSmry (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     d:\misc\Rtemp\RtmpEduo1t\dxTmp34a851e20e4\file34a8ce23df1.xdf</span>
+<span class="co">#&gt;     d:\misc\Rtemp\RtmpEduo1t\dxTmp34a85cf17aff\file34a8725769b7.xdf</span>
 <span class="co">#&gt; Dependent variable(s): mean_delay</span>
 <span class="co">#&gt; Total independent variables: 18 (Including number dropped: 2)</span>
 <span class="co">#&gt; Number of valid observations: 16</span>

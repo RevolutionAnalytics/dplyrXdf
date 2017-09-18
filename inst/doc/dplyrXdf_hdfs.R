@@ -164,6 +164,9 @@ names(flightsLocal)
 
 local_exec(names(flightsLocal))
 
+## ---- eval=FALSE---------------------------------------------------------
+#  rxLinMod(y ~ x1 + x2 + ..., data=as_xdf(tbl))
+
 ## ---- echo=FALSE, message=FALSE, results="hide"--------------------------
 hdfs_dir_remove(c("flights", "flights2", "/tmp/mydata", "/tmp/flights.csv"))
 clean_dplyrxdf_dir("hdfs")

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2017-09-18" />
+<meta name="date" content="2017-09-19" />
 
 <title>Working with HDFS</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Working with HDFS</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2017-09-18</em></h4>
+<h4 class="date"><em>2017-09-19</em></h4>
 
 
 <div id="TOC">
@@ -85,7 +85,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#azure-data-lake-store-support">Azure Data Lake Store support</a></li>
 </ul></li>
 <li><a href="#miscellaneous-functions">Miscellaneous functions</a></li>
-<li><a href="#limitations">Limitations</a></li>
+<li><a href="#limitations-and-glitches">Limitations and glitches</a></li>
 </ul>
 </div>
 
@@ -123,8 +123,8 @@ hd &lt;-<span class="st"> </span><span class="kw">RxHdfsFileSystem</span>()
 <span class="co"># copy a data frame into an Xdf file in HDFS</span>
 flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to</span>(hd, flights)
 <span class="co">#&gt; Creating composite Xdf from non-composite data source</span>
-<span class="co">#&gt; 17/09/18 10:06:41 WARN azure.AzureFileSystemThreadPoolExecutor: Disabling threads for Rename operation as thread count 0 is &lt;= 1</span>
-<span class="co">#&gt; 17/09/18 10:06:42 INFO azure.AzureFileSystemThreadPoolExecutor: Time taken for Rename operation is: 145 ms with threads: 0</span>
+<span class="co">#&gt; 17/09/18 15:39:32 WARN azure.AzureFileSystemThreadPoolExecutor: Disabling threads for Rename operation as thread count 0 is &lt;= 1</span>
+<span class="co">#&gt; 17/09/18 15:39:32 INFO azure.AzureFileSystemThreadPoolExecutor: Time taken for Rename operation is: 172 ms with threads: 0</span>
 
 flightsHd
 <span class="co">#&gt; RxXdfData Source</span>
@@ -158,7 +158,7 @@ flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to_hdfs</span>(fli
 
 flightsLocal
 <span class="co">#&gt; tbl_xdf Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpEduo1t\dxTmp34a851e20e4/flights&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpEduo1t\dxTmp34a85cf17aff/flights&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: TRUE</span>
@@ -358,17 +358,19 @@ xdf &lt;-<span class="st"> </span><span class="kw">RxXdfData</span>(<span class=
 <span class="co">#&gt; [13] &quot;origin&quot;         &quot;dest&quot;           &quot;air_time&quot;       &quot;distance&quot;      </span>
 <span class="co">#&gt; [17] &quot;hour&quot;           &quot;minute&quot;         &quot;time_hour&quot;</span></code></pre></div>
 </div>
-<div id="limitations" class="section level2">
-<h2>Limitations</h2>
+<div id="limitations-and-glitches" class="section level2">
+<h2>Limitations and glitches</h2>
 <p>Most of the single-table dplyr verbs supported by dplyrXdf will work for datasets in HDFS. The main exceptions are:</p>
 <ul>
-<li><code>distinct</code>, <code>sample_n</code> and <code>sample_frac</code> do not support HDFS data</li>
-<li><code>arrange</code>,<code>cbind</code> and <code>rbind</code> require the compute context to be local</li>
+<li><code>arrange</code>, <code>distinct</code>, <code>sample_n</code> and <code>sample_frac</code> do not support HDFS data</li>
+<li><code>cbind</code> and <code>rbind</code> require the compute context to be local</li>
 <li>grouped <code>mutate</code> and <code>transmute</code> also require that the compute context is local. Consider whether you really need to group before transforming; many transformations do not require grouping information. If your data fits into memory, you can also use <code>do</code> or <code>do_xdf</code>.</li>
 <li><code>summarise</code> on HDFS data will always send the output to the edge node/remote client, before writing it back to the cluster. This is a consequence of the way in which <code>rxCube</code> and <code>rxSummary</code> work, by creating an in-memory data structure.</li>
 </ul>
 <p>Support for two-table verbs is similarly more limited for datasets in HDFS than in the native filesystem. First, only the Spark compute context supports joining (not Hadoop), and only for Xdf data sources and Spark data sources (<code>RxHiveData</code>, <code>RxOrcData</code> and <code>RxParquetData</code>). Only the “standard” joins (<code>left_join</code>, <code>right_join</code>, <code>inner_join</code> and <code>full_join</code>) are supported.</p>
-<p>As a final note, the Xdf data sources created by dplyrXdf will always contain absolute HDFS paths (that is, of the form <code>&quot;/path/to/file&quot;</code> rather than <code>&quot;file&quot;</code>. This is because of limitations in RevoScaleR support for relative paths in HDFS. The data source <em>inputs</em> to dplyrXdf verbs can contain relative paths; these will be internally translated to absolute.</p>
+<p>The RevoScaleR functions do not recognise <code>tbl_xdf</code> objects, which are automatically generated by dplyrXdf, when in the Spark or Hadoop compute context. To remedy this, wrap any such object inside <code>as_xdf()</code> before calling a Revo function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rxLinMod</span>(y ~<span class="st"> </span>x1 +<span class="st"> </span>x2 +<span class="st"> </span>..., <span class="dt">data=</span><span class="kw">as_xdf</span>(tbl))</code></pre></div>
+<p>Finally, the Xdf data sources created by dplyrXdf will always contain absolute HDFS paths (that is, of the form <code>&quot;/path/to/file&quot;</code> rather than <code>&quot;file&quot;</code>. This is because of limitations in RevoScaleR support for relative paths in HDFS. The data source <em>inputs</em> to dplyrXdf verbs can contain relative paths; these will be internally translated to absolute.</p>
 </div>
 
 

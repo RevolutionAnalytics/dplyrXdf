@@ -37,7 +37,7 @@ flightsXdf %>%
     filter(month > 6) %>%
     group_by(carrier) %>%
     summarise(avg_delay=mean(arr_delay)) %>%
-    head
+    head()
 
 ## ---- echo=FALSE, message=FALSE, results="hide"--------------------------
 delete_xdf(flightsXdf)
