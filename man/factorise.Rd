@@ -45,8 +45,6 @@ An object representing the returned data. This depends on the \code{.outFile} ar
 }
 \description{
 Convert columns in an Xdf file to factor
-
-The data frame method simply calls \code{factor} to convert the specified columns into factors.
 }
 \details{
 The selector functions listed in \code{\link[dplyr]{select}} also work with \code{factorise}. In addition, you can use the following:
@@ -62,6 +60,8 @@ You can specify the levels for a variable by specifying them as the value of the
 For performance reasons, factors created by \code{factorise} are not sorted; instead, the ordering of their levels will be determined by the order in which they are encountered in the data.
 
 The method for \code{RxXdfData} objects is a shell around \code{\link[RevoScaleR]{rxFactors}}, which is the standard RevoScaleR function for factor manipulation. For \code{RxFileData} objects, the method calls \code{\link[RevoScaleR]{rxImport}} with an appropriately constructed \code{colInfo} argument.
+
+The data frame method simply calls \code{factor} to convert the specified columns into factors.
 }
 \examples{
 mtx <- as_xdf(mtcars, overwrite=TRUE)

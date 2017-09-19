@@ -1,3 +1,4 @@
+#' @details
 #' The data frame method simply calls \code{factor} to convert the specified columns into factors.
 #'
 #' @examples
