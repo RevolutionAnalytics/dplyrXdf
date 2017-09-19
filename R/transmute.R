@@ -2,9 +2,9 @@
 #' @export
 transmute.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
-    dots <- rlang::quos(..., .named=TRUE)
+    dots <- quos(..., .named=TRUE)
 
-    transforms <- lapply(dots, rlang::get_expr)
+    transforms <- lapply(dots, get_expr)
     # turn a list of quoted expressions into a quoted list of expressions
     transforms <- if(length(transforms) > 0)
         as.call(c(as.name("list"), transforms))
@@ -15,7 +15,7 @@ transmute.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 
     # piping messes up NSE
     arglst <- list(.data, transforms=transforms)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
     arglst <- setTransmuteVars(arglst, names(.data))
 
     on.exit(deleteIfTbl(.data))
@@ -29,8 +29,8 @@ transmute.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxAr
 {
     stopIfDistribCC("mutate on grouped data not supported in Hadoop/Spark compute context")
 
-    dots <- rlang::quos(..., .named=TRUE)
-    transforms <- lapply(dots, rlang::get_expr)
+    dots <- quos(..., .named=TRUE)
+    transforms <- lapply(dots, get_expr)
     # turn a list of quoted expressions into a quoted list of expressions
     transforms <- if(length(transforms) > 0)
         as.call(c(as.name("list"), transforms))
@@ -44,7 +44,7 @@ transmute.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxAr
 
     # piping messes up NSE
     arglst <- list(.data, transforms=transforms)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
     arglst <- setTransmuteVars(arglst, names(.data), grps)
 
     callGroupedExec(.data, .outFile, transmutateGrouped, .fs=rxGetFileSystem(.data), arglst=arglst) %>%

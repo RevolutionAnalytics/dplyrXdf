@@ -27,12 +27,12 @@
 distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.data), .rxArgs)
 {
     stopIfDistribCC("distinct not supported in Hadoop/Spark compute context")
-    args <- rlang::quos(...)
+    args <- quos(...)
     .rxArgs <- if(missing(.rxArgs))
         NULL
-    else rlang::enexpr(.rxArgs)
+    else enexpr(.rxArgs)
 
-    distinctBase(.data, args, .keep_all, .outFile, rlang::enexpr(.rxArgs))
+    distinctBase(.data, args, .keep_all, .outFile, enexpr(.rxArgs))
 }
 
 
@@ -49,10 +49,10 @@ distinct.RxFileData <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.d
 distinct.grouped_tbl_xdf <- function(.data, ..., .keep_all=FALSE, .outFile=tbl_xdf(.data), .rxArgs)
 {
     stopIfDistribCC("distinct not supported in Hadoop/Spark compute context")
-    args <- rlang::quos(...)
+    args <- quos(...)
     .rxArgs <- if(missing(.rxArgs))
         NULL
-    else rlang::enexpr(.rxArgs)
+    else enexpr(.rxArgs)
 
     grps <- group_vars(.data)
 

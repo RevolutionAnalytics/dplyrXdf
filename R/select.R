@@ -36,7 +36,7 @@ select.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
         stop("No variables selected", call.=FALSE)
 
     arglst <- list(.data, varsToKeep=vars)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
     # need to use rxImport on non-Xdf data sources because of bugs in rxDataStep (?)

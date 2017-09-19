@@ -26,7 +26,7 @@
 #' @export
 rename.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
-    dots <- rlang::quos(..., .named=TRUE)
+    dots <- quos(..., .named=TRUE)
 
     grps <- group_vars(.data)
     vars <- rename_vars(names(.data), !!!dots)
@@ -47,7 +47,7 @@ rename.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
          missing(.rxArgs)))
     {
         arglst <- list(.data)
-        arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+        arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
 
         oldData <- .data
         .data <- callRx("rxDataStep", arglst)

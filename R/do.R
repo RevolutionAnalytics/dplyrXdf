@@ -31,7 +31,7 @@
 #' @export
 do.RxFileData <- function(.data, ...)
 {
-    args <- rlang::quos(...)
+    args <- quos(...)
     if(".rxArgs" %in% names(args))
     {
         warning("do() doesn't use .rxArgs argument", call.=FALSE)
@@ -71,7 +71,7 @@ do.RxFileData <- function(.data, ...)
 #' @export
 do.grouped_tbl_xdf <- function(.data, ...)
 {
-    args <- rlang::quos(...)
+    args <- quos(...)
     if(".rxArgs" %in% names(args))
     {
         warning("do() doesn't use .rxArgs argument", call.=FALSE)
@@ -131,7 +131,7 @@ doXdf <- function(.data, ...)
 #' @export
 do_xdf.RxFileData <- function(.data, ...)
 {
-    args <- rlang::quos(...)
+    args <- quos(...)
     if(".rxArgs" %in% names(args))
     {
         warning("do_xdf() doesn't use .rxArgs argument", call.=FALSE)
@@ -154,7 +154,7 @@ do_xdf.RxFileData <- function(.data, ...)
 #' @export
 do_xdf.grouped_tbl_xdf <- function(.data, ...)
 {
-    args <- rlang::quos(...)
+    args <- quos(...)
     if(".rxArgs" %in% names(args))
     {
         warning("do_xdf() doesn't use .rxArgs argument", call.=FALSE)
@@ -185,7 +185,7 @@ doXdfBase <- function(.data, exprs, grps=NULL, named, ...)
 {
     .data <- unTbl(.data)
 
-    datlst <- rlang::env(.=.data, .data=.data)
+    datlst <- rlang::env(.=.data, .data=.data) # explicit namespacing required for Hadoop/Spark
     if(named)
     {
         out <- lapply(exprs, function(arg)

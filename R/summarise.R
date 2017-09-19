@@ -45,9 +45,9 @@
 #' @export
 summarise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs, .method=NULL)
 {
-    dots <- rlang::quos(..., .named=TRUE)
+    dots <- quos(..., .named=TRUE)
 
-    exprs <- lapply(dots, rlang::get_expr)
+    exprs <- lapply(dots, get_expr)
     stats <- sapply(exprs, function(term) as.character(term[[1]]))
     needs_mutate <- vapply(exprs, function(e)
     {
@@ -56,9 +56,9 @@ summarise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs, .
     if(any(needs_mutate))
         stop("summarise with xdf tbls only works with named variables, not expressions")
 
-    .rxArgs <- rlang::enquo(.rxArgs)
-    .rxArgs <- if(!rlang::quo_is_missing(.rxArgs) && rlang::is_lang(.rxArgs))
-        rlang::lang_args(.rxArgs)
+    .rxArgs <- enquo(.rxArgs)
+    .rxArgs <- if(!quo_is_missing(.rxArgs) && is_lang(.rxArgs))
+        lang_args(.rxArgs)
     else NULL
 
     grps <- group_vars(.data)

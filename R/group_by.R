@@ -74,7 +74,7 @@ grouped_tbl_xdf <- setClass("grouped_tbl_xdf", contains="tbl_xdf", slots=c(group
 #' @export
 group_by.RxFileData <- function(.data, ..., add=FALSE)
 {
-    grps <- names(rlang::quos(..., .named=TRUE))
+    grps <- names(quos(..., .named=TRUE))
     if(length(grps) > 0)
     {
         .data <- rxImport(.data, tbl_xdf(.data), rowsPerRead=.dxOptions$rowsPerRead)
@@ -89,7 +89,7 @@ group_by.RxFileData <- function(.data, ..., add=FALSE)
 #' @export
 group_by.RxXdfData <- function(.data, ..., add=FALSE)
 {
-    grps <- names(rlang::quos(..., .named=TRUE))
+    grps <- names(quos(..., .named=TRUE))
     if(length(grps) > 0)
     {
         composite <- is_composite_xdf(.data)
@@ -106,7 +106,7 @@ group_by.RxXdfData <- function(.data, ..., add=FALSE)
 #' @export
 group_by.tbl_xdf <- function(.data, ..., add=FALSE)
 {
-    grps <- names(rlang::quos(..., .named=TRUE))
+    grps <- names(quos(..., .named=TRUE))
     if(length(grps) > 0)
     {
         .data <- as(.data, "grouped_tbl_xdf")
@@ -120,7 +120,7 @@ group_by.tbl_xdf <- function(.data, ..., add=FALSE)
 #' @export
 group_by.grouped_tbl_xdf <- function(.data, ..., add=FALSE)
 {
-    grps <- names(rlang::quos(..., .named=TRUE))
+    grps <- names(quos(..., .named=TRUE))
     newGrps <- if(add) c(group_vars(.data), grps) else grps
     if(length(newGrps) > 0)
         .data@groups <- newGrps
@@ -163,7 +163,7 @@ groups.RxFileData <- function(x)
 #' @export
 groups.grouped_tbl_xdf <- function(x)
 {
-    rlang::syms(group_vars(x))
+    syms(group_vars(x))
 }
 
 

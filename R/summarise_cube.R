@@ -20,7 +20,7 @@ smryRxCube <- function(data, grps=NULL, stats, exprs, rxArgs)
     isChar <- gvarTypes == "character"
     if(any(isChar))
     {
-        data <- factorise(data, !!!rlang::syms(grps[isChar]))
+        data <- factorise(data, !!!syms(grps[isChar]))
         gvarTypes[isChar] <- "factor"
     }
 

@@ -30,9 +30,9 @@ NULL
 
 doExtraArgs <- function(arglst, .data, .rxArgs, .outFile)
 {
-    arglst <- rlang::modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)
-    if(rlang::is_lang(.rxArgs))
-        arglst <- rlang::modify(arglst, rlang::splice(rlang::lang_args(.rxArgs)))
+    arglst <- modify(arglst, overwrite=TRUE, rowsPerRead=.dxOptions$rowsPerRead)
+    if(is_lang(.rxArgs))
+        arglst <- modify(arglst, splice(lang_args(.rxArgs)))
 
     if(!inherits(.outFile, "tbl_xdf"))
     {

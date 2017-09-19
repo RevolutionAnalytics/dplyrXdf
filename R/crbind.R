@@ -38,7 +38,7 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
         return(NULL)
 
     # wart: specifying .rxArgs will fail if called from the generic, because of how cbind/rbind dispatch
-    arglst <- doExtraArgs(list(), lst[[1]], rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(list(), lst[[1]], enexpr(.rxArgs), .outFile)
     
     # for data frame output, create an xdf and convert
     dfOutput <- is.null(arglst$outFile)
@@ -100,7 +100,7 @@ rbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
         return(NULL)
 
     # wart: specifying .rxArgs will fail if called from the generic, because of how cbind/rbind dispatch
-    arglst <- doExtraArgs(list(), lst[[1]], rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(list(), lst[[1]], enexpr(.rxArgs), .outFile)
 
     # for data frame output, create an xdf and convert
     dfOutput <- is.null(arglst$outFile)

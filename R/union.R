@@ -95,7 +95,7 @@ union_all.RxFileData <- function(x, y, .outFile=tbl_xdf(x), .rxArgs)
     }
 
     arglst <- list(y, append="rows")
-    arglst <- doExtraArgs(arglst, x, rlang::enexpr(.rxArgs), x)
+    arglst <- doExtraArgs(arglst, x, enexpr(.rxArgs), x)
     x <- callRx("rxDataStep", arglst)
 
     simpleRegroup(x, grps)

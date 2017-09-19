@@ -72,15 +72,15 @@
 #' @export
 mutate.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
-    dots <- rlang::quos(..., .named=TRUE)
-    transforms <- lapply(dots, rlang::get_expr)
+    dots <- quos(..., .named=TRUE)
+    transforms <- lapply(dots, get_expr)
     # turn a list of quoted expressions into a quoted list of expressions
     transforms <- if(length(transforms) > 0)
         as.call(c(as.name("list"), transforms))
     else NULL
 
     arglst <- list(.data, transforms=transforms)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
     callRx("rxDataStep", arglst)
@@ -93,8 +93,8 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     stopIfDistribCC("mutate on grouped data not supported in Hadoop/Spark compute context")
 
-    dots <- rlang::quos(..., .named=TRUE)
-    transforms <- lapply(dots, rlang::get_expr)
+    dots <- quos(..., .named=TRUE)
+    transforms <- lapply(dots, get_expr)
     # turn a list of quoted expressions into a quoted list of expressions
     transforms <- if(length(transforms) > 0)
         as.call(c(as.name("list"), transforms))
@@ -105,7 +105,7 @@ mutate.grouped_tbl_xdf <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
         stop("cannot mutate grouping variable")
 
     arglst <- list(.data, transforms=transforms)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
 
     callGroupedExec(.data, .outFile, transmutateGrouped, .fs=rxGetFileSystem(.data), arglst=arglst) %>%
         simpleRegroup(grps)

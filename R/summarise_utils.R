@@ -1,7 +1,7 @@
 buildSmryFormulaRhs <- function(data, grps, call, rxArgs, addN=FALSE, proxyVar=FALSE, gvarTypes)
 {
     if(!is.null(rxArgs))
-        call <- rlang::lang_modify(call, rlang::splice(rxArgs))
+        call <- lang_modify(call, splice(rxArgs))
 
     if(addN)
     {

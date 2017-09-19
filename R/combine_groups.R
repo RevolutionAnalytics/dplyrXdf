@@ -22,7 +22,7 @@ combineGroups <- function(datlst, output)
             else out <- rxDataStep(out, output, rowsPerRead=.dxOptions$rowsPerRead, overwrite=TRUE)
         }
     }
-    else out <- do.call(rbind.RxXdfData, rlang::modify(datlst, .outFile=output))
+    else out <- do.call(rbind.RxXdfData, modify(datlst, .outFile=output))
 
     out
 }

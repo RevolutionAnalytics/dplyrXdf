@@ -29,9 +29,7 @@
 filter.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
     grps <- group_vars(.data)
-    dots <- rlang::quos(..., .named=TRUE)
-
-    exprs <- lapply(dots, rlang::get_expr)
+    exprs <- exprs(...)
     if(length(exprs) > 0)
     {
         all_exprs <- exprs[[1]]
@@ -43,7 +41,7 @@ filter.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     else all_exprs <- NULL
 
     arglst <- list(.data, rowSelection=all_exprs)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
     output <- callRx("rxDataStep", arglst)

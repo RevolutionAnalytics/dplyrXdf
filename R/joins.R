@@ -37,7 +37,7 @@ NULL
 left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     by <- commonBy(by, x, y)
-    mergeBase(x, y, by, copy, "left", .outFile, rlang::enexpr(.rxArgs), suffix)
+    mergeBase(x, y, by, copy, "left", .outFile, enexpr(.rxArgs), suffix)
 }
 
 
@@ -46,7 +46,7 @@ left_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y")
 right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     by <- commonBy(by, x, y)
-    mergeBase(x, y, by, copy, "right", .outFile, rlang::enexpr(.rxArgs), suffix)
+    mergeBase(x, y, by, copy, "right", .outFile, enexpr(.rxArgs), suffix)
 }
 
 
@@ -55,7 +55,7 @@ right_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"
 inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     by <- commonBy(by, x, y)
-    mergeBase(x, y, by, copy, "inner", .outFile, rlang::enexpr(.rxArgs), suffix)
+    mergeBase(x, y, by, copy, "inner", .outFile, enexpr(.rxArgs), suffix)
 }
 
 
@@ -64,7 +64,7 @@ inner_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"
 full_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, suffix=c(".x", ".y"), .outFile=tbl_xdf(x), .rxArgs, ...)
 {
     by <- commonBy(by, x, y)
-    mergeBase(x, y, by, copy, "full", .outFile, rlang::enexpr(.rxArgs), suffix)
+    mergeBase(x, y, by, copy, "full", .outFile, enexpr(.rxArgs), suffix)
 }
 
 
@@ -81,10 +81,10 @@ semi_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile=tbl_xdf(x),
     # make sure we don't orphan y
     if(inherits(y, "tbl_xdf"))
         y@hasTblFile <- FALSE
-    y <- select(y, !!!rlang::syms(by$y)) %>% distinct
+    y <- select(y, !!!syms(by$y)) %>% distinct
     if(inherits(y, "tbl_xdf") && y@hasTblFile)
         on.exit(deleteIfTbl(y))
-    mergeBase(x, y, by, copy, "inner", .outFile, rlang::enexpr(.rxArgs))
+    mergeBase(x, y, by, copy, "inner", .outFile, enexpr(.rxArgs))
 }
 
 
@@ -103,10 +103,10 @@ anti_join.RxFileData <- function(x, y, by=NULL, copy=FALSE, .outFile=tbl_xdf(x),
         y@hasTblFile <- FALSE
     #ones <- sprintf("rep(1L, length(%s))", by$x[1])
 
-    y <- transmute(y, !!!rlang::syms(by$y), .ones=1L) %>% distinct
+    y <- transmute(y, !!!syms(by$y), .ones=1L) %>% distinct
 
     on.exit(deleteIfTbl(y))
-    out <- mergeBase(x, y, by, copy, "left", , rlang::enexpr(.rxArgs)) %>%  # note missing .outFile arg!
+    out <- mergeBase(x, y, by, copy, "left", , enexpr(.rxArgs)) %>%  # note missing .outFile arg!
         subset(is.na(.ones),  -.ones, .outFile=.outFile)
 }
 

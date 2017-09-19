@@ -84,8 +84,8 @@ copy_to.RxDataSource <- function(dest, df, ...)
         on.exit(delete_xdf(df))
     }
 
-    dots <- rlang::exprs(...)
-    arglst <- rlang::modify(list(df, outFile=dest), rlang::splice(dots))
+    dots <- exprs(...)
+    arglst <- modify(list(df, outFile=dest), splice(dots))
     if(destInHdfs)
         callRx("rxDataStep", arglst)
     else local_exec(callRx("rxDataStep", arglst))

@@ -33,9 +33,7 @@ arrange.RxXdfData <- function(.data, ..., .by_group=FALSE, .outFile=tbl_xdf(.dat
 {
     stopIfHdfs(.data, "arrange not supported on HDFS")
 
-    dots <- rlang::quos(...)
-
-    exprs <- lapply(dots, function(e) rlang::get_expr(e))
+    exprs <- exprs(...)
     desc <- sapply(exprs, function(e) !is.name(e) && identical(e[[1]], as.name("desc")))
     vars <- sapply(exprs, function(e) all.vars(e)[1])
 
@@ -47,7 +45,7 @@ arrange.RxXdfData <- function(.data, ..., .by_group=FALSE, .outFile=tbl_xdf(.dat
     }
 
     arglst <- list(.data, sortByVars=vars, decreasing=desc)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
     output <- callRx("rxSort", arglst)

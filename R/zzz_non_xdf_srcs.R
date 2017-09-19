@@ -121,9 +121,9 @@ summarise.RxDataSource <- function(.data, ...)
 #' @export
 subset.RxDataSource <- function(.data, subset, select, ...)
 {
-    sub <- rlang::enquo(subset)
-    sel <- rlang::enquo(select)
-    if(rlang::quo_is_missing(sel))
+    sub <- enquo(subset)
+    sel <- enquo(select)
+    if(quo_is_missing(sel))
         convertSrc(.data) %>% filter(!!sub)
     else convertSrc(.data) %>% filter(!!sub) %>% select(!!sel)
 }

@@ -11,7 +11,7 @@
 factorise.data.frame <- function(.data, ...)
 {
     # add a method for data frames because merging with xdfs can get messy
-    dots <- rlang::quos(..., .named = TRUE)
+    dots <- quos(..., .named = TRUE)
     if(".rxArgs" %in% names(dots))
     {
         warning("factorise() with data frame input doesn't use .rxArgs argument", call.=FALSE)

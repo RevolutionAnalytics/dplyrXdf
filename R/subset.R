@@ -35,20 +35,20 @@
 subset.RxFileData <- function(.data, subset=NULL, select=NULL, .outFile=tbl_xdf(.data), .rxArgs)
 {
     grps <- group_vars(.data)
-    select <- rlang::get_expr(rlang::enquo(select))
+    select <- get_expr(enquo(select))
     if(is.null(select))
         select <- names(.data)
     
     vars <- do.call(dplyr::select_vars, c(list(names(.data), select)),
-                    envir=parent.frame()) # cannot use rlang::invoke
+                    envir=parent.frame()) # cannot use invoke
     vars <- unique(c(grps, vars))
     if(length(vars) == 0)
         stop("No variables selected", call.=FALSE)
 
-    rows <- rlang::get_expr(rlang::enquo(subset))
+    rows <- get_expr(enquo(subset))
 
     arglst <- list(.data, rowSelection=rows, varsToKeep=vars)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
 
     on.exit(deleteIfTbl(.data))
     output <- callRx("rxDataStep", arglst)

@@ -36,7 +36,7 @@ smryRxSplitDplyr <- function(data, grps=NULL, stats, exprs, rxArgs)
 
         arglst <- list(data, maxRowsByCols=NULL)
         if(!is.null(rxArgs))
-            arglst <- rlang::modify(arglst, !!!rxArgs)
+            arglst <- modify(arglst, !!!rxArgs)
         return(callRx("rxDataStep", arglst) %>%
             summarise(!!!exprs))
     }
@@ -51,7 +51,7 @@ smryDplyrWithGroupvars <- function(data, grps, exprs, rxArgs=NULL, ...)
     arglst <- list(data, maxRowsByCols=NULL)
 
     if(!is.null(rxArgs))
-        arglst <- rlang::modify(arglst, !!!rxArgs)
+        arglst <- modify(arglst, !!!rxArgs)
 
     smry <- dplyr::summarise(do.call("rxDataStep", arglst), !!!exprs)
         

@@ -105,7 +105,7 @@ as_xdf.RxXdfData <- function(.data, file=NULL, composite=is_composite_xdf(.data)
     asXdfOverwriteCheck(file, overwrite, in_hdfs(.data), hdfs_host(.data))
 
     out <- modifyXdf(.data, file=file, createCompositeSet=composite)
-    arglst <- rlang::modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
+    arglst <- modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
     callRx("rxDataStep", arglst)
 }
 
@@ -135,7 +135,7 @@ as_xdf.RxDataSource <- function(.data, file=NULL, composite=in_hdfs(.data), over
     else rxGetFileSystem(.data)
         
     out <- RxXdfData(file=file, fileSystem=fs, createCompositeSet=composite)
-    arglst <- rlang::modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
+    arglst <- modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
 
     if(in_hdfs(out))
         callRx("rxDataStep", arglst)
@@ -155,7 +155,7 @@ as_xdf.default <- function(.data, file=NULL, composite=FALSE, overwrite=FALSE, .
     .data <- as.data.frame(.data)
 
     out <- RxXdfData(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
-    arglst <- rlang::modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
+    arglst <- modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
     local_exec(callRx("rxDataStep", arglst))
 }
 

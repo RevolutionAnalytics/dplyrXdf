@@ -59,7 +59,7 @@ factorize <- factorise
 #' @export
 factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
-    dots <- rlang::quos(..., .named=TRUE)
+    dots <- quos(..., .named=TRUE)
 
     grps <- group_vars(.data)
     types <- varTypes(.data)
@@ -87,7 +87,7 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     }
 
     arglst <- list(.data, factorInfo=factorInfo)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
 
     # rxFactors doesn't support rowsPerRead
     arglst$rowsPerRead <- NULL
@@ -115,7 +115,7 @@ factorise.RxXdfData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 #' @export
 factorise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
 {
-    dots <- rlang::quos(..., .named=TRUE)
+    dots <- quos(..., .named=TRUE)
 
     types <- varTypes(.data)
     vars <- factoriseVars(types, dots)
@@ -129,7 +129,7 @@ factorise.RxFileData <- function(.data, ..., .outFile=tbl_xdf(.data), .rxArgs)
     }, simplify=FALSE)
 
     arglst <- list(.data, colInfo=colInfo)
-    arglst <- doExtraArgs(arglst, .data, rlang::enexpr(.rxArgs), .outFile)
+    arglst <- doExtraArgs(arglst, .data, enexpr(.rxArgs), .outFile)
     callRx("rxImport", arglst)
 }
 
@@ -150,13 +150,13 @@ factoriseVars <- function(types, args)
     # unlike select, named arguments always treated as specifying factor levels, not indices
     # blank arguments can also include variable selector functions
     isBlankArg <- sapply(args, function(e) {
-        e <- rlang::get_expr(e)
+        e <- get_expr(e)
         is.name(e) || (is.call(e) && as.character(e[[1]]) %in% selectionFuncs)
     })
 
     blankArgs <- select_vars(names(types), !!!args[isBlankArg])
     names(blankArgs) <- sapply(blankArgs, as.character)
-    newlevelArgs <- lapply(args[!isBlankArg], rlang::eval_tidy)
+    newlevelArgs <- lapply(args[!isBlankArg], eval_tidy)
 
     list(blankArgs=blankArgs, newlevelArgs=newlevelArgs)
 }
