@@ -8,8 +8,8 @@
 \usage{
 persist(.data, ...)
 
-\method{persist}{tbl_xdf}(.data, outFile, overwrite = TRUE, move = TRUE,
-  composite = NULL, ...)
+\method{persist}{tbl_xdf}(.data, file, composite = is_composite_xdf(.data),
+  move = TRUE, overwrite = TRUE, ...)
 
 \method{persist}{RxFileData}(.data, ...)
 }
@@ -18,13 +18,13 @@ persist(.data, ...)
 
 \item{...}{Other arguments to \code{\link[RevoScaleR]{rxDataStep}}}
 
-\item{outFile}{Character string giving the name of the output xdf file}
+\item{file}{Character string giving the name of the output xdf file}
 
-\item{overwrite}{If the outfile already exists, should it be overwritten?}
+\item{composite}{Create a composite Xdf or normal? The default is to create the same type of file as the input.}
 
 \item{move}{Should the tbl file be moved or copied?}
 
-\item{composite}{Create a composite Xdf or normal? The default is to create the same type of file as the input.}
+\item{overwrite}{If the outfile already exists, should it be overwritten?}
 }
 \value{
 An \code{RxXdfData} object pointing to the new xdf file.

@@ -1,7 +1,7 @@
 #' Copy an xdf tbl to a permanent storage location.
 #'
 #' @param .data An xdf tbl
-#' @param outFile Character string giving the name of the output xdf file
+#' @param file Character string giving the name of the output xdf file
 #' @param overwrite If the outfile already exists, should it be overwritten?
 #' @param move Should the tbl file be moved or copied?
 #' @param composite Create a composite Xdf or normal? The default is to create the same type of file as the input.
@@ -33,34 +33,12 @@ persist <- function(.data, ...)
 
 #' @rdname persist
 #' @export
-persist.tbl_xdf <- function(.data, outFile, overwrite=TRUE, move=TRUE, composite=NULL, ...)
+persist.tbl_xdf <- function(.data, file, composite=is_composite_xdf(.data), move=TRUE, overwrite=TRUE, ...)
 {
-    compositeIn <- is_composite_xdf(.data)
-    if(is.null(composite))
-        composite <- compositeIn
-
-    # only allow composite on HDFS
-    if(in_hdfs(.data) && !composite)
-    {
-        warning("only composite Xdf files supported in HDFS")
-        composite <- TRUE
-    }
-
-    outFile <- validateXdfFile(outFile, composite)
-
-    if(compositeIn == composite)
-    {
-        # direct copy/move using OS commands
-        copyOrMove(.data, outFile, overwrite=overwrite, move=move)
-    }
-    else
-    {
-        # save as desired type
-        out <- RxXdfData(outFile, fileSystem=rxGetFileSystem(.data), createCompositeSet=composite)
-        if(move)
-            on.exit(delete_xdf(.data))
-        rxDataStep(.data, out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite)
-    }
+    out <- as_xdf(.data, file, composite=composite, overwrite=overwrite)
+    if(move)
+        delete_xdf(.data)
+    out
 }
 
 
