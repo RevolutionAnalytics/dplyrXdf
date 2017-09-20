@@ -8,8 +8,8 @@ callGroupedExec <- function(.data, .output, ...)
     fs <- rxGetFileSystem(.data)
     cc <- rxGetComputeContext()
 
-    # must use rxExecBy if compute context is distributed
-    outlst <- if(.dxOptions$useExecBy || inherits(cc, "RxHadoopMR"))
+    # use rxExecBy if compute context is Hadoop, OR (execBy is set, and cc is localseq)
+    outlst <- if(inherits(cc, "RxHadoopMR") || (.dxOptions$useExecBy  && inherits(cc, "RxLocalSeq")))
         callExecBy(.data, ...)
     else callSplit(.data, ...)
 
