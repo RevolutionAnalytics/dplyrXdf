@@ -39,7 +39,7 @@ tbl <- transmute(mtx, mpg2 = 2 * mpg)
 cbind(mtx, tbl)
 
 # rbind two Xdf files together
-mtx2 <- as_xdf(mtcars)
+mtx2 <- as_xdf(mtcars, overwrite=TRUE)
 rbind(mtx, mtx2)
 
 # combine an Xdf file and a data frame: must explicitly call RxXdfData method

@@ -42,8 +42,8 @@ Calling this verb on a non-tbl data source (eg a raw \code{RxXdfData} object) wi
 \examples{
 mtx <- as_xdf(mtcars, overwrite=TRUE)
 tbl <- mutate(mtx, mpg2=2 * mpg)
-persist(tbl, "mtcars_mutate.xdf")
-persist(tbl, "mtcars_composite", composite=TRUE)
+persist(tbl, "mtcars_mutate.xdf", move=FALSE)
+persist(tbl, "mtcars-composite", composite=TRUE)  # composite Xdf names cannot contain _ or .
 }
 \seealso{
 \code{\link{as_xdf}}, \code{\link{as.data.frame.RxXdfData}}, \code{\link[RevoScaleR]{rxDataStep}}

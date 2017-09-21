@@ -44,7 +44,7 @@
 #'
 #' # convert a tbl_xdf to Xdf (could also use persist())
 #' tbl <- mtx %>% mutate(mpg2=2 * mpg)
-#' as_xdf(tbl, file="mtcars_mutate.xdf")
+#' as_xdf(tbl, file="mtcars_mutate.xdf", overwrite=TRUE)
 #'
 #' # import a text file to Xdf
 #' write.csv(mtcars, "mtcars.csv", row.names=FALSE)

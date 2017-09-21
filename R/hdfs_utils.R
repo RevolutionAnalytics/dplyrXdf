@@ -31,7 +31,7 @@
 #' \dontrun{
 #' hdfs_host()
 #'
-#' mtx <- as_xdf(mtcars)
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
 #' mth <- copy_to_hdfs(mtx)
 #' in_hdfs(mtx)
 #' in_hdfs(mth)

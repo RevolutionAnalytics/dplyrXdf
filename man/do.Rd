@@ -47,15 +47,25 @@ The difference between the \code{do} and \code{do_xdf} verbs is that the former 
 To run expressions on a grouped Xdf tbl, \code{do} and \code{do_xdf} split the data into one file per group, and the arguments are called on each file. Note however this may be slow if you have a large number of groups; and, for \code{do}, the operation will be limited by memory if the number of rows per group is large.
 }
 \examples{
+mtx <- as_xdf(mtcars, overwrite=TRUE)
+
 # unnamed arg
-mtx <- as_xdf(mtcars)
 do(mtx, {
     mpg2 <- 2 * .$mpg
     cyl2 <- 2 * .$cyl
+    .
 })
 
+do_xdf(mtx, rxDataStep(., transformFunc=function(.data) {
+    .data$mpg2 <- 2 * .data$mpg
+    .data$cyl2 <- 2 * .data$cyl
+    .data
+}))
+
 # named arg
-do(mtx, m=lm(mpg ~ cyl, data=.)
+do(mtx, m=lm(mpg ~ cyl, data=.))
+
+do_xdf(mtx, m=rxLinMod(mpg ~ cyl, data=.))
 
 # fitting multiple models to subsets of the data
 if(require("nycflights13")) {
@@ -67,7 +77,7 @@ flx \%>\%
 # with do_xdf: useful if each subset is very large, but called code must be Xdf-aware
 flx \%>\%
     group_by(carrier) \%>\%
-    do_xdf(m2=rxLinMod(arr_delay ~ dep_time, data=.)
+    do_xdf(m2=rxLinMod(arr_delay ~ dep_time, data=.))
 }
 }
 \seealso{

@@ -55,14 +55,14 @@ setMethod("initialize", "tbl_xdf", function(.Object, ...) {
 #'         stop("must supply Xdf data source") 
 #'     rxLinMod(formula, data=data)
 #' }
-#' swx <- as_xdf(starwars, overwrite=TRUE)
-#' tbl <- select(swx, height, mass, name)
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#' tbl <- select(mtx, mpg, wt, disp)
 #' \dontrun{
 #' # this will fail
-#' my_model(tbl, height ~ mass)
+#' my_model(tbl, mpg ~ wt + disp)
 #' }
 #' # use as_xdf() to convert back to RxXdfData
-#' my_model(as_xdf(tbl), height ~ mass)
+#' my_model(as_xdf(tbl), mpg ~ wt + disp)
 #' @rdname tbl_xdf
 #' @export
 tbl_xdf <- function(xdf=NULL, file=NULL, createCompositeSet=NULL, fileSystem=rxGetFileSystem(xdf), ...)

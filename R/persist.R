@@ -21,8 +21,8 @@
 #' @examples
 #' mtx <- as_xdf(mtcars, overwrite=TRUE)
 #' tbl <- mutate(mtx, mpg2=2 * mpg)
-#' persist(tbl, "mtcars_mutate.xdf")
-#' persist(tbl, "mtcars_composite", composite=TRUE)
+#' persist(tbl, "mtcars_mutate.xdf", move=FALSE)
+#' persist(tbl, "mtcars-composite", composite=TRUE)  # composite Xdf names cannot contain _ or .
 #' @rdname persist
 #' @export
 persist <- function(.data, ...)

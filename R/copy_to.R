@@ -40,7 +40,7 @@
 #' copy_to(mtdb, mtcars)
 #'
 #' # copy an Xdf file to SQL Server: will overwrite any existing table with the same name
-#' mtx <- as_xdf(mtcars)
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
 #' copy_to(mtdb, mtx)
 #'
 #' # copy a data frame to HDFS

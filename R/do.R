@@ -17,15 +17,25 @@
 #' \code{\link[dplyr]{do}} in package dplyr
 #'
 #' @examples
+#' mtx <- as_xdf(mtcars, overwrite=TRUE)
+#'
 #' # unnamed arg
-#' mtx <- as_xdf(mtcars)
 #' do(mtx, {
 #'     mpg2 <- 2 * .$mpg
 #'     cyl2 <- 2 * .$cyl
+#'     .
 #' })
 #'
+#' do_xdf(mtx, rxDataStep(., transformFunc=function(.data) {
+#'     .data$mpg2 <- 2 * .data$mpg
+#'     .data$cyl2 <- 2 * .data$cyl
+#'     .data
+#' }))
+#'
 #' # named arg
-#' do(mtx, m=lm(mpg ~ cyl, data=.)
+#' do(mtx, m=lm(mpg ~ cyl, data=.))
+#'
+#' do_xdf(mtx, m=rxLinMod(mpg ~ cyl, data=.))
 #' @aliases do
 #' @rdname do
 #' @export
@@ -65,7 +75,7 @@ do.RxFileData <- function(.data, ...)
 #' # with do_xdf: useful if each subset is very large, but called code must be Xdf-aware
 #' flx %>%
 #'     group_by(carrier) %>%
-#'     do_xdf(m2=rxLinMod(arr_delay ~ dep_time, data=.)
+#'     do_xdf(m2=rxLinMod(arr_delay ~ dep_time, data=.))
 #' }
 #' @rdname do
 #' @export

@@ -77,7 +77,7 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
 
 #' @examples
 #' # rbind two Xdf files together
-#' mtx2 <- as_xdf(mtcars)
+#' mtx2 <- as_xdf(mtcars, overwrite=TRUE)
 #' rbind(mtx, mtx2)
 #'
 #' # combine an Xdf file and a data frame: must explicitly call RxXdfData method

@@ -35,8 +35,13 @@
 #' tbl2 <- group_by(mtx, cyl) %>% summarise(m=mean(mpg))
 #' as.data.frame(tbl2)
 #'
-#' select and summarise simultaneously with .rxArgs
+#' # filter and summarise simultaneously with .rxArgs
 #' tbl3 <- summarise(mtx, m=mean(mpg), .rxArgs=list(rowSelection=cyl > 4))
+#' as.data.frame(tbl3)
+#'
+#' # compute a weighted mean
+#' tbl4 <- summarise(mtx, m=mean(mpg), .rxArgs=list(pweights="wt"))
+#' as.data.frame(tbl4)
 #'
 #' # save to a persistent Xdf file
 #' summarise(mtx, m=mean(mpg), .outFile="mtcars_summary.xdf")
