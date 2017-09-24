@@ -289,11 +289,8 @@ in_hdfs <- function(object)
 local_exec <- function(expr, context="local")
 {
     cc <- rxGetComputeContext()
-    if(inherits(cc, "RxDistributedHpa"))
-    {
-        on.exit(rxSetComputeContext(cc))
-        rxSetComputeContext(context)
-    }
+    on.exit(rxSetComputeContext(cc))
+    rxSetComputeContext(context)
     eval(expr, parent.frame())
 }
 
