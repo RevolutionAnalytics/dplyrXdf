@@ -21,12 +21,13 @@ grouped_tbl_xdf <- setClass("grouped_tbl_xdf", contains="tbl_xdf", slots=c(group
 #'  There are two options for handling grouped data: use the \code{\link[RevoScaleR]{rxExecBy}} function supplied in the RevoScaleR package, or via dplyrXdf-internal code. The former is the default if the version of Microsoft R installed is 9.1 or higher.
 #'
 #' @section Parallel by-group processing:
-#' Most verbs that have specific methods for grouped data will split the data into multiple Xdf files, and then process each file separately (the exception is \code{\link[dplyrXdf]{summarise}}. This makes it easy to parallelise the processing of groups in dplyrXdf. There are a number of options available:
-#' \itemize{
-#'     \item By default, if Microsoft R Server 9.1 or higher is installed, dplyrXdf will use \code{\link{rxExecBy}} to process groups. This will create a cluster of slave nodes in the background and send the data to the nodes by group. The cluster is destroyed at the end of each pipeline.
-#'     \item For more flexibility, you can set the compute context manually to \code{\link{RxForeachDoPar}}. This will create a \emph{persistent} cluster that can be reused for multiple pipelines. The ForeachDoPar compute context can also use clusters made up of multiple machines, not just multiple processes on the single machine; see below for an example of this.
-#'     \item If your data is stored in a Hadoop or Spark cluster, dplyrXdf will similarly take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes.
-#' }
+#' Most verbs that have specific methods for grouped data will split the data into multiple Xdf files, and then process each file separately (the exception is \code{\link[dplyrXdf]{summarise}}. This makes it easy to parallelise the processing of groups.
+#'
+#' dplyrXdf will automatically use the RevoScaleR compute context that you set via \code{\link{rxSetComputeContext}}. For example, if you set the compute context to \code{\link{RxLocalParallel}}, dplyrXdf will create a cluster of slave nodes in the background and send the data to the nodes by group. The cluster is destroyed when the verb returns.
+#'
+#' For more flexibility and scalability, you can set the compute context manually to \code{\link{RxForeachDoPar}}. This will create a \emph{persistent} cluster that can be reused for multiple pipelines. The dopar compute context can also use clusters made up of multiple machines, not just multiple processes on the single machine; see below for an example of this.
+#'
+#' The above applies to data stored in the native filesystem (either on your local machine or a network share). If your data is stored in a Hadoop or Spark cluster, dplyrXdf will similarly take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes.
 #'
 #' @seealso
 #' \code{\link[dplyr]{group_by}} in package dplyr, \code{\link{dplyrxdf_options}} for how to change the splitting procedure
