@@ -14,18 +14,21 @@ splitGroups <- function(data)
 
     # mimic behaviour of rxSplit: rxDataStep that splits each chunk, calls rxDataStep on each split
     filelst <- rxDataStep(data, transformFunc=function(varlst) {
+            if(.rxIsTestChunk)
+                return(NULL)
             datlst <- split(as.data.frame(varlst, stringsAsFactors=FALSE), varlst[.grps], drop=TRUE, sep="--")
             # fix problematic characters in filenames: ?*<>|+ etc
             names(datlst) <- sapply(names(datlst), URLencode, reserved=TRUE)
 
             filelst <- paste(.fname, paste(.grps, collapse="#"), names(datlst), sep="##")
+            if(!.composite)
+                filelst <- paste0(filelst, ".xdf")
             outlst <- lapply(filelst, RxXdfData, fileSystem=.fs, createCompositeSet=.composite)
 
             for(i in seq_along(datlst))
             {
-                out <- if(file.exists(filelst[i]))
-                    rxDataStep(datlst[[i]], outlst[[i]], append="rows")
-                else rxDataStep(datlst[[i]], outlst[[i]], append="none")
+                append <- if(file.exists(filelst[i])) "rows" else "none"
+                out <- rxDataStep(datlst[[i]], outlst[[i]], append=append)
             }
             .outFiles <<- base::union(.outFiles, filelst)
             NULL
