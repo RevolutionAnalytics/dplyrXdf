@@ -124,6 +124,7 @@ as_xdf.RxDataSource <- function(.data, file=NULL, composite=in_hdfs(.data), over
         else if(inherits(.data, c("RxOdbcData", "RxTeradata", "RxHiveData")) && !is.null(.data@table))
             .data@table
         else URLencode(deparse(substitute(.data)), reserved=TRUE)
+        file <- basename(file)
     }
 
     file <- validateXdfFile(file, composite)
