@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2017-09-19" />
+<meta name="date" content="2017-09-27" />
 
 <title>Using the dplyrXdf package</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Using the dplyrXdf package</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2017-09-19</em></h4>
+<h4 class="date"><em>2017-09-27</em></h4>
 
 
 <div id="TOC">
@@ -201,7 +201,7 @@ output3 &lt;-<span class="st"> </span>output1 %&gt;%
 
 output3
 <span class="co">#&gt; tbl_xdf Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpEduo1t\dxTmp34a85cf17aff\file34a86a6b553d.xdf&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpY7aQYX\dxTmpbac7dbc59e\filebac3983da3.xdf&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: FALSE</span>
@@ -209,7 +209,7 @@ output3
 <span class="co"># no longer a tbl_xdf</span>
 outputXdf
 <span class="co">#&gt; RxXdfData Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpEduo1t\dxTmp34a85cf17aff\file34a86a6b553d.xdf&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpY7aQYX\dxTmpbac7dbc59e\filebac3983da3.xdf&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: FALSE</span></code></pre></div>
@@ -235,7 +235,7 @@ output3
 <h3>Setting the tbl directory</h3>
 <p>By default, dplyrXdf will save the files it creates into the R working directory. On some systems, this may be located on a filesystem that is relatively small; this is rarely an issue with open source R, as all its objects are loaded into memory, but can be problematic with large Xdf files. You can view the location of the current Xdf tbl directory with <code>get_dplyrxdf_dir</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_dplyrxdf_dir</span>()
-<span class="co">#&gt; [1] &quot;d:\\misc\\Rtemp\\RtmpEduo1t\\dxTmp34a85cf17aff&quot;</span></code></pre></div>
+<span class="co">#&gt; [1] &quot;d:\\misc\\Rtemp\\RtmpY7aQYX\\dxTmpbac7dbc59e&quot;</span></code></pre></div>
 <p>Similarly, you can change the location of the Xdf tbl directory with the <code>set_dplyrxdf_dir</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># set the tbl directory to a network drive (on Windows)</span>
 <span class="kw">set_dplyrxdf_dir</span>(<span class="st">&quot;n:/Rtemp&quot;</span>)</code></pre></div>
@@ -409,50 +409,48 @@ flightsMods$model[[<span class="dv">1</span>]]
 <span class="co">#&gt; Linear Regression Results for: arr_delay ~ dep_delay + hour</span>
 <span class="co">#&gt; Data: . (RxXdfData Data Source)</span>
 <span class="co">#&gt; File name:</span>
-<span class="co">#&gt;     d:\misc\Rtemp\RtmpEduo1t\tmpPartitions34a896f32e0\data\tmpPartitions34a896f32e0_8198236150526572797.xdf</span>
+<span class="co">#&gt;     d:\misc\Rtemp\RtmpY7aQYX\dxTmpbac7dbc59e/flights##carrier##9E.xdf</span>
 <span class="co">#&gt; Dependent variable(s): arr_delay</span>
 <span class="co">#&gt; Total independent variables: 3 </span>
-<span class="co">#&gt; Number of valid observations: 57782</span>
-<span class="co">#&gt; Number of missing observations: 883 </span>
+<span class="co">#&gt; Number of valid observations: 17294</span>
+<span class="co">#&gt; Number of missing observations: 1166 </span>
 <span class="co">#&gt;  </span>
 <span class="co">#&gt; Coefficients:</span>
-<span class="co">#&gt;               arr_delay</span>
-<span class="co">#&gt; (Intercept) -8.98982876</span>
-<span class="co">#&gt; dep_delay    1.02019301</span>
-<span class="co">#&gt; hour         0.02243255</span></code></pre></div>
+<span class="co">#&gt;              arr_delay</span>
+<span class="co">#&gt; (Intercept) -3.4373316</span>
+<span class="co">#&gt; dep_delay    1.0284862</span>
+<span class="co">#&gt; hour        -0.4247951</span></code></pre></div>
 </div>
 </div>
 <div id="parallel-processing-of-grouped-data" class="section level2">
 <h2>Parallel processing of grouped data</h2>
 <p>dplyrXdf takes a fairly literal approach to implementing the split-apply-combine strategy for grouped data. Most verbs that have specific methods for groups will split the data into multiple Xdf files, and then process each file separately (the exception is <code>summarise</code>, because <code>rxCube</code> and <code>rxSummary</code> can deal with groups natively). This makes it easy to parallelise the processing of groups in dplyrXdf.</p>
-<p>By default, if Microsoft R Server 9.1 or higher is installed, dplyrXdf will use <code>rxExecBy</code> to process groups. This automatically creates a cluster of slave nodes in the background and sends the data to the nodes by group. The cluster is destroyed when the verb returns.</p>
-<p>For more flexibility, you can <em>manually</em> create a cluster and set the compute context to <code>RxForeachDoPar</code>, which has a number of benefits. First, since the cluster is persistent, no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the <code>RxForeachDoPar</code> compute context is agnostic as to the nature of the underlying cluster. In particular, you can create a cluster of multiple (virtual) machines, which will be much more scalable than a cluster of multiple processes on a single machine. The main requirement is that all the machines must have access to the same filesystem, such as a network drive or file share.</p>
-<p>The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the <a href="https://github.com/Azure/doAzureParallel">doAzureParallel package</a>, which is an easy-to-use way to create clusters of <a href="https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview">Azure Data Science VMs</a>, but you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).</p>
+<p>dplyrXdf will automatically use the RevoScaleR compute context that you set via <code>rxSetComputeContext()</code>. For example, if you set the compute context to <code>RxLocalParallel()</code>, dplyrXdf will create a cluster of slave nodes in the background and send the data to the nodes by group. The cluster is destroyed when the verb returns.</p>
+<p>For more flexibility, you can <em>manually</em> create a cluster and set the compute context to <code>RxForeachDoPar()</code>. This has a number of benefits. First, the cluster is persistent, so no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the <code>RxForeachDoPar</code> compute context is agnostic as to the nature of the underlying cluster. In particular, you can create a cluster of multiple (virtual) machines, which will be much more scalable than a cluster of multiple processes on a single machine. The main requirements are that you must be able to register the cluster with the foreach package; and all the machines must have access to the same filesystem, such as a network drive or file share.</p>
+<p>The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the <a href="https://github.com/Azure/doAzureParallel">doAzureParallel package</a>, which is an easy-to-use way to create clusters of <a href="https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview">Azure Data Science VMs</a>. However, you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(doAzureParallel)
 
 <span class="co"># doAzureParallel uses json files for cluster setup; see the documentation on GitHub for details</span>
 <span class="kw">setCredentials</span>(<span class="st">&quot;credentials.json&quot;</span>)
 
-<span class="co"># create a cluster of VMs in Azure</span>
+<span class="co"># create and register a cluster of VMs in Azure</span>
 cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(<span class="st">&quot;cluster.json&quot;</span>)
 <span class="kw">registerDoAzureParallel</span>(cl)
 
 <span class="co"># tell dplyrXdf to use our cluster</span>
-<span class="kw">dplyrxdf_options</span>(<span class="dt">useExecBy=</span><span class="ot">FALSE</span>)
 <span class="kw">rxSetComputeContext</span>(<span class="st">&quot;dopar&quot;</span>)
 
 <span class="co"># set the dplyrXdf working directory to a cluster-accessible location</span>
 <span class="kw">set_dplyrxdf_dir</span>(<span class="st">&quot;n:/clusterdata&quot;</span>)
 
-<span class="co"># fit the models in parallel across the cluster</span>
+<span class="co"># fit models in parallel across the cluster</span>
 flightsXdf %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(carrier) %&gt;%
 <span class="st">    </span><span class="kw">do</span>(<span class="dt">model=</span><span class="kw">lm</span>(arr_delay ~<span class="st"> </span>dep_delay +<span class="st"> </span>hour, <span class="dt">data=</span>.))
 
-<span class="co"># manually shut down the cluster when we're done</span>
+<span class="co"># shut down the cluster when we're done</span>
 <span class="kw">stopCluster</span>(cl)
-<span class="kw">rxSetComputeContext</span>(<span class="st">&quot;local&quot;</span>)
-<span class="kw">dplyrxdf_options</span>(<span class="dt">useExecBy=</span><span class="ot">TRUE</span>)</code></pre></div>
+<span class="kw">rxSetComputeContext</span>(<span class="st">&quot;local&quot;</span>)</code></pre></div>
 <p>Note that the above assumes your data is stored on the native filesystem (either on your machine’s local hard disk, or in a network share). If your data is stored in a Hadoop or Spark cluster, dplyrXdf will take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes. See the HDFS vignette for more information on working with Xdf files in Spark.</p>
 </div>
 <div id="data-frame-methods" class="section level2">

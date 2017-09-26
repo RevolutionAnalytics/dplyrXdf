@@ -25,7 +25,7 @@ One of the key strengths of dplyr is its ability to interoperate with SQL databa
 
 ## Working in the database
 
-As of version 0.10.0, dplyrXdf has the ability to leverage this ability with ODBC data sources. If the input to a pipeline is an `RxOdbcData`, `RxTeradata` or `RxSqlServerData` source, dplyrXdf will convert it to a dplyr tbl. The subsequent pipeline will then be run in the database, rather than the data being imported to the local R session. To demonstrate how this works, we'll take the flights dataset and turn it into a table in a SQL Server database, then run a simple pipeline against it.
+As of version 1.0, dplyrXdf has the ability to leverage this ability with ODBC data sources. If the input to a pipeline is an `RxOdbcData`, `RxTeradata` or `RxSqlServerData` source, dplyrXdf will convert it to a dplyr tbl. The subsequent pipeline will then be run in the database, rather than the data being imported to the local R session. To demonstrate how this works, we'll take the flights dataset and turn it into a table in a SQL Server database, then run a simple pipeline against it.
 
 The verb to copy an `RxSqlServerData` source into a table is `copy_to`. RevoScaleR doesn't have an exact analogue to the "src" concept in dplyr, so `copy_to` works slightly differently in dplyrXdf. To copy a dataset to a SQL database, the first argument to the function should be a data source that references the destination table:
 
@@ -61,7 +61,7 @@ compute(flightsQry, name="flightsQry", temporary=FALSE)
 
 ## Working locally
 
-Going the other way is also possible: starting from a database table, dplyrXdf can import the data to Xdf format. This is done via `compute` if you want to create a temporary Xdf file (which will be deleted after you quit R), or `as_xdf` if you want a permanent Xdf file.
+Going the other way is also possible: starting from a database table, dplyrXdf can import the data to Xdf format. This is done via `compute` if you want to create a temporary Xdf file (which will be deleted after you quit R), or `as_xdf` if you want a permanent one.
 
 ```{r}
 # import a table to the local machine

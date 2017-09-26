@@ -65,19 +65,17 @@ as_data_frame(flightsHd2)
 #      filter(deviceplatform == "Android") %>%
 #      group_by(devicemake) %>%
 #      summarise(n=n()) %>%
-#      arrange(desc(n)) %>%
 #      head()
 #  #> # Source:     lazy query [?? x 2]
 #  #> # Database:   spark_connection
-#  #> # Ordered by: desc(n)
 #  #>     devicemake     n
 #  #>          <chr> <dbl>
-#  #> 1      Samsung 16244
-#  #> 2           LG  7950
-#  #> 3          HTC  2242
-#  #> 4      Unknown  2133
-#  #> 5     Motorola  1524
-#  #> # ... with more rows
+#  #> 1        Casio   996
+#  #> 2     Motorola  1524
+#  #> 3       Huawei   230
+#  #> 4 SonyEricsson   139
+#  #> 5      Kyocera   117
+#  #> 6      Unknown  2133
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  # this will create the composite Xdf 'samplehivetable' in the HDFS user directory
@@ -86,15 +84,15 @@ as_data_frame(flightsHd2)
 #  sampleXdf %>%
 #      filter(deviceplatform == "Android") %>%
 #      group_by(devicemake) %>%
-#      summarise(n=n()) %>%
-#      arrange(desc(n)) %>%
+#      summarise(n=n(), .method=4) %>%
 #      head()
 #  #>     devicemake     n
-#  #> 1      Samsung 16244
-#  #> 2           LG  7950
-#  #> 3          HTC  2242
-#  #> 4      Unknown  2133
-#  #> 5     Motorola  1524
+#  #> 1       Archos     1
+#  #> 2      Samsung 16244
+#  #> 3      Unknown  2133
+#  #> 4      Kyocera   117
+#  #> 5          HTC  2242
+#  #> 6 SonyEricsson   139
 
 ## ------------------------------------------------------------------------
 # create a new directory

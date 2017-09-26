@@ -24,7 +24,7 @@ dplyrXdf:::detectHdfsConnection()
 ```
 Microsoft R Server includes the ability to work with Hadoop and Spark clusters. As part of this, it also lets you work with datasets, in particular Xdf files, that are stored in HDFS.
 
-As of version 0.10.0, dplyrXdf also supports Xdf files in HDFS. Most verbs will work exactly the same as  with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark. You will need to have Microsoft R Server version 9.0 to use dplyrXdf with HDFS, and ideally version 9.1 for full functionality.
+As of version 1.0, dplyrXdf also supports Xdf files in HDFS. Most verbs will work exactly the same as  with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark. You will need to have Microsoft R Server version 9.0 to use dplyrXdf with HDFS, and ideally version 9.1 for full functionality.
 
 
 ## Basics: Hadoop, Spark and HDFS
@@ -150,19 +150,17 @@ sampleHiv %>%
     filter(deviceplatform == "Android") %>%
     group_by(devicemake) %>%
     summarise(n=n()) %>%
-    arrange(desc(n)) %>%
     head()
 #> # Source:     lazy query [?? x 2]
 #> # Database:   spark_connection
-#> # Ordered by: desc(n)
 #>     devicemake     n
 #>          <chr> <dbl>
-#> 1      Samsung 16244
-#> 2           LG  7950
-#> 3          HTC  2242
-#> 4      Unknown  2133
-#> 5     Motorola  1524
-#> # ... with more rows
+#> 1        Casio   996
+#> 2     Motorola  1524
+#> 3       Huawei   230
+#> 4 SonyEricsson   139
+#> 5      Kyocera   117
+#> 6      Unknown  2133
 ```
 
 In this example, dplyrXdf has converted the `RxHiveData` source into a sparklyr tbl, and the subsequent pipeline will be run by sparklyr (_not_ by dplyrXdf) in the cluster.
@@ -176,15 +174,15 @@ sampleXdf <- as_xdf(sampleHiv)
 sampleXdf %>%
     filter(deviceplatform == "Android") %>%
     group_by(devicemake) %>%
-    summarise(n=n()) %>%
-    arrange(desc(n)) %>%
+    summarise(n=n(), .method=4) %>%
     head()
 #>     devicemake     n
-#> 1      Samsung 16244
-#> 2           LG  7950
-#> 3          HTC  2242
-#> 4      Unknown  2133
-#> 5     Motorola  1524
+#> 1       Archos     1
+#> 2      Samsung 16244
+#> 3      Unknown  2133
+#> 4      Kyocera   117
+#> 5          HTC  2242
+#> 6 SonyEricsson   139
 ```
 
 

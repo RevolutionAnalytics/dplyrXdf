@@ -184,26 +184,24 @@ flightsMods$model[[1]]
 #  # doAzureParallel uses json files for cluster setup; see the documentation on GitHub for details
 #  setCredentials("credentials.json")
 #  
-#  # create a cluster of VMs in Azure
+#  # create and register a cluster of VMs in Azure
 #  cl <- makeCluster("cluster.json")
 #  registerDoAzureParallel(cl)
 #  
 #  # tell dplyrXdf to use our cluster
-#  dplyrxdf_options(useExecBy=FALSE)
 #  rxSetComputeContext("dopar")
 #  
 #  # set the dplyrXdf working directory to a cluster-accessible location
 #  set_dplyrxdf_dir("n:/clusterdata")
 #  
-#  # fit the models in parallel across the cluster
+#  # fit models in parallel across the cluster
 #  flightsXdf %>%
 #      group_by(carrier) %>%
 #      do(model=lm(arr_delay ~ dep_delay + hour, data=.))
 #  
-#  # manually shut down the cluster when we're done
+#  # shut down the cluster when we're done
 #  stopCluster(cl)
 #  rxSetComputeContext("local")
-#  dplyrxdf_options(useExecBy=TRUE)
 
 ## ------------------------------------------------------------------------
 head(flightsXdf$arr_delay)

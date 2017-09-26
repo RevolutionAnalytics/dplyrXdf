@@ -367,11 +367,11 @@ flightsMods$model[[1]]
 
 dplyrXdf takes a fairly literal approach to implementing the split-apply-combine strategy for grouped data. Most verbs that have specific methods for groups will split the data into multiple Xdf files, and then process each file separately (the exception is `summarise`, because `rxCube` and `rxSummary` can deal with groups natively). This makes it easy to parallelise the processing of groups in dplyrXdf.
 
-By default, if Microsoft R Server 9.1 or higher is installed, dplyrXdf will use `rxExecBy` to process groups. This automatically creates a cluster of slave nodes in the background and sends the data to the nodes by group. The cluster is destroyed when the verb returns.
+dplyrXdf will automatically use the RevoScaleR compute context that you set via `rxSetComputeContext()`. For example, if you set the compute context to `RxLocalParallel()`, dplyrXdf will create a cluster of slave nodes in the background and send the data to the nodes by group. The cluster is destroyed when the verb returns.
 
-For more flexibility, you can _manually_ create a cluster and set the compute context to `RxForeachDoPar`, which has a number of benefits. First, since the cluster is persistent, no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the `RxForeachDoPar` compute context is agnostic as to the nature of the underlying cluster. In particular, you can create a cluster of multiple (virtual) machines, which will be much more scalable than a cluster of multiple processes on a single machine. The main requirement is that all the machines must have access to the same filesystem, such as a network drive or file share.
+For more flexibility, you can _manually_ create a cluster and set the compute context to `RxForeachDoPar()`. This has a number of benefits. First, the cluster is persistent, so no time is wasted in creating and then destroying it each time you want to work with groups. Second, and perhaps more importantly, the `RxForeachDoPar` compute context is agnostic as to the nature of the underlying cluster. In particular, you can create a cluster of multiple (virtual) machines, which will be much more scalable than a cluster of multiple processes on a single machine. The main requirements are that you must be able to register the cluster with the foreach package; and all the machines must have access to the same filesystem, such as a network drive or file share.
 
-The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the [doAzureParallel package](https://github.com/Azure/doAzureParallel), which is an easy-to-use way to create clusters of [Azure Data Science VMs](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview), but you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).
+The code below gives an example of creating a cluster of VMs, and then running dplyrXdf code on it. This uses the [doAzureParallel package](https://github.com/Azure/doAzureParallel), which is an easy-to-use way to create clusters of [Azure Data Science VMs](https://docs.microsoft.com/en-us/azure/machine-learning/machine-learning-data-science-virtual-machine-overview). However, you could use any other package to create the cluster (such as the parallel package that comes with open source R; SNOW; Rmpi; etc).
 
 
 ```{r, eval=FALSE}
@@ -380,26 +380,24 @@ library(doAzureParallel)
 # doAzureParallel uses json files for cluster setup; see the documentation on GitHub for details
 setCredentials("credentials.json")
 
-# create a cluster of VMs in Azure
+# create and register a cluster of VMs in Azure
 cl <- makeCluster("cluster.json")
 registerDoAzureParallel(cl)
 
 # tell dplyrXdf to use our cluster
-dplyrxdf_options(useExecBy=FALSE)
 rxSetComputeContext("dopar")
 
 # set the dplyrXdf working directory to a cluster-accessible location
 set_dplyrxdf_dir("n:/clusterdata")
 
-# fit the models in parallel across the cluster
+# fit models in parallel across the cluster
 flightsXdf %>%
     group_by(carrier) %>%
     do(model=lm(arr_delay ~ dep_delay + hour, data=.))
 
-# manually shut down the cluster when we're done
+# shut down the cluster when we're done
 stopCluster(cl)
 rxSetComputeContext("local")
-dplyrxdf_options(useExecBy=TRUE)
 ```
 
 Note that the above assumes your data is stored on the native filesystem (either on your machine's local hard disk, or in a network share). If your data is stored in a Hadoop or Spark cluster, dplyrXdf will take advantage of the Hadoop and Spark compute contexts to process data in parallel on the worker nodes. See the HDFS vignette for more information on working with Xdf files in Spark.

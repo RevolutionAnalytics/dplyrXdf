@@ -12,7 +12,7 @@
 
 <meta name="author" content="Hong Ooi" />
 
-<meta name="date" content="2017-09-19" />
+<meta name="date" content="2017-09-27" />
 
 <title>Working with HDFS</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Working with HDFS</h1>
 <h4 class="author"><em>Hong Ooi</em></h4>
-<h4 class="date"><em>2017-09-19</em></h4>
+<h4 class="date"><em>2017-09-27</em></h4>
 
 
 <div id="TOC">
@@ -94,7 +94,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
  - ensure you are connected to a Spark or Hadoop cluster (a remote connection works)
  - run devtools::install(build_vignettes=TRUE) -->
 <p>Microsoft R Server includes the ability to work with Hadoop and Spark clusters. As part of this, it also lets you work with datasets, in particular Xdf files, that are stored in HDFS.</p>
-<p>As of version 0.10.0, dplyrXdf also supports Xdf files in HDFS. Most verbs will work exactly the same as with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark. You will need to have Microsoft R Server version 9.0 to use dplyrXdf with HDFS, and ideally version 9.1 for full functionality.</p>
+<p>As of version 1.0, dplyrXdf also supports Xdf files in HDFS. Most verbs will work exactly the same as with data in the native filesystem, and there are also a number of utility functions to ease working with Hadoop and Spark. You will need to have Microsoft R Server version 9.0 to use dplyrXdf with HDFS, and ideally version 9.1 for full functionality.</p>
 <div id="basics-hadoop-spark-and-hdfs" class="section level2">
 <h2>Basics: Hadoop, Spark and HDFS</h2>
 <p>If you’re used to dplyr and how it handles databases, Microsoft R Server and dplyrXdf work a little differently. What dplyr calls a “src” (a remote data source) is handled by two related concepts in MRS: a <em>compute context</em> and a <em>filesystem</em>. The compute context determines where computations take place: on a local machine, in a database like SQL Server, or in a Hadoop or Spark cluster. The <em>filesystem</em> is where the data files are stored. Note that not all data sources have a filesystem: eg a SQL Server table is part of a database, not a filesystem as such.</p>
@@ -123,8 +123,6 @@ hd &lt;-<span class="st"> </span><span class="kw">RxHdfsFileSystem</span>()
 <span class="co"># copy a data frame into an Xdf file in HDFS</span>
 flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to</span>(hd, flights)
 <span class="co">#&gt; Creating composite Xdf from non-composite data source</span>
-<span class="co">#&gt; 17/09/18 15:39:32 WARN azure.AzureFileSystemThreadPoolExecutor: Disabling threads for Rename operation as thread count 0 is &lt;= 1</span>
-<span class="co">#&gt; 17/09/18 15:39:32 INFO azure.AzureFileSystemThreadPoolExecutor: Time taken for Rename operation is: 172 ms with threads: 0</span>
 
 flightsHd
 <span class="co">#&gt; RxXdfData Source</span>
@@ -139,13 +137,13 @@ flightsHd
 
 <span class="kw">as_data_frame</span>(flightsHd)
 <span class="co">#&gt; # A tibble: 336,776 x 19</span>
-<span class="co">#&gt;    year month   day dep_t. sche. dep_. arr_. sche. arr_. carr. flig. tail.</span>
+<span class="co">#&gt;    year month   day dep_t sche dep_ arr_ sche arr_ carr flig tail</span>
 <span class="co">#&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt; &lt;int&gt; &lt;chr&gt;</span>
-<span class="co">#&gt; 1  2013     1     1    517   515  2.00   830   819  11.0 UA     1545 N142.</span>
-<span class="co">#&gt; 2  2013     1     1    533   529  4.00   850   830  20.0 UA     1714 N242.</span>
-<span class="co">#&gt; 3  2013     1     1    542   540  2.00   923   850  33.0 AA     1141 N619.</span>
-<span class="co">#&gt; 4  2013     1     1    544   545 -1.00  1004  1022 -18.0 B6      725 N804.</span>
-<span class="co">#&gt; 5  2013     1     1    554   600 -6.00   812   837 -25.0 DL      461 N668.</span>
+<span class="co">#&gt; 1  2013     1     1    517   515  2.00   830   819  11.0 UA     1545 N142</span>
+<span class="co">#&gt; 2  2013     1     1    533   529  4.00   850   830  20.0 UA     1714 N242</span>
+<span class="co">#&gt; 3  2013     1     1    542   540  2.00   923   850  33.0 AA     1141 N619</span>
+<span class="co">#&gt; 4  2013     1     1    544   545 -1.00  1004  1022 -18.0 B6      725 N804</span>
+<span class="co">#&gt; 5  2013     1     1    554   600 -6.00   812   837 -25.0 DL      461 N668</span>
 <span class="co">#&gt; # ... with 336,771 more rows, and 7 more variables: origin &lt;chr&gt;,</span>
 <span class="co">#&gt; #   dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   time_hour &lt;dttm&gt;</span></code></pre></div>
@@ -158,20 +156,20 @@ flightsHd &lt;-<span class="st"> </span><span class="kw">copy_to_hdfs</span>(fli
 
 flightsLocal
 <span class="co">#&gt; tbl_xdf Source</span>
-<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpEduo1t\dxTmp34a85cf17aff/flights&quot;</span>
+<span class="co">#&gt; &quot;d:\misc\Rtemp\RtmpY7aQYX\dxTmpbac7dbc59e/flights&quot;</span>
 <span class="co">#&gt; fileSystem: </span>
 <span class="co">#&gt;     fileSystemType: native</span>
 <span class="co">#&gt; createCompositeSet: TRUE</span>
 
 <span class="kw">as_data_frame</span>(flightsLocal)
 <span class="co">#&gt; # A tibble: 336,776 x 19</span>
-<span class="co">#&gt;    year month   day dep_t. sche. dep_. arr_. sche. arr_. carr. flig. tail.</span>
+<span class="co">#&gt;    year month   day dep_t sche dep_ arr_ sche arr_ carr flig tail</span>
 <span class="co">#&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt; &lt;int&gt; &lt;chr&gt;</span>
-<span class="co">#&gt; 1  2013     1     1    517   515  2.00   830   819  11.0 UA     1545 N142.</span>
-<span class="co">#&gt; 2  2013     1     1    533   529  4.00   850   830  20.0 UA     1714 N242.</span>
-<span class="co">#&gt; 3  2013     1     1    542   540  2.00   923   850  33.0 AA     1141 N619.</span>
-<span class="co">#&gt; 4  2013     1     1    544   545 -1.00  1004  1022 -18.0 B6      725 N804.</span>
-<span class="co">#&gt; 5  2013     1     1    554   600 -6.00   812   837 -25.0 DL      461 N668.</span>
+<span class="co">#&gt; 1  2013     1     1    517   515  2.00   830   819  11.0 UA     1545 N142</span>
+<span class="co">#&gt; 2  2013     1     1    533   529  4.00   850   830  20.0 UA     1714 N242</span>
+<span class="co">#&gt; 3  2013     1     1    542   540  2.00   923   850  33.0 AA     1141 N619</span>
+<span class="co">#&gt; 4  2013     1     1    544   545 -1.00  1004  1022 -18.0 B6      725 N804</span>
+<span class="co">#&gt; 5  2013     1     1    554   600 -6.00   812   837 -25.0 DL      461 N668</span>
 <span class="co">#&gt; # ... with 336,771 more rows, and 7 more variables: origin &lt;chr&gt;,</span>
 <span class="co">#&gt; #   dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   time_hour &lt;dttm&gt;</span></code></pre></div>
@@ -187,13 +185,13 @@ flightsHd2 &lt;-<span class="st"> </span><span class="kw">as_xdf</span>(flightsC
 
 <span class="kw">as_data_frame</span>(flightsHd2)
 <span class="co">#&gt; # A tibble: 336,776 x 19</span>
-<span class="co">#&gt;    year month   day dep_t. sche. dep_. arr_. sche. arr_. carr. flig. tail.</span>
+<span class="co">#&gt;    year month   day dep_t sche dep_ arr_ sche arr_ carr flig tail</span>
 <span class="co">#&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;int&gt; &lt;chr&gt;</span>
-<span class="co">#&gt; 1  2013     1     1    517   515     2   830   819    11 UA     1545 N142.</span>
-<span class="co">#&gt; 2  2013     1     1    533   529     4   850   830    20 UA     1714 N242.</span>
-<span class="co">#&gt; 3  2013     1     1    542   540     2   923   850    33 AA     1141 N619.</span>
-<span class="co">#&gt; 4  2013     1     1    544   545    -1  1004  1022   -18 B6      725 N804.</span>
-<span class="co">#&gt; 5  2013     1     1    554   600    -6   812   837   -25 DL      461 N668.</span>
+<span class="co">#&gt; 1  2013     1     1    517   515     2   830   819    11 UA     1545 N142</span>
+<span class="co">#&gt; 2  2013     1     1    533   529     4   850   830    20 UA     1714 N242</span>
+<span class="co">#&gt; 3  2013     1     1    542   540     2   923   850    33 AA     1141 N619</span>
+<span class="co">#&gt; 4  2013     1     1    544   545    -1  1004  1022   -18 B6      725 N804</span>
+<span class="co">#&gt; 5  2013     1     1    554   600    -6   812   837   -25 DL      461 N668</span>
 <span class="co">#&gt; # ... with 336,771 more rows, and 7 more variables: origin &lt;chr&gt;,</span>
 <span class="co">#&gt; #   dest &lt;chr&gt;, air_time &lt;int&gt;, distance &lt;int&gt;, hour &lt;int&gt;, minute &lt;int&gt;,</span>
 <span class="co">#&gt; #   time_hour &lt;chr&gt;</span></code></pre></div>
@@ -231,19 +229,17 @@ sampleHiv %&gt;%
 <span class="st">    </span><span class="kw">filter</span>(deviceplatform ==<span class="st"> &quot;Android&quot;</span>) %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(devicemake) %&gt;%
 <span class="st">    </span><span class="kw">summarise</span>(<span class="dt">n=</span><span class="kw">n</span>()) %&gt;%
-<span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(n)) %&gt;%
 <span class="st">    </span><span class="kw">head</span>()
 <span class="co">#&gt; # Source:     lazy query [?? x 2]</span>
 <span class="co">#&gt; # Database:   spark_connection</span>
-<span class="co">#&gt; # Ordered by: desc(n)</span>
 <span class="co">#&gt;     devicemake     n</span>
 <span class="co">#&gt;          &lt;chr&gt; &lt;dbl&gt;</span>
-<span class="co">#&gt; 1      Samsung 16244</span>
-<span class="co">#&gt; 2           LG  7950</span>
-<span class="co">#&gt; 3          HTC  2242</span>
-<span class="co">#&gt; 4      Unknown  2133</span>
-<span class="co">#&gt; 5     Motorola  1524</span>
-<span class="co">#&gt; # ... with more rows</span></code></pre></div>
+<span class="co">#&gt; 1        Casio   996</span>
+<span class="co">#&gt; 2     Motorola  1524</span>
+<span class="co">#&gt; 3       Huawei   230</span>
+<span class="co">#&gt; 4 SonyEricsson   139</span>
+<span class="co">#&gt; 5      Kyocera   117</span>
+<span class="co">#&gt; 6      Unknown  2133</span></code></pre></div>
 <p>In this example, dplyrXdf has converted the <code>RxHiveData</code> source into a sparklyr tbl, and the subsequent pipeline will be run by sparklyr (<em>not</em> by dplyrXdf) in the cluster.</p>
 <p>If you don’t want to use sparklyr – for example, if you want to take advantage of MRS features like a <code>transformFunc</code> to execute arbitrary R code – you can import the Hive table to an Xdf file in HDFS. The pipeline will then execute according to your compute context. This will probably still be in-cluster, since you must be in the Spark compute context to access Hive tables. However, executing the pipeline via sparklyr is likely to be more efficient, since it removes the need to import the data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># this will create the composite Xdf 'samplehivetable' in the HDFS user directory</span>
@@ -252,15 +248,15 @@ sampleXdf &lt;-<span class="st"> </span><span class="kw">as_xdf</span>(sampleHiv
 sampleXdf %&gt;%
 <span class="st">    </span><span class="kw">filter</span>(deviceplatform ==<span class="st"> &quot;Android&quot;</span>) %&gt;%
 <span class="st">    </span><span class="kw">group_by</span>(devicemake) %&gt;%
-<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">n=</span><span class="kw">n</span>()) %&gt;%
-<span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(n)) %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="dt">n=</span><span class="kw">n</span>(), <span class="dt">.method=</span><span class="dv">4</span>) %&gt;%
 <span class="st">    </span><span class="kw">head</span>()
 <span class="co">#&gt;     devicemake     n</span>
-<span class="co">#&gt; 1      Samsung 16244</span>
-<span class="co">#&gt; 2           LG  7950</span>
-<span class="co">#&gt; 3          HTC  2242</span>
-<span class="co">#&gt; 4      Unknown  2133</span>
-<span class="co">#&gt; 5     Motorola  1524</span></code></pre></div>
+<span class="co">#&gt; 1       Archos     1</span>
+<span class="co">#&gt; 2      Samsung 16244</span>
+<span class="co">#&gt; 3      Unknown  2133</span>
+<span class="co">#&gt; 4      Kyocera   117</span>
+<span class="co">#&gt; 5          HTC  2242</span>
+<span class="co">#&gt; 6 SonyEricsson   139</span></code></pre></div>
 </div>
 <div id="working-with-files-and-directories" class="section level2">
 <h2>Working with files and directories</h2>
