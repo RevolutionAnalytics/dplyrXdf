@@ -74,7 +74,7 @@ hdfs_upload <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=hd
             nativeTarget <- file.path(nativeTarget, basename(src), fsep="/")
         extraSwitches <- if(isDir) "-r" else ""
 
-        RevoScaleR:::rxRemoteCopy(rxGetComputeContext(), shQuote(src), FALSE, nativeTarget, TRUE, extraSwitches)
+        res <- remoteCopy(rxGetComputeContext(), shQuote(src), FALSE, nativeTarget, TRUE, extraSwitches)
 
         if(isDir)
             src <- nativeTarget
@@ -145,7 +145,7 @@ hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=
             localDest <- file.path(localDest, basename(src), fsep="/")
             extraSwitches <- ""
         }
-        RevoScaleR:::rxRemoteCopy(rxGetComputeContext(), localDest, TRUE, shQuote(dest), FALSE, extraSwitches)
+        remoteCopy(rxGetComputeContext(), localDest, TRUE, shQuote(dest), FALSE, extraSwitches)
 
         cmd <- paste0("sudo rm -rf ", localDest)
         RevoScaleR:::rxRemoteCommand(rxGetComputeContext(), cmd)
@@ -153,3 +153,93 @@ hdfs_download <- function(src, dest, overwrite=FALSE, nativeTarget="/tmp", host=
     else ret
 }
 
+
+# hacks to fix RevoScaleR:::rxRemoteCopy and rxScp
+remoteCopy <- function(computeContext, source, sourceIsRemote, target, targetIsRemote, extraSwitches="")
+{
+    localCopyOnly <- computeContext@onClusterNode
+    if(localCopyOnly)
+    {
+        rxLocalCopy(source, target)
+    }
+    else
+    {
+        userAtHost <- paste(computeContext@sshUsername, "@", computeContext@sshHostname, sep="")
+
+        if(sourceIsRemote && !localCopyOnly)
+        {
+            source <- paste(userAtHost, ":", source, sep="")
+        }
+        if(!sourceIsRemote && !localCopyOnly)
+        {
+            target <- paste(userAtHost, ":", target, sep="")
+        }
+        return(scp(source, target,
+                   switches=paste(computeContext@sshSwitches, extraSwitches),
+                   profileScript=computeContext@sshProfileScript,
+                   sshStrictHostKeyChecking=computeContext@sshStrictHostKeyChecking,
+                   sshClientDir=computeContext@sshClientDir))
+    }
+
+}
+
+
+scp <- function(source, target, switches="", profileScript=NULL, sshStrictHostKeyChecking="ask", sshClientDir="")
+{
+    scriptOutput <- NULL
+    printOut <- NULL
+    havePreformedScp <- FALSE
+    userAtHost <- NULL
+    if(.Platform$OS.type == "windows")
+    {
+        sshClient <- RevoScaleR:::rxFindWindowsSsh("pscp.exe", "scp.exe", sshClientDir)
+        command <- sshClient$path
+
+        # don't scribble on the switches
+        #switches <- sub("-p", "-P , switches, fixed=TRUE)
+
+        if(sshClient$usePutty)
+        {
+            if(grepl("@", target, fixed=TRUE))
+            {
+                userAtHostAndTargetDir <- unlist(strsplit(target, ":", fixed=TRUE))
+                userAtHost <- userAtHostAndTargetDir[[1]]
+
+                targetDir <- userAtHostAndTargetDir[[2]]
+                cmd <- paste("mkdir -p ", targetDir)
+
+                RevoScaleR:::rxSsh(userAtHost, cmd, sub("-r", "", switches, fixed=TRUE),
+                                   profileScript=profileScript,
+                                   sshStrictHostKeyChecking=sshStrictHostKeyChecking,
+                                   sshClientDir=sshClientDir)
+
+                if(grepl("-r", switches, fixed=TRUE) && (substring(source, nchar(source)) != "\\"))
+                {
+                    source <- paste(source, "\\", sep="")
+                }
+            }
+            scriptOutput <- capture.output(suppressWarnings(
+                printOut <- system2(command, paste(switches, "-q", source, target),
+                                    stdout=TRUE, stderr=TRUE, input="")
+            ))
+            havePreformedScp <- TRUE
+        }
+        else
+        {
+            source <- RevoScaleR:::rxuFixForCygwinIfLocal(source)
+            target <- RevoScaleR:::rxuFixForCygwinIfLocal(target)
+        }
+    }
+    else command <- "scp"
+
+    if(!havePreformedScp)
+    {
+        args <- paste(paste0("-o StrictHostKeyChecking=", sshStrictHostKeyChecking),
+                      switches, "-q", source, target)
+        scriptOutput <- capture.output(suppressWarnings(
+            printOut <- system2(command, args=args, input="", stdout=TRUE, stderr=TRUE)
+        ))
+    }
+    RevoScaleR:::checkSshReturnMessage(printOut)
+    RevoScaleR:::printSecureOutput(scriptOutput, userAtHost)
+}
