@@ -20,7 +20,7 @@ splitGroups <- function(data)
             # fix problematic characters in filenames: ?*<>|+ etc
             names(datlst) <- sapply(names(datlst), URLencode, reserved=TRUE)
 
-            filelst <- paste(.fname, paste(.grps, collapse="#"), names(datlst), sep="##")
+            filelst <- paste(.fname, paste(.grps, collapse="-"), names(datlst), sep="--")
             if(!.composite)
                 filelst <- paste0(filelst, ".xdf")
             outlst <- lapply(filelst, RxXdfData, fileSystem=.fs, createCompositeSet=.composite)
@@ -44,7 +44,7 @@ cleanSplitOutput <- function(fname, grps)
 {
     dname <- dirname(fname)
     fname <- basename(fname)
-    pattern <- paste(fname, paste(grps, collapse="#"), sep="##")
+    pattern <- paste(fname, paste(grps, collapse="-"), sep="--")
     existingFiles <- grep(pattern, dir(dname), value=TRUE, fixed=TRUE)
 
     if(length(existingFiles) > 0)
@@ -53,3 +53,5 @@ cleanSplitOutput <- function(fname, grps)
         unlink(file.path(dname, existingFiles))
     }
 }
+
+
