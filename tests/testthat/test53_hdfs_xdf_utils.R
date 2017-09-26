@@ -128,8 +128,7 @@ test_that("persist works",
     expect_true(verifyCompositeData(tbl2, "RxXdfData"))
     expect_false(hdfs_dir_exists(tbl@file))
 
-    expect_warning(tbl <- as(mthc, "tbl_xdf") %>% persist("test53.xdf", composite=FALSE, move=FALSE))
-    expect_true(verifyCompositeData(tbl, "RxXdfData"))
+    expect_error(as(mthc, "tbl_xdf") %>% persist("test53.xdf", composite=FALSE, move=FALSE))
 })
 
 hdfs_dir_remove(c("mtcars", "test53", "test53a", test2), skipTrash=TRUE)
