@@ -6,8 +6,7 @@ getFactorLevels <- function(data, vars=group_vars(data))
     # use rxExecBy if in Spark/Hadoop CC: only for the keys, not the data
     levs <- if(inherits(rxGetComputeContext(), "RxHadoopMR"))
     {
-        # keep only the variables we need
-        tmpSrc <- modifyXdf(data, varsToKeep=vars)
+        tmpSrc <- unTbl(data)
         message("Scanning data to get levels")
 
         keys <- execByResult(tmpSrc, vars, function(keys, data) keys)
@@ -38,8 +37,7 @@ getFactorCombinations <- function(data, vars=group_vars(data))
 
     levs <- if(in_hdfs(data))
     {
-        vars <- unname(vars)
-        tmpSrc <- modifyXdf(data, varsToKeep=vars)
+        tmpSrc <- unTbl(data)
 
         # split by 1 factor only to reduce no. of files created
         execByResult(tmpSrc, vars[1], function(keys, data, vars)
