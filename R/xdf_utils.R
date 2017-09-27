@@ -32,6 +32,8 @@
 #' @export
 copy_xdf <- function(src, dest)
 {
+    if(!is_xdf(src))
+        stop("only for copying Xdf files, input is of class ", class(src)[1])
     copyOrMove(src, dest, move=FALSE)
 }
 
@@ -40,6 +42,8 @@ copy_xdf <- function(src, dest)
 #' @export
 move_xdf <- function(src, dest)
 {
+    if(!is_xdf(src))
+        stop("only for moving Xdf files, input is of class ", class(src)[1])
     copyOrMove(src, dest, move=TRUE)
 }
 
@@ -48,6 +52,8 @@ move_xdf <- function(src, dest)
 #' @export
 rename_xdf <- function(src, dest)
 {
+    if(!is_xdf(src))
+        stop("only for renaming Xdf files, input is of class ", class(src)[1])
     if(dirname(dest) == dirname(src@file))
         dest <- basename(dest)
     else if(basename(dest) != dest)
@@ -94,7 +100,7 @@ rename_xdf <- function(src, dest)
 delete_xdf <- function(xdf)
 {
     if(!is_xdf(xdf))
-        stop("only for deleting Xdf files: input is of class ", class(xdf)[1])
+        stop("only for deleting Xdf files, input is of class ", class(xdf)[1])
     if(in_hdfs(xdf))
     {
         out <- hdfs_dir_remove(xdf@file, host=xdf@fileSystem, intern=TRUE)
