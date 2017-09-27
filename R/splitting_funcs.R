@@ -31,7 +31,7 @@ callExecBy <- function(.data, .func, ..., .captures=list())
     enclosFunc <- function(keys, data, .func, ..., .captures)
     {
         e <- list2env(.captures)
-        attach(e)
+        attach(e, warn.conflicts=FALSE)
         on.exit(detach())
         .func(data, ...)
     }
@@ -53,7 +53,7 @@ callSplit <- function(.data, .func, ..., .captures=list())
     enclosFunc <- function(data, .func, ..., .captures)
     {
         e <- list2env(.captures)
-        attach(e)
+        attach(e, warn.conflicts=FALSE)
         on.exit(detach())
         .func(data, ...)
     }
