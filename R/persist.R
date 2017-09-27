@@ -35,6 +35,9 @@ persist <- function(.data, ...)
 #' @export
 persist.tbl_xdf <- function(.data, file, composite=is_composite_xdf(.data), move=TRUE, overwrite=TRUE, ...)
 {
+    if(composite == is_composite_xdf(.data))
+        return(copyOrMove(.data, file, move=move))
+
     out <- as_xdf(.data, file, composite=composite, overwrite=overwrite)
     if(move)
         delete_xdf(.data)

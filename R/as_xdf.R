@@ -6,7 +6,7 @@
 #' @param file The name for the Xdf data file, optionally with path. If not supplied, this is taken from \code{.data}.
 #' @param composite Whether to create a composite Xdf file. Defaults to TRUE if \code{.data} is stored in HDFS, and FALSE otherwise.
 #' @param overwrite Whether to overwrite any existing file.
-#' @param ... Other arguments to pass to \code{\link{rxDataStep}}.
+#' @param ... Other (named) arguments to pass to \code{\link{rxDataStep}}.
 #'
 #' @details
 #' The \code{as_xdf} function takes the object given by \code{.data} and imports its data into an Xdf file, returning a data source pointing to that file. The file can be either a standard or a \emph{composite} Xdf, as given by the \code{composite} argument. A composite Xdf is actually a directory containing data and metadata files; it can be manipulated by the RevoScaleR functions as if it were a single dataset.
@@ -46,10 +46,10 @@
 #' tbl <- mtx %>% mutate(mpg2=2 * mpg)
 #' as_xdf(tbl, file="mtcars_mutate.xdf", overwrite=TRUE)
 #'
-#' # import a text file to Xdf
+#' # import selected columns of a text file to Xdf
 #' write.csv(mtcars, "mtcars.csv", row.names=FALSE)
 #' mtt <- RxTextData("mtcars.csv")
-#' mtx <- as_xdf(mtt, overwrite=TRUE)
+#' mtx <- as_xdf(mtt, overwrite=TRUE, varsToKeep=c("mpg", "cyl"))
 #'
 #' # import a database table to Xdf
 #' \dontrun{
@@ -105,7 +105,7 @@ as_xdf.RxXdfData <- function(.data, file=NULL, composite=is_composite_xdf(.data)
     asXdfOverwriteCheck(file, overwrite, in_hdfs(.data), hdfs_host(.data))
 
     out <- modifyXdf(.data, file=file, createCompositeSet=composite)
-    arglst <- modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
+    arglst <- asXdfArgList(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite, ...)
     callRx("rxDataStep", arglst)
 }
 
@@ -136,7 +136,7 @@ as_xdf.RxDataSource <- function(.data, file=NULL, composite=in_hdfs(.data), over
     else rxGetFileSystem(.data)
         
     out <- RxXdfData(file=file, fileSystem=fs, createCompositeSet=composite)
-    arglst <- modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
+    arglst <- asXdfArgList(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite, ...)
 
     if(in_hdfs(out))
         callRx("rxDataStep", arglst)
@@ -156,7 +156,7 @@ as_xdf.default <- function(.data, file=NULL, composite=FALSE, overwrite=FALSE, .
     .data <- as.data.frame(.data)
 
     out <- RxXdfData(file=file, fileSystem=RxNativeFileSystem(), createCompositeSet=composite)
-    arglst <- modify(list(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite), ...)
+    arglst <- asXdfArgList(.data, outFile=out, rowsPerRead=.dxOptions$rowsPerRead, overwrite=overwrite, ...)
     local_exec(callRx("rxDataStep", arglst))
 }
 
@@ -184,7 +184,24 @@ asXdfOverwriteCheck <- function(file, overwrite, inHdfs, hdfsHost=NULL)
             else err <- TRUE
         }
     }
+
     if(err)
         stop("destination file '", file, "' exists; set overwrite=TRUE to replace it", call.=FALSE)
+}
+
+
+# rowSelection and transforms args require special treatment because of NSE
+asXdfArgList <- function(.data, outFile, ...)
+{
+    dots <- quos(..., .named=TRUE)
+    dots <- sapply(names(dots), function(n)
+    {
+        if(n %in% c("rowSelection", "transforms"))
+            get_expr(dots[[n]])
+        else eval_tidy(dots[[n]])
+    }, simplify=FALSE)
+
+    init <- list(.data, outFile=outFile, rowsPerRead=.dxOptions$rowsPerRead)
+    modify(init, splice(dots))
 }
 

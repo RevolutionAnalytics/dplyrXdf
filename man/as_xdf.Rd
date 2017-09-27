@@ -34,7 +34,7 @@ is_composite_xdf(x)
 is_standard_xdf(x)
 }
 \arguments{
-\item{...}{Other arguments to pass to \code{\link{rxDataStep}}.}
+\item{...}{Other (named) arguments to pass to \code{\link{rxDataStep}}.}
 
 \item{.data}{An R object that can be coerced to an Xdf data source. This includes another existing Xdf data source; see details below.}
 
@@ -89,10 +89,10 @@ is_composite_xdf(mtc)
 tbl <- mtx \%>\% mutate(mpg2=2 * mpg)
 as_xdf(tbl, file="mtcars_mutate.xdf", overwrite=TRUE)
 
-# import a text file to Xdf
+# import selected columns of a text file to Xdf
 write.csv(mtcars, "mtcars.csv", row.names=FALSE)
 mtt <- RxTextData("mtcars.csv")
-mtx <- as_xdf(mtt, overwrite=TRUE)
+mtx <- as_xdf(mtt, overwrite=TRUE, varsToKeep=c("mpg", "cyl"))
 
 # import a database table to Xdf
 \dontrun{
