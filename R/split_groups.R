@@ -10,7 +10,7 @@ splitGroups <- function(data)
 
     # if files exist that could interfere with splitting output, delete them
     # this can happen, eg if a previous splitting op failed
-    cleanSplitOutput(fname, grps)
+    cleanSplitOutput(fname, grps, fs)
 
     # mimic behaviour of rxSplit: rxDataStep that splits each chunk, calls rxDataStep on each split
     filelst <- rxDataStep(data, transformFunc=function(varlst) {
@@ -40,18 +40,24 @@ splitGroups <- function(data)
 }
 
 
-cleanSplitOutput <- function(fname, grps)
+cleanSplitOutput <- function(fname, grps, fileSystem)
 {
     dname <- dirname(fname)
     fname <- basename(fname)
     pattern <- paste(fname, paste(grps, collapse="-"), sep="--")
-    existingFiles <- grep(pattern, dir(dname), value=TRUE, fixed=TRUE)
 
-    if(length(existingFiles) > 0)
-    {
-        message("removing old temporary files from splitting")
-        unlink(file.path(dname, existingFiles))
-    }
+    hd <- in_hdfs(fileSystem)
+    existingFiles <- if(hd)
+        grep(pattern, hdfs_dir(dname), value=TRUE, fixed=TRUE)
+    else grep(pattern, dir(dname), value=TRUE, fixed=TRUE)
+
+    if(length(existingFiles) == 0)
+        return()
+
+    message("removing old temporary files from splitting")
+    if(hd)
+        hdfs_dir_remove(file.path(dname, existingFiles))
+    else unlink(file.path(dname, existingFiles))
 }
 
 
