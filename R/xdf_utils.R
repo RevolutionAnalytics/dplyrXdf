@@ -103,7 +103,7 @@ delete_xdf <- function(xdf)
         stop("only for deleting Xdf files, input is of class ", class(xdf)[1])
     if(in_hdfs(xdf))
     {
-        out <- hdfs_dir_remove(xdf@file, host=xdf@fileSystem, intern=TRUE)
+        out <- hdfs_dir_remove(xdf@file, host=hdfs_host(xdf), intern=TRUE)
         attr(out, "status")
     }
     else unlink(xdf@file, recursive=TRUE)

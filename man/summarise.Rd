@@ -40,7 +40,11 @@ The default method is 1 if the data is grouped and the requested summary statist
 
 Supplying custom functions to summarise is supported, but they must be \emph{named} functions (and will automatically cause \code{.method=4} to be selected). Anonymous functions will cause an error.
 
-Due to the way in which \code{rxSummary} and \code{rxCube} work, when used with data in HDFS, the result of the summarisation will be streamed to the client (either the edge node or a remote client) before being written to back to HDFS.
+Due to limitations in RevoScaleR support for HDFS, you should take note of the following:
+\itemize{
+  \item The result of the summarise will be streamed to the client (either the edge node or a remote client) before being written back to HDFS.
+  \item If summarising over character grouping variables, it may be faster to specify \code{.method=4} or \code{5}. This is because the usual summarise functions, \code{rxSummary} and \code{rxCube}, require factor or numeric groups, and converting character to factor can be slow for HDFS data.
+}
 }
 \examples{
 mtx <- as_xdf(mtcars, overwrite=TRUE)

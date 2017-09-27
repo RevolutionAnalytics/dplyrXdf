@@ -18,7 +18,11 @@
 #'
 #' Supplying custom functions to summarise is supported, but they must be \emph{named} functions (and will automatically cause \code{.method=4} to be selected). Anonymous functions will cause an error.
 #'
-#' Due to the way in which \code{rxSummary} and \code{rxCube} work, when used with data in HDFS, the result of the summarisation will be streamed to the client (either the edge node or a remote client) before being written to back to HDFS.
+#' Due to limitations in RevoScaleR support for HDFS, you should take note of the following:
+#' \itemize{
+#'   \item The result of the summarise will be streamed to the client (either the edge node or a remote client) before being written back to HDFS.
+#'   \item If summarising over character grouping variables, it may be faster to specify \code{.method=4} or \code{5}. This is because the usual summarise functions, \code{rxSummary} and \code{rxCube}, require factor or numeric groups, and converting character to factor can be slow for HDFS data.
+#' }
 #'
 #' @return
 #' An object representing the summary. This depends on the \code{.outFile} argument: if missing, it will be an xdf tbl object; if \code{NULL}, a data frame; and if a filename, an Xdf data source referencing a file saved to that location.
@@ -107,12 +111,12 @@ selectSmryMethod <- function(stats, method=NULL, groups=NULL)
     {
         if(method == 1 && !grouped)
         {
-            warning("rxCube method only works for grouped data", call.=FALSE)
+            warning("grouping variables required for .method = 1", call.=FALSE)
             method <- Recall(stats=stats, method=NULL, groups=groups)
         }
         else if(method == 3 && !grouped)
         {
-            warning("grouping variables method required for .method = 3", call.=FALSE)
+            warning("grouping variables required for .method = 3", call.=FALSE)
             method <- Recall(stats=stats, method=NULL, groups=groups)
         }
         else if(method == 1 && !cubeStats)

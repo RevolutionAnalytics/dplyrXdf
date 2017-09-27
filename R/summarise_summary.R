@@ -1,4 +1,4 @@
-smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
+smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs, cleanInput=TRUE)
 {
     outvars <- names(exprs)
     invars <- invars(exprs)
@@ -76,7 +76,7 @@ smryRxSummary <- function(data, grps=NULL, stats, exprs, rxArgs)
     }
 
     oldData <- data
-    on.exit(deleteIfTbl(oldData))
+    if(cleanInput) on.exit(deleteIfTbl(oldData))
     data <- unTbl(data) # workaround HDFS/tbl incompatibility
 
     if(length(grps) > 0)
