@@ -1,15 +1,19 @@
 Package: dplyrXdf
-Title: Interface to xdf files for the dplyr package
-Version: 0.10.0
+Title: Tools for working with Microsoft R Server Xdf files and the dplyr package
+Version: 1.0.0
 Authors@R: c(
     person("Hong", "Ooi", , "hongooi@microsoft.com", role = c("aut", "cre")),
     person("Microsoft", role="cph"),
     person("Hadley", "Wickham", role = "ctb", comment = "Some functions based on code in dplyr and httr"),
-    person("Ali-Kazim", "Zaidi", role = "ctb", comment = "Invaluable assistance on Spark")
+    person("Ali-Kazim", "Zaidi", role = "ctb", comment = "Invaluable assistance on Spark"),
+    person("Mario", "Inchiosa", role = "ctb", comment = "Invaluable assistance on Spark")
     )
-Description: Interface to xdf files for the dplyr package
+Description: A suite of tools for working with Microsoft R Server. Its most
+    visible feature is a dplyr interface for the Xdf file format and other MRS
+    data sources. It supports Hadoop and Spark clusters, as well as in-database
+    processing with Microsoft SQL Server.
 Depends: 
-    R (>= 3.3.2),
+    R (>= 3.3),
     dplyr (>= 0.7),
     RevoScaleR (>= 8.0)
 Imports: 
