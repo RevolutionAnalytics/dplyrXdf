@@ -22,7 +22,10 @@ dplyrXdf requires Microsoft R Server release 8.0 or later, and dplyr 0.7 or late
 If you are using MRS 9.1 or earlier, the necessary packages will not be in the MRAN snapshot that is your default repo. You can install them from CRAN instead:
 
 ```r
-install.packages(c("dplyr", "dbplyr", "sparklyr", "odbc"), repos="https://cloud.r-project.org")
+install.packages("dplyr", repos="https://cloud.r-project.org")
+# optional
+install.packages(c("dbplyr", "odbc"), repos="https://cloud.r-project.org")
+install.packages(c("dbplyr", "sparklyr"), repos="https://cloud.r-project.org")
 ```
 
 Make sure you install dplyr 0.7 _before_ you install dplyrXdf.
@@ -30,6 +33,5 @@ Make sure you install dplyr 0.7 _before_ you install dplyrXdf.
 ## Earlier versions
 
 The previous version of dplyrXdf, 0.9.2, is also available. You can install this with `install_github("RevolutionAnalytics/dplyrXdf@v0.9.2")`. This version requires dplyr 0.5 or earlier; it may run into problems with dplyr 0.7.
-
 
 
