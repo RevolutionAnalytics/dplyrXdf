@@ -160,4 +160,5 @@ test_that("output to xdf works",
 
 
 # cleanup
+dplyrxdf_options(useExecBy=FALSE)
 unlink(c("mtc", "test15a"), recursive=TRUE)

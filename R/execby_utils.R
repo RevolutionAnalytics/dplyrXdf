@@ -17,7 +17,7 @@ execByResult <- function(.data, vars, ...)
     # workaround crazy rxExecBy issue
     vars <- unname(vars)
 
-    execLst <- callRx("rxExecBy", list(.data, vars, ...))
+    execLst <- callRx("rxExecBy", list(.data, vars, ..., filterFunc=function(x) x))
     execByCheck(execLst)
     lapply(execLst, "[[", "result")
 }
