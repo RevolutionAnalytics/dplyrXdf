@@ -48,18 +48,21 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
     # cannot set rowsPerRead with append="cols"
     arglst$rowsPerRead <- NULL
 
+    # copy first arg directly to target location, rather than using rxDataStep
+    # if target exists, delete it: this stops composite output from being created in the wrong dir
+    if(arglst$outFile@file != lst[[1]]@file)
+        copyAndOverwrite(lst[[1]], arglst$outFile)
+
+    lst <- lst[-1]
     dupNameWarn <- FALSE
+    output <- arglst$outFile
     for(i in seq_along(lst))
     {
-        if(i == 1)
-            arglst$append <- "none"
-        else
-        {
-            arglst$append <- "cols"
-            # warn if duplicate colnames found
-            if(!dupNameWarn)
-                dupNameWarn <- any(names(lst[[i]]) %in% names(output))
-        }
+        arglst$append <- "cols"
+        # warn if duplicate colnames found
+        if(!dupNameWarn)
+            dupNameWarn <- any(names(lst[[i]]) %in% names(output))
+
         arglst$inData <- lst[[i]]
         output <- callRx("rxDataStep", arglst)
     }
