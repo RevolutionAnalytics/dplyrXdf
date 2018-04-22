@@ -107,9 +107,15 @@ rbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
     if(dfOutput)
         arglst$outFile <- tbl_xdf(lst[[1]])
 
+    # copy first arg directly to target location, rather than using rxDataStep
+    # if target exists, delete it: this stops composite output from being created in the wrong dir
+    if(arglst$outFile@file != lst[[1]]@file)
+        copyAndOverwrite(lst[[1]], arglst$outFile)
+
+    lst <- lst[-1]
     for(i in seq_along(lst))
     {
-        arglst$append <- if(i == 1) "none" else "rows"
+        arglst$append <- "rows"
         arglst$inData <- lst[[i]]
         output <- callRx("rxDataStep", arglst)
     }
@@ -122,4 +128,18 @@ rbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
     else output
 }
 
+
+copyAndOverwrite <- function(src, dest)
+{
+    if(in_hdfs(dest))
+    {
+        if(hdfs_dir_exists(dest@file, host=hdfs_host(dest)))
+            hdfs_dir_remove(dest@file, host=hdfs_host(dest))
+    }
+    else
+    {
+        if(file.exists(dest@file)) unlink(dest@file, recursive=TRUE)
+    }
+    copy_xdf(src, dest)
+}
 
