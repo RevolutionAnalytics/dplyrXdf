@@ -116,6 +116,7 @@ rbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
         copyAndOverwrite(lst[[1]], arglst$outFile)
 
     lst <- lst[-1]
+    output <- arglst$outFile
     for(i in seq_along(lst))
     {
         arglst$append <- "rows"

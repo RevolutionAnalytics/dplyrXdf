@@ -11,6 +11,8 @@ verifyData <- function(xdf, expectedClass)
 
 test_that("cbind works",
 {
+    tbl <- cbind(mtx)
+    expect_true(verifyData(tbl, "tbl_xdf") && ncol(tbl) == ncol(mtx))
     expect_warning(tbl <- cbind(mtx, mtx2))
     expect_true(verifyData(tbl, "tbl_xdf") && ncol(tbl) == ncol(mtx))
     tbl <- cbind(mtx, mtx3)
@@ -19,12 +21,18 @@ test_that("cbind works",
 
 test_that("rbind works",
 {
+    tbl <- rbind(mtx)
+    expect_true(verifyData(tbl, "tbl_xdf") && nrow(tbl) == nrow(mtx))
     tbl <- rbind(mtx, mtx2)
     expect_true(verifyData(tbl, "tbl_xdf") && nrow(tbl) == 2 * nrow(mtx))
 })
 
 test_that("output to data frame works",
 {
+    tbl <- cbind(mtx, .outFile=NULL)
+    expect_true(verifyData(tbl, "data.frame") && ncol(tbl) == ncol(mtx))
+    tbl <- rbind(mtx, .outFile=NULL)
+    expect_true(verifyData(tbl, "data.frame") && nrow(tbl) == nrow(mtx))
     tbl <- cbind(mtx, mtx3, .outFile=NULL)
     expect_true(verifyData(tbl, "data.frame") && ncol(tbl) == 2 * ncol(mtx))
     tbl <- rbind(mtx, mtx2, .outFile=NULL)
@@ -33,6 +41,10 @@ test_that("output to data frame works",
 
 test_that("output to xdf works",
 {
+    tbl <- cbind(mtx, .outFile="test11.xdf")
+    expect_true(verifyData(tbl, "RxXdfData") && ncol(tbl) == ncol(mtx))
+    tbl <- rbind(mtx, .outFile="test11.xdf")
+    expect_true(verifyData(tbl, "RxXdfData") && nrow(tbl) == nrow(mtx))
     tbl <- cbind(mtx, mtx3, .outFile="test11.xdf")
     expect_true(verifyData(tbl, "RxXdfData") && ncol(tbl) == 2 * ncol(mtx))
     tbl <- rbind(mtx, mtx2, .outFile="test11.xdf")
