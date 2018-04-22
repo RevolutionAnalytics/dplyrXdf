@@ -30,8 +30,6 @@
 cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .rxArgs)
 {
     stopIfDistribCC("cbind for Rx source objects not supported in Hadoop/Spark compute context")
-    if(!missing(deparse.level))
-        warn("cbind for Rx source objects doesn't use deparse.level")
 
     lst <- list(...)
     if(length(lst) < 1)
@@ -95,8 +93,6 @@ cbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .r
 rbind.RxXdfData <- function(..., deparse.level=1, .outFile=tbl_xdf(lst[[1]]), .rxArgs)
 {
     stopIfDistribCC("rbind for Rx source objects not supported in Hadoop/Spark compute context")
-    if(!missing(deparse.level))
-        warn("rbind for Rx source objects doesn't use deparse.level")
 
     lst <- list(...)
     if(length(lst) < 1)
