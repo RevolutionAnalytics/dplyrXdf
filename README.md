@@ -10,7 +10,7 @@ The dplyrXdf package is a suite of tools to facilitate working with [Microsoft M
 
 ## Obtaining dplyrXdf
 
-The current version of dplyrXdf is **1.0.0**. You can download and install dplyrXdf from within R via the devtools package:
+The current version of dplyrXdf is **1.0.1**. You can download and install dplyrXdf from within R via the devtools package:
 
 ```r
 install.packages("devtools")
