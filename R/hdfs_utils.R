@@ -86,9 +86,9 @@ hdfs_dir <- function(path=".", ..., full_path=FALSE, include_dirs=FALSE, recursi
     else if(dirs_only)
         output <- output[substr(output, 1, 1) == "d"]
 
-    #output <- gsub("^[^/]*(/.*)$", "\\1", output)
     ## NOTE: regex below will break on filenames with a space
-    output <- substr(output, regexpr("[^ ]+$", output), nchar(output))
+    #output <- substr(output, regexpr("[^ ]+$", output), nchar(output))
+    output <- sub("^[^ ]+[ ]+[^ ]+[ ]+[^ ]+[ ]+[^ ]+[ ]+[^ ]+[ ]+[^ ]+[ ]+[^ ]+[ ]+", "", output)
 
     if(!full_path && !recursive)
         output <- basename(output)
